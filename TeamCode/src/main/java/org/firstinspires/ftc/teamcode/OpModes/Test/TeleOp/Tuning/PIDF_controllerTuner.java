@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp.Tuning;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.outtakeMAX;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.LeftOuttakeMotor;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.RightOuttakeMotor;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.outtakeMAX;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.LeftOuttakeMotor;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RightOuttakeMotor;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -10,9 +10,9 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Systems.Lift.AnyMotorLift;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Lift.AnyMotorLift;
 
 import java.util.Arrays;
 

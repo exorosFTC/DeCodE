@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp.Tuning.Configuration;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.AnalogNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.ServoNamesList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.AnalogNamesList;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -10,8 +9,6 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.UltrasonicSensor;

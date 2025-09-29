@@ -1,8 +1,12 @@
 package org.firstinspires.ftc.teamcode.Hardware.Util.MotionHardware;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.PwmControl;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -17,6 +21,16 @@ public interface Init {
         motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         return motor;
+    }
+
+    static Servo initializeServo(Servo servo) {
+        ((ServoImplEx) servo).setPwmRange(new PwmControl.PwmRange(500, 2500, 5000));
+        return servo;
+    }
+
+    static CRServo initializeServo(CRServo crServo) {
+        ((ServoImplEx) crServo).setPwmRange(new PwmControl.PwmRange(500, 2500));
+        return crServo;
     }
 
 
@@ -45,7 +59,6 @@ public interface Init {
 
         return motor;
     }
-
 
 
 

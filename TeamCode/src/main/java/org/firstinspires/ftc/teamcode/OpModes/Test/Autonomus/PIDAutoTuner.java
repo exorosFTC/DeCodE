@@ -1,18 +1,18 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.AngularP;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.LinearD;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.LinearP;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.ahhX;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.ahhY;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularD;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearD;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearP;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.ahhX;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.ahhY;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Machine;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.MachineData;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;

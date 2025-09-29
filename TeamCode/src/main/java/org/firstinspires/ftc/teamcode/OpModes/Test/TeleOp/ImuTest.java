@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Localizer.IMU.SketchyIMU;
+import org.firstinspires.ftc.teamcode.Pathing.Localizer.IMU.SketchyIMU;
 
 @TeleOp(group = "test", name = "IMU")
 public class ImuTest extends LinearOpMode {

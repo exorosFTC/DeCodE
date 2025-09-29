@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces;
+package org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces;
 
 
 import com.acmerobotics.roadrunner.PoseVelocity2d;

@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode.Hardware.OpenCV;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.cameraConfigurationName;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.cameraConfigurationName;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.OpenCV.Pipelines.PropDetectionPipeline;
 import org.firstinspires.ftc.teamcode.Hardware.OpenCV.Pipelines.SampleDetectionPipeline;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.ColorEx;

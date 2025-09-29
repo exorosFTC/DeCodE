@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.Pathing.Math;
 
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 
 import java.util.ArrayList;
 import java.util.List;

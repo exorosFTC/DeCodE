@@ -1,22 +1,18 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp.Tuning.Configuration;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.ServoNamesList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ServoNamesList;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Config
 @TeleOp(name = "ConfigureServo", group = "tuning")

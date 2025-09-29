@@ -1,21 +1,21 @@
 package org.firstinspires.ftc.teamcode.Hardware.Robot;
 
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.driveSensitivity;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.randomization;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.telemetryAddLoopTime;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.usingAprilTagCamera;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.usingOpenCvCamera;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.driveSensitivity;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.randomization;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.telemetryAddLoopTime;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.usingAprilTagCamera;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.usingOpenCvCamera;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.OpenCV.AprilTagCamera;
 import org.firstinspires.ftc.teamcode.Hardware.OpenCV.Camera;
 import org.firstinspires.ftc.teamcode.Hardware.OpenCV.Pipelines.PropDetectionPipeline;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Systems.Drivetrain;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Mecanum.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 import javax.annotation.Nullable;
@@ -24,7 +24,7 @@ public class Machine {
     public Hardware hardware;
     public Thread drivetrainThread;
 
-    public Drivetrain drive;
+    public MecanumDrive drive;
 
     public GamepadEx g1, g2;
     private boolean add_g1, add_g2;
@@ -78,7 +78,7 @@ public class Machine {
         this.opMode = opMode;
 
         //follower = new Follower(hardware);
-        drive = new Drivetrain(opMode);
+        drive = new MecanumDrive(opMode);
 
         g1 = add_g1 ? new GamepadEx(opMode.gamepad1) : null;
         g2 = add_g2 ? new GamepadEx(opMode.gamepad2) : null;

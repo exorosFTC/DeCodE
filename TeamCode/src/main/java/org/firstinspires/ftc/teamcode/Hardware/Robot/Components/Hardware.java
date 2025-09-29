@@ -1,13 +1,13 @@
 package org.firstinspires.ftc.teamcode.Hardware.Robot.Components;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.AnalogNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.CRServoNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.DigitalNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.MotorNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.RevColorNameList;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.RevDistanceNameList;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.RevTouchNameList;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.ServoNamesList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.AnalogNamesList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.CRServoNamesList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.DigitalNamesList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.MotorNamesList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RevColorNameList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RevDistanceNameList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RevTouchNameList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ServoNamesList;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -25,7 +25,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Localizer.IMU.SketchyIMU;
+import org.firstinspires.ftc.teamcode.Pathing.Localizer.IMU.SketchyIMU;
 import org.firstinspires.ftc.teamcode.Hardware.Util.MotionHardware.Init;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.HubBulkRead;
 
@@ -81,11 +81,11 @@ public class Hardware {
         // add all servos into a list
         for (String servoName : ServoNamesList)
             if (!servoName.isEmpty())
-                servos.put(servoName, hardwareMap.get(Servo.class, servoName));
+                servos.put(servoName, Init.initializeServo(hardwareMap.get(Servo.class, servoName)));
 
         for (String CRServoName: CRServoNamesList)
             if (!CRServoName.isEmpty())
-                CRservos.put(CRServoName, hardwareMap.get(CRServo.class, CRServoName));
+                CRservos.put(CRServoName, Init.initializeServo(hardwareMap.get(CRServo.class, CRServoName)));
 
         // add all motors into a list
         for (String motorName : MotorNamesList)

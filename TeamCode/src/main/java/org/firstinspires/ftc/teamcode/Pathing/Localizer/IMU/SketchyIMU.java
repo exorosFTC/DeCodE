@@ -1,9 +1,9 @@
-package org.firstinspires.ftc.teamcode.Hardware.Robot.Localizer.IMU;
+package org.firstinspires.ftc.teamcode.Pathing.Localizer.IMU;
 
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.LOGO_DIRECTION;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.USB_DIRECTION;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.IMU_Name;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.LOGO_DIRECTION;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.USB_DIRECTION;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IMU_Name;
 
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Localizer;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Localizer;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 /**Test class for field-centric drive before mounting odometry wheels

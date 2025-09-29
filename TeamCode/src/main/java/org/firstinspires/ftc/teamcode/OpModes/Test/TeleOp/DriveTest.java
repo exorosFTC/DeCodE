@@ -5,12 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Systems.Drivetrain;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Mecanum.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 @TeleOp(group = "test", name = "DRIVE")
 public class DriveTest extends LinearOpMode {
-    private Drivetrain drive;
+    private MecanumDrive drive;
     private Hardware hardware;
 
     private boolean testingLocalizer = false;
@@ -19,7 +19,7 @@ public class DriveTest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive = new Drivetrain(this);
+        drive = new MecanumDrive(this);
         hardware = new Hardware(this);
 
         g1 = new GamepadEx(gamepad1);

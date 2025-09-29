@@ -1,10 +1,9 @@
 package org.firstinspires.ftc.teamcode.Pathing;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.AngularP;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.LinearD;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.LinearP;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.basketPose;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularD;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearD;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearP;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.FindShortestPath;
 
 import com.arcrobotics.ftclib.controller.PIDController;
@@ -12,11 +11,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Localizer;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Localizer;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Systems.Drivetrain;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Localizer.RR.TwoWheelNew;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Mecanum.MecanumDrive;
+import org.firstinspires.ftc.teamcode.Pathing.Localizer.RR.TwoWheelNew;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Machine;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
@@ -25,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class AutoDrive {
-    private final Drivetrain drive;
+    private final MecanumDrive drive;
 
 
     private Thread driveThread;
@@ -179,45 +178,6 @@ public class AutoDrive {
 
         return this;
     }
-
-    public AutoDrive validateBasket(double leftDistance, double rightDistance) {
-        double
-                correctionX = drive.right.getFilteredDistance(DistanceUnit.INCH) - rightDistance,
-                correctionY = drive.left.getFilteredDistance(DistanceUnit.INCH) - leftDistance;
-
-        // correct location based on the ultrasonic input
-        setPose(new Pose(basketPose.x + correctionX, basketPose.y - correctionY, Math.toRadians(position.heading)));
-
-        return this;
-    }
-
-    public AutoDrive alignBasket(double leftDistance, double rightDistance) {
-        driveTo(new Pose(position.x, position.y, Math.toRadians(-45)));
-
-        waitDrive();
-        boolean reached = false;
-
-        pause();
-        failSafeTimer.reset();
-        while (!reached && opMode.opModeIsActive() && failSafeTimer.time(TimeUnit.MILLISECONDS) < 1400) {
-            double left = drive.left.getFilteredDistance(DistanceUnit.INCH),
-                    right = drive.right.getFilteredDistance(DistanceUnit.INCH);
-
-            Pose power = new Pose(
-                 linearC.calculate(right, rightDistance) * 1.9,
-                 -linearC.calculate(left, leftDistance) * 1.9,
-                    angularC.calculate(FindShortestPath(normalizeAngleRad(Math.toRadians(position.heading)), Math.toRadians(-45))
-            ));
-
-            reached = Math.abs(right - rightDistance) < 1 && Math.abs(left - leftDistance) < 1;
-            drive.update(power);
-        }
-
-        driveTo(new Pose(position.x, position.y, Math.toRadians(position.heading)));
-        resume();
-        return this;
-    }
-
 
 
 

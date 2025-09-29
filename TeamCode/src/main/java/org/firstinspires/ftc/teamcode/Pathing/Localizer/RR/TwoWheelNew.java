@@ -1,16 +1,14 @@
-package org.firstinspires.ftc.teamcode.Hardware.Robot.Localizer.RR;
+package org.firstinspires.ftc.teamcode.Pathing.Localizer.RR;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.ODOMETRY_TICKS_PER_REVOLUTION;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.ODOMETRY_WHEEL_RADIUS_CM;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.ahhX;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.ahhY;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.forward;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.perpendicular;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.LOGO_DIRECTION;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.USB_DIRECTION;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.IMU_Name;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.LeftOdometry;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.PerpendicularOdometry;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.ODOMETRY_TICKS_PER_REVOLUTION;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.ODOMETRY_WHEEL_RADIUS_CM;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.ahhX;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.ahhY;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.LOGO_DIRECTION;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.USB_DIRECTION;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IMU_Name;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.LeftOdometry;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.PerpendicularOdometry;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.Transformations.toCustomPose;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.Transformations.toIN;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.Transformations.toRoadrunnerPose;
@@ -37,9 +35,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Localizer;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Localizer;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Localizer.IMU.SketchyIMU;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 public class TwoWheelNew implements Localizer {

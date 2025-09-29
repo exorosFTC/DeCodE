@@ -1,32 +1,17 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp.Tuning.Configuration;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.MotorNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.ServoNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.cameraConfigurationName;
-
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @TeleOp(name = "ConfigureMotor", group = "tuning")
 public class MotorTest extends LinearOpMode {

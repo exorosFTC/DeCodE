@@ -1,10 +1,8 @@
-package org.firstinspires.ftc.teamcode.Hardware.Generals.Constants;
-
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeDegrees;
+package org.firstinspires.ftc.teamcode.Hardware.Constants;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.ColorEx;
 
 public class SystemConstants {
@@ -12,7 +10,6 @@ public class SystemConstants {
     public static RevHubOrientationOnRobot.LogoFacingDirection LOGO_DIRECTION = RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
     public static RevHubOrientationOnRobot.UsbFacingDirection  USB_DIRECTION  = RevHubOrientationOnRobot.UsbFacingDirection.UP;
 
-    public static Enums.Color detectionColor = Enums.Color.YELLOW;
     public static Enums.OpMode opModeType;
 
 

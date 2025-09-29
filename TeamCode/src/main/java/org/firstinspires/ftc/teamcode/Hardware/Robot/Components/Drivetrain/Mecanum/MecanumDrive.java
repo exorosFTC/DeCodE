@@ -1,28 +1,28 @@
-package org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Systems;
+package org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Mecanum;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.TRACK_WIDTH;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.accelerationScalar;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.usingAcceleration;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants.usingExponentialInput;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.opModeType;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.FrontUltrasonic;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.LeftBack;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.LeftFront;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.LeftUltrasonic;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.RightBack;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.RightFront;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.RightUltrasonic;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.DRIVE_W;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.accelerationScalar;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.usingAcceleration;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.usingExponentialInput;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.opModeType;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.FrontUltrasonic;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.LeftBack;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.LeftFront;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.LeftUltrasonic;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RightBack;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RightFront;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RightUltrasonic;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.UltrasonicSensor;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
-public class Drivetrain {
+public class MecanumDrive {
     private final Hardware hardware;
     private final LinearOpMode opMode;
 
@@ -31,7 +31,7 @@ public class Drivetrain {
 
     public final UltrasonicSensor left, right, front;
 
-    public Drivetrain(LinearOpMode opMode) {
+    public MecanumDrive(LinearOpMode opMode) {
         hardware = Hardware.getInstance(opMode);
 
         hardware.motors.get(LeftBack).setDirection(DcMotorSimple.Direction.REVERSE);
@@ -63,10 +63,10 @@ public class Drivetrain {
         double x = velocity.x, y = velocity.y, head = velocity.heading;
 
 
-        LF = x - y - head * TRACK_WIDTH;
-        RF = x + y + head * TRACK_WIDTH;
-        LB = x + y - head * TRACK_WIDTH;
-        RB = x - y + head * TRACK_WIDTH;
+        LF = x - y - head * DRIVE_W;
+        RF = x + y + head * DRIVE_W;
+        LB = x + y - head * DRIVE_W;
+        RB = x - y + head * DRIVE_W;
 
         if (Math.abs(LF) < 0.05) LF = 0;
         if (Math.abs(RF) < 0.05) RF = 0;

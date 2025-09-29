@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode.Hardware.Robot;
 
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
-
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.MecanumConstants;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 
 public class MachineData implements Enums {
 
@@ -13,13 +11,6 @@ public class MachineData implements Enums {
         SystemConstants.opModeType = opModeType;
         return this;
     }
-
-    public MachineData add (Color detectionColor) {
-        SystemConstants.detectionColor = detectionColor;
-        return this;
-    }
-
-
 
     public MachineData getLoopTime(boolean flag) {
         SystemConstants.telemetryAddLoopTime = flag;
@@ -42,12 +33,12 @@ public class MachineData implements Enums {
     }
 
     public MachineData setUsingAcceleration(boolean flag) {
-        MecanumConstants.usingAcceleration = flag;
+        DriveConstants.usingAcceleration = flag;
         return this;
     }
 
     public MachineData setUsingExponentialInput(boolean flag) {
-        MecanumConstants.usingExponentialInput = flag;
+        DriveConstants.usingExponentialInput = flag;
         return this;
     }
 

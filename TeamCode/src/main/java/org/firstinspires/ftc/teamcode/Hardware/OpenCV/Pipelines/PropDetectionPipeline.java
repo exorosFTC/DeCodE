@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.Hardware.OpenCV.Pipelines;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.autoOnBlue;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.autoOnBlue;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;

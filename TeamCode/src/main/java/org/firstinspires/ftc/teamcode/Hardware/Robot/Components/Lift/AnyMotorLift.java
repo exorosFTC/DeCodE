@@ -1,7 +1,7 @@
-package org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Systems.Lift;
+package org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Lift;
 
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants.manualLiftCoefficient;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.manualLiftCoefficient;
 
 
 import com.arcrobotics.ftclib.controller.PIDController;
@@ -11,12 +11,11 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Constants.SystemConstants;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
 import org.firstinspires.ftc.teamcode.Hardware.Util.MotionHardware.Init;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

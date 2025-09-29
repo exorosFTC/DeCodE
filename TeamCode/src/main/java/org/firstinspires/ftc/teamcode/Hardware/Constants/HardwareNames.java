@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Hardware.Generals;
+package org.firstinspires.ftc.teamcode.Hardware.Constants;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,8 +16,7 @@ public class HardwareNames {
     public static final String RightFront = "RF";
     public static final String RightBack = "RB";
 
-    public static final String IntakeExtensionMotor = "intakeExtensionMotor";
-    public static final String IntakeMotor = "intakeCollectionMotor";
+
     public static final String RightOuttakeMotor = "rightOuttakeMotor";
     public static final String LeftOuttakeMotor = "leftOuttakeMotor";
 
@@ -25,9 +24,7 @@ public class HardwareNames {
 
     // you can leave these as they are
     public static final List<String> MotorNamesList = Arrays.asList(
-            LeftFront, LeftBack, RightFront, RightBack,
-            IntakeExtensionMotor, IntakeMotor,
-            RightOuttakeMotor, LeftOuttakeMotor);
+            LeftFront, LeftBack, RightFront, RightBack);
 
 
 
@@ -45,37 +42,40 @@ public class HardwareNames {
 
 
     // TODO: add additional hardware components in the lists below
-    public static final String IntakeTurret = "intakeTurret";
-    public static final String IntakeWrist = "intakeWrist";
-    public static final String IntakeLocker = "intakeLocker";
 
-    public static final String OuttakeLeftPivot = "outtakeLeft";
-    public static final String OuttakeRightPivot = "outtakeRight";
-    public static final String OuttakeWrist = "outtakeWrist";
-    public static final String OuttakeClaw = "outtakeClaw";
+    public static List<String> ServoNamesList = Arrays.asList("", "");
 
-    public static List<String> ServoNamesList = Arrays.asList(
-            IntakeTurret, IntakeWrist, IntakeLocker,
-            OuttakeLeftPivot, OuttakeRightPivot, OuttakeWrist, OuttakeClaw
+
+
+    public static final String LeftFront_servo = LeftFront + " servo";
+    public static final String LeftBack_servo = LeftBack + " servo";
+    public static final String RightFront_servo = RightFront + " servo";
+    public static final String RightBack_servo = RightBack + " servo";
+
+    public static List<String> CRServoNamesList = Arrays.asList(
+            LeftFront_servo, LeftBack_servo, RightFront_servo, RightBack_servo
     );
 
 
 
-
-    public static List<String> CRServoNamesList = Arrays.asList("", "");
     public static List<String> DigitalNamesList = Arrays.asList("", "");
     public static List<String> RevDistanceNameList = Arrays.asList("", "");
     public static List<String> RevTouchNameList = Arrays.asList("", "");
+
 
 
     public static final String LeftUltrasonic = "left";
     public static final String RightUltrasonic = "right";
     public static final String FrontUltrasonic = "front";
 
-    public static List<String> AnalogNamesList = Arrays.asList(
-            LeftUltrasonic, RightUltrasonic, FrontUltrasonic
-    );
+    public static final String LeftFront_encoder = LeftFront + " encoder";
+    public static final String LeftBack_encoder = LeftBack + " encoder";
+    public static final String RightFront_encoder = RightFront + " encoder";
+    public static final String RightBack_encoder = RightBack + " encoder";
 
+    public static List<String> AnalogNamesList = Arrays.asList(
+            LeftFront_encoder, LeftBack_encoder, RightFront_encoder, RightBack_encoder
+    );
 
 
 

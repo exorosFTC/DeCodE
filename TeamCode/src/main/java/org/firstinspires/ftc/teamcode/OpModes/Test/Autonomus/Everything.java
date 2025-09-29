@@ -1,17 +1,11 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.IntakeTurret;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.IntakeWrist;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.OuttakeLeftPivot;
-import static org.firstinspires.ftc.teamcode.Hardware.Generals.HardwareNames.OuttakeWrist;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Hardware.Generals.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Machine;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.MachineData;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
