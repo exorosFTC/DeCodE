@@ -10,21 +10,20 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants;
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.OpenCV.AprilTagCamera;
 import org.firstinspires.ftc.teamcode.Hardware.OpenCV.Camera;
 import org.firstinspires.ftc.teamcode.Hardware.OpenCV.Pipelines.PropDetectionPipeline;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Mecanum.MecanumDrive;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 import javax.annotation.Nullable;
 
-public class Machine {
+public class Robot {
     public Hardware hardware;
     public Thread drivetrainThread;
 
-    public MecanumDrive drive;
+    public SwerveDrive drive;
 
     public GamepadEx g1, g2;
     private boolean add_g1, add_g2;
@@ -39,7 +38,7 @@ public class Machine {
 
 
     //default data
-    private MachineData data = new MachineData()
+    private RobotData data = new RobotData()
             .add(Enums.OpMode.TELE_OP)
             .setUsingAprilTag(false)
             .setUsingOpenCv(false);
@@ -47,12 +46,12 @@ public class Machine {
 
 
 
-    public Machine addData(MachineData data) {
+    public Robot addData(RobotData data) {
         this.data = data;
         return this;
     }
 
-    public Machine addGamepads(Enums.Gamepads gamepads) {
+    public Robot addGamepads(Enums.Gamepads gamepads) {
         switch (gamepads) {
             case G1: {
                 add_g1 = true;
@@ -73,12 +72,12 @@ public class Machine {
         return this;
     }
 
-    public Machine construct(LinearOpMode opMode) {
+    public Robot construct(LinearOpMode opMode) {
         this.hardware = Hardware.getInstance(opMode);
         this.opMode = opMode;
 
         //follower = new Follower(hardware);
-        drive = new MecanumDrive(opMode);
+        drive = new SwerveDrive(opMode);
 
         g1 = add_g1 ? new GamepadEx(opMode.gamepad1) : null;
         g2 = add_g2 ? new GamepadEx(opMode.gamepad2) : null;
@@ -180,24 +179,4 @@ public class Machine {
             }
         hardware.telemetry.update();
     }
-
-    public void debuggingTelemetry() {}
-
-    public void setAccess(Enums.Access access) {
-        switch (access) {
-            case INTAKE: {
-                opMode.gamepad2.rumble(0, 1, 500);
-                opMode.gamepad2.setLedColor(0.96, 0.54,  0.09, 120000);
-            } break;
-
-            case OUTTAKE: {
-                opMode.gamepad2.rumble(1, 0, 500);
-                opMode.gamepad2.setLedColor(0.5, 0,  0.5, 120000);
-            } break;
-        }
-    }
-
-
-
-
 }

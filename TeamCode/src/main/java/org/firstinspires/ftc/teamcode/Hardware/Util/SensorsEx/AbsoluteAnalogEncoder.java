@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @Config
-public class AbsoluteAnalogEncoderEx {
+public class AbsoluteAnalogEncoder {
     private final AnalogInput encoder;
     private double offset;
     private boolean inverted;
@@ -17,18 +17,18 @@ public class AbsoluteAnalogEncoderEx {
     private double pastPosition = 1;
 
 
-    public AbsoluteAnalogEncoderEx(AnalogInput enc){
+    public AbsoluteAnalogEncoder(AnalogInput enc){
         encoder = enc;
         offset = 0;
         inverted = false;
     }
 
-    public AbsoluteAnalogEncoderEx zero(double off){
+    public AbsoluteAnalogEncoder zero(double off){
         offset = off;
         return this;
     }
 
-    public AbsoluteAnalogEncoderEx setInverted(boolean invert){
+    public AbsoluteAnalogEncoder setInverted(boolean invert){
         inverted = invert;
         return this;
     }

@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 
 import java.util.Iterator;
 import java.util.Map;

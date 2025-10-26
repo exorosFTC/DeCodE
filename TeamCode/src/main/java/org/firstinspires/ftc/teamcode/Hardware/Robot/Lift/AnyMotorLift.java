@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Lift;
+package org.firstinspires.ftc.teamcode.Hardware.Robot.Lift;
 
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.manualLiftCoefficient;
@@ -12,8 +12,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants;
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.Hardware.Util.MotionHardware.Init;
 
 import java.util.HashMap;

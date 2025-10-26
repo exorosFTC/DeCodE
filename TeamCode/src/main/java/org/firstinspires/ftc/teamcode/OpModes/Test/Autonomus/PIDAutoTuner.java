@@ -4,17 +4,15 @@ import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.A
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearD;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearP;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.ahhX;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.ahhY;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Machine;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.MachineData;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Robot;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.RobotData;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
@@ -22,21 +20,19 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 @Config
 @Autonomous(name = "MovementPIDTuner", group = "tuning")
 public class PIDAutoTuner extends ExoMode {
-    private Machine robot;
+    private Robot robot;
     private AutoDrive auto;
 
     public static double linP = LinearP, angP = AngularP;
     public static double linD = LinearD, angD = AngularD;
     public static double x, y, head;
 
-    public static double ahX = ahhX;
-    public static double ahY = ahhY;
     public GamepadEx g2;
 
     @Override
     protected void Init() {
-        robot = new Machine()
-                .addData(new MachineData()
+        robot = new Robot()
+                .addData(new RobotData()
                         .add(Enums.OpMode.AUTONOMUS)
                         .setAutoOnBlue(false)
                         .getLoopTime(true)
@@ -64,10 +60,8 @@ public class PIDAutoTuner extends ExoMode {
         if (g2.wasJustPressed(GamepadKeys.Button.B))
             auto.driveTo(new Pose(x, y, Math.toRadians(head)));
 
-        ahhX = ahX;
-        ahhY = ahY;
-
         g2.readButtons();
-        auto.linearC.setD(linD);
+        auto.linearC.setPID(linP, 0, linD);
+        auto.angularC.setPID(angP, 0, angD);
     }
 }

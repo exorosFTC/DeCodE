@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.OpenCV.Camera;
 
 @TeleOp(group = "test", name = "RANDOM")

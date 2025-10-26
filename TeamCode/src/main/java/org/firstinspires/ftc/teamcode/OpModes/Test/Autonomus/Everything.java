@@ -5,9 +5,9 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Machine;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.MachineData;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Robot;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.RobotData;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
@@ -15,18 +15,17 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 @Config
 @Autonomous(name = "ValuesAutoTuner", group = "tuning")
 public class Everything extends ExoMode {
-    private Machine robot;
+    private Robot robot;
     private AutoDrive auto;
 
-    public static double Q = 0.1;
     public static double R = 5;
 
     private GamepadEx g2;
 
     @Override
     protected void Init() {
-        robot = new Machine()
-                .addData(new MachineData()
+        robot = new Robot()
+                .addData(new RobotData()
                         .add(Enums.OpMode.AUTONOMUS)
                         .setAutoOnBlue(false)
                         .getLoopTime(true)
@@ -57,12 +56,6 @@ public class Everything extends ExoMode {
     protected void Loop() {
         Pose position = auto.getPosition();
         g2.readButtons();
-
-        robot.drive.left.Q = Q;
-        robot.drive.right.Q = Q;
-
-        robot.drive.left.R = R;
-        robot.drive.right.R = R;
 
         if (g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
             auto.setPose(new Pose(0, 0, Math.toRadians(45)));

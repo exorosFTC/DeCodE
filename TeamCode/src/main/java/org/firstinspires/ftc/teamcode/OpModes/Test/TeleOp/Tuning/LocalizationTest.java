@@ -4,16 +4,15 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Localizer;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Mecanum.MecanumDrive;
-import org.firstinspires.ftc.teamcode.Pathing.Localizer.RR.TwoWheelNew;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Mecanum.MecanumDrive;
+import org.firstinspires.ftc.teamcode.Pathing.Localizer.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 @TeleOp(name = "RR Localizer", group = "tuning")
 public class LocalizationTest extends LinearOpMode {
-    private Localizer localizer;
+    private PinpointLocalizer localizer;
     private Hardware hardware;
     private MecanumDrive drive;
 
@@ -22,7 +21,7 @@ public class LocalizationTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         hardware = Hardware.getInstance(this);
-        localizer = new TwoWheelNew(this);
+        localizer = new PinpointLocalizer(this.hardwareMap);
         drive = new MecanumDrive(this);
 
         g1 = new GamepadEx(gamepad1);

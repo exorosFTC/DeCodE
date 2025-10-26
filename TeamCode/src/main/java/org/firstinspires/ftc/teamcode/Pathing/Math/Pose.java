@@ -56,7 +56,7 @@ public class Pose extends Point {
 
     //......................................................................
 
-    public Pose rotateWithRotationalMatrix(double amount) {
+    public Pose rotate_matrix(double amount) {
         double new_x = x * Math.cos(amount) - y * Math.sin(amount);
         double new_y = x * Math.sin(amount) + y * Math.cos(amount);
 

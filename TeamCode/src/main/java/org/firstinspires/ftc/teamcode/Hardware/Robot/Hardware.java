@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Hardware.Robot.Components;
+package org.firstinspires.ftc.teamcode.Hardware.Robot;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.AnalogNamesList;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.CRServoNamesList;
@@ -8,9 +8,11 @@ import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.Re
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RevDistanceNameList;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RevTouchNameList;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ServoNamesList;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.cameraConfigurationName;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
@@ -25,9 +27,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-import org.firstinspires.ftc.teamcode.Pathing.Localizer.IMU.SketchyIMU;
 import org.firstinspires.ftc.teamcode.Hardware.Util.MotionHardware.Init;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.HubBulkRead;
+import org.firstinspires.ftc.teamcode.Pathing.Localizer.PinpointLocalizer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +41,9 @@ public class Hardware {
     public final VoltageSensor batteryVoltageSensor;
     public final MultipleTelemetry telemetry;
     public final HubBulkRead bulk;
-    public final SketchyIMU imu;
+
+    public final PinpointLocalizer localizer;
+    public final HuskyLens huskyLens;
 
 
 
@@ -74,9 +78,12 @@ public class Hardware {
     public Hardware(LinearOpMode opMode) {
         this.telemetry = new MultipleTelemetry(opMode.telemetry, FtcDashboard.getInstance().getTelemetry());
         this.bulk = new HubBulkRead(opMode.hardwareMap, LynxModule.BulkCachingMode.MANUAL);
+        this.huskyLens = opMode.hardwareMap.get(HuskyLens.class, cameraConfigurationName);
+        this.localizer = new PinpointLocalizer(opMode.hardwareMap);
+
         batteryVoltageSensor = opMode.hardwareMap.voltageSensor.iterator().next();
+
         this.hardwareMap = opMode.hardwareMap;
-        this.imu = new SketchyIMU(opMode);
 
         // add all servos into a list
         for (String servoName : ServoNamesList)

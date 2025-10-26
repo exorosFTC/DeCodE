@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Swerve;
+package org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.DRIVE_W;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.DRIVE_L;

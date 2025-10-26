@@ -10,13 +10,10 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Localizer;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Mecanum.MecanumDrive;
-import org.firstinspires.ftc.teamcode.Pathing.Localizer.RR.TwoWheelNew;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Machine;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve.SwerveDrive;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Robot;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
@@ -24,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class AutoDrive {
-    private final MecanumDrive drive;
+    private final SwerveDrive drive;
 
 
     private Thread driveThread;
@@ -32,7 +29,6 @@ public class AutoDrive {
     private final ElapsedTime waitTimer;
 
     private final Hardware hardware;
-    private final Localizer localizer;
 
     public final PIDController linearC, angularC;
     private double busyThreshold = 0.19;
@@ -74,14 +70,13 @@ public class AutoDrive {
 
 
 
-    public AutoDrive(LinearOpMode opMode, Machine robot, Pose startPose) {
+    public AutoDrive(LinearOpMode opMode, Robot robot, Pose startPose) {
         this.drive = robot.drive;
         this.position = startPose;
 
         linearC = new PIDController(LinearP, 0, LinearD);
         angularC = new PIDController(AngularP, 0, AngularD);
 
-        localizer = new TwoWheelNew(opMode);
         setPose(position);
 
         this.opMode = opMode;
@@ -91,13 +86,12 @@ public class AutoDrive {
         startDriveThread();
     }
 
-    public AutoDrive(LinearOpMode opMode, Machine robot) {
+    public AutoDrive(LinearOpMode opMode, Robot robot) {
         this.drive = robot.drive;
 
         linearC = new PIDController(LinearP, 0, LinearD);
         angularC = new PIDController(AngularP, 0, AngularD);
 
-        localizer = new TwoWheelNew(opMode);
         setPose(position);
 
         this.opMode = opMode;
@@ -112,15 +106,12 @@ public class AutoDrive {
     private void startDriveThread() {
         driveThread = new Thread(() -> {
                 while (opMode.opModeIsActive()) {
-                    localizer.update();
-                    position = localizer.getRobotPosition();
+                    hardware.localizer.update();
+                    position = hardware.localizer.getRobotPosition();
 
                     hardware.telemetry.addData("x: ", position.x);
                     hardware.telemetry.addData("y: ", position.y);
-                    hardware.telemetry.addData("head: ", position.heading);
-                    hardware.telemetry.addData("left: ", drive.left.getFilteredDistance(DistanceUnit.INCH));
-                    hardware.telemetry.addData("right: ", drive.right.getFilteredDistance(DistanceUnit.INCH));
-                    hardware.telemetry.addData("front: ", drive.front.getFilteredDistance(DistanceUnit.INCH));
+                    hardware.telemetry.addData("head: ", Math.toDegrees(position.heading));
 
                     hardware.telemetry.update();
                     hardware.bulk.clearCache(Enums.Hubs.ALL);
@@ -192,7 +183,7 @@ public class AutoDrive {
         updateDriveVector();
         while (isBusy() && opMode.opModeIsActive()) { inLoop.run(); }
 
-        driveTo(new Pose(position.x, position.y, Math.toRadians(position.heading)));
+        driveTo(new Pose(position.x, position.y, position.heading));
 
         return this;
     }
@@ -263,8 +254,8 @@ public class AutoDrive {
     }
 
     public AutoDrive setPose(Pose pose) {
-        localizer.setPositionEstimate(
-                new Pose(pose.x, pose.y, Math.toDegrees(pose.heading))
+        hardware.localizer.setPositionEstimate(
+                new Pose(pose.x, pose.y, pose.heading)
         );
         return this;
     }
@@ -289,7 +280,7 @@ public class AutoDrive {
 
 
     private void updateDriveVector() {
-        double radians = normalizeAngleRad(Math.toRadians(position.heading));
+        double radians = normalizeAngleRad(position.heading);
         double targetVelX, targetVelY;
 
 

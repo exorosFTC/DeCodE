@@ -1,11 +1,9 @@
-package org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Swerve;
+package org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve;
 
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeRadians;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.K_STATIC;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.swerveD;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.swerveP;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.useMotorFlipping;
-import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.clip;
-
-import static java.lang.Math.signum;
 
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -17,22 +15,21 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.AbsoluteAnalogEncoderEx;
+import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.AbsoluteAnalogEncoder;
 
 
 public class SwerveModule {
     private final DcMotorEx motor;
     private final CRServo servo;
-    private final AbsoluteAnalogEncoderEx encoder;
-
+    private final AbsoluteAnalogEncoder encoder;
     private final PIDFController controller = new PIDFController(swerveP, 0, swerveD, 0);
+
     private boolean wheelFlipped = false;
 
-
-    private final SwerveModuleState currentState = new SwerveModuleState(0, 0);
+    private SwerveModuleState currentState = new SwerveModuleState(0, 0);
     private SwerveModuleState targetState = new SwerveModuleState(0, 0);
 
 
@@ -40,12 +37,12 @@ public class SwerveModule {
     public SwerveModule(HardwareMap hardwareMap, String motor_name, String servo_name, String encoder_name) {
         motor = hardwareMap.get(DcMotorEx.class, motor_name);
         servo = hardwareMap.get(CRServo.class, servo_name);
-        encoder = new AbsoluteAnalogEncoderEx(hardwareMap.get(AnalogInput.class, encoder_name));
+        encoder = new AbsoluteAnalogEncoder(hardwareMap.get(AnalogInput.class, encoder_name));
 
         initialize();
     }
 
-    public SwerveModule(DcMotorEx motor, CRServo servo, AbsoluteAnalogEncoderEx encoder) {
+    public SwerveModule(DcMotorEx motor, CRServo servo, AbsoluteAnalogEncoder encoder) {
         this.motor = motor;
         this.servo = servo;
         this.encoder = encoder;
@@ -62,35 +59,41 @@ public class SwerveModule {
 
     public void setTargetState(SwerveModuleState state) { targetState = state; }
 
-    public void set(double s, double a) {
-        double p = (s > 0.02) ? (clip(s * flipModifier(), -1, 1)) : 0;
-
-        targetState.setModuleAngle(a);
-        targetState.setModuleVelocity(p);
-        currentState.setModuleVelocity(p);
-
-        motor.setPower(p);
-    }
-
 
 
     public void update() {
         currentState.setModuleAngle(encoder.getCurrentPosition(AngleUnit.RADIANS));
         currentState.setModuleVelocity(motor.getPower());
 
-        // both are in the [-π, +π] range
-        double error = targetState.getModuleAngle() - currentState.getModuleAngle();
+        double target = getTargetRotation(), current = getModuleRotation();
 
-        if (Math.abs(error) > Math.PI / 2.0 && useMotorFlipping) {
-            wheelFlipped = !wheelFlipped;
-            error = error > 0 ? error - Math.PI : error + Math.PI;
+        double error = normalizeRadians(target - current);
+        if (Math.abs(error) > Math.PI / 2) {
+            target = normalizeRadians(target - Math.PI);
+            wheelFlipped = true;
+        } else {
+            wheelFlipped = false;
         }
 
-        double servo_pow = controller.calculate(error);
-        double motor_pow = (targetState.getModuleVelocity() > 0.02) ? (clip(targetState.getModuleVelocity() * flipModifier(), -1, 1)) : 0;
+        error = normalizeRadians(target - current);
 
-        servo.setPower(servo_pow);
-        motor.setPower(motor_pow);
+        double power = Range.clip(controller.calculate(0, error), -1, 1);
+        if (Double.isNaN(power)) power = 0;
+
+        servo.setPower(power + (Math.abs(error) > 0.02 ? K_STATIC : 0) * Math.signum(power));
+
+        if (currentState.getModuleVelocity() != targetState.getModuleVelocity()) {
+            motor.setPower(wheelFlipped ? -power : power);
+            targetState.setModuleVelocity(currentState.getModuleVelocity());
+        }
+    }
+
+    public double getTargetRotation() {
+        return normalizeRadians(targetState.getModuleAngle() - Math.PI);
+    }
+
+    public double getModuleRotation() {
+        return normalizeRadians(currentState.getModuleAngle() - Math.PI);
     }
 
 
@@ -106,8 +109,4 @@ public class SwerveModule {
 
         ((ServoImplEx) servo).setPwmRange(new PwmControl.PwmRange(500, 2500, 5000));
     }
-
-    public int flipModifier() { return wheelFlipped ? -1 : 1; }
-
-    public boolean isFlipped() { return wheelFlipped; }
 }

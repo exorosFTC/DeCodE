@@ -1,25 +1,21 @@
-package org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Mecanum;
+package org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Mecanum;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.DRIVE_W;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.accelerationScalar;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.usingAcceleration;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.usingExponentialInput;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.opModeType;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.FrontUltrasonic;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.LeftBack;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.LeftFront;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.LeftUltrasonic;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RightBack;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RightFront;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RightUltrasonic;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.UltrasonicSensor;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 public class MecanumDrive {
@@ -29,17 +25,12 @@ public class MecanumDrive {
     private double lastX = 0, lastY = 0, lastHead = 0;
     private double LF, RF, LB, RB;
 
-    public final UltrasonicSensor left, right, front;
-
     public MecanumDrive(LinearOpMode opMode) {
         hardware = Hardware.getInstance(opMode);
 
         hardware.motors.get(LeftBack).setDirection(DcMotorSimple.Direction.REVERSE);
         hardware.motors.get(LeftFront).setDirection(DcMotorSimple.Direction.REVERSE);
 
-        left = new UltrasonicSensor(opMode, hardware.analog.get(LeftUltrasonic));
-        right = new UltrasonicSensor(opMode, hardware.analog.get(RightUltrasonic));
-        front = new UltrasonicSensor(opMode, hardware.analog.get(FrontUltrasonic));
 
         if (opModeType == Enums.OpMode.AUTONOMUS) {
             hardware.motors.get(LeftFront).setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

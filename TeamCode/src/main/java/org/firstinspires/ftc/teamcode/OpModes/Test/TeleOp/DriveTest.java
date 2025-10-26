@@ -4,8 +4,8 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Components.Drivetrain.Mecanum.MecanumDrive;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Mecanum.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 @TeleOp(group = "test", name = "DRIVE")

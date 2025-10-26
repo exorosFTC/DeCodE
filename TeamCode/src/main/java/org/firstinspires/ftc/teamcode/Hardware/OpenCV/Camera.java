@@ -7,10 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.OpenCV.Pipelines.PropDetectionPipeline;
-import org.firstinspires.ftc.teamcode.Hardware.OpenCV.Pipelines.SampleDetectionPipeline;
-import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.ColorEx;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -51,7 +49,6 @@ public class Camera {
 
         switch (desiredPipeline) {
             case DETECTING_PROP: { currentPipeline = new PropDetectionPipeline(); }
-            case DETECTING_SAMPLE: { currentPipeline = new SampleDetectionPipeline(); }
             default: {}
         }
 
@@ -123,42 +120,4 @@ public class Camera {
 
         } else return null;
     }
-
-
-
-
-    public org.firstinspires.ftc.teamcode.Pathing.Math.Point getSampleCenterError() {
-        if (!(currentPipeline instanceof SampleDetectionPipeline))
-            return new org.firstinspires.ftc.teamcode.Pathing.Math.Point();
-
-        Point sampleCenterCameraCoords = ((SampleDetectionPipeline) currentPipeline).getCenter();
-        return cameraToRobotCoords(sampleCenterCameraCoords);
-    }
-
-    public double getSampleAngle() {
-        if (!(currentPipeline instanceof SampleDetectionPipeline))
-            return 0;
-
-        return ((SampleDetectionPipeline) currentPipeline).getAngle();
-    }
-
-    public ColorEx getSampleColorRGB() {
-        if (!(currentPipeline instanceof SampleDetectionPipeline))
-            return new ColorEx(0, 0, 0);
-
-        return ((SampleDetectionPipeline) currentPipeline).getHSV();
-    }
-
-    /**
-     To convert from camera to Roadrunner coordinate systems, this method does, in order:
-        1) moves the origin to the center of the camera, by subtracting *** 1/2HEIGHT ***
-            and *** 1/2WIDTH *** from the original coords
-        2) newX = -oldY
-                &&
-           newY = oldX
-     */
-    private org.firstinspires.ftc.teamcode.Pathing.Math.Point cameraToRobotCoords(Point point) {
-        return new org.firstinspires.ftc.teamcode.Pathing.Math.Point(-(point.y - HEIGHT * 0.5), point.x - WIDTH * 0.5);
-    }
-
 }

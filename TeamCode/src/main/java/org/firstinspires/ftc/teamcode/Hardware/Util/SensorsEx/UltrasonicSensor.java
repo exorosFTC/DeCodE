@@ -51,29 +51,19 @@ public class UltrasonicSensor {
      * The filter operates in millimeters and then converts the value to the requested unit.
      */
     public double getFilteredDistance(DistanceUnit unit) {
-        // Get raw measurement in mm.
         double measurement = sensor.getVoltage() / MAX_voltage * MAX_mm;
 
-        // If this is the first reading, initialize the filter state.
+        //if this is the first reading, initialize the filter state.
         if (kFilteredDistance < 0) {
             kFilteredDistance = measurement;
         }
 
-        // --- Kalman Filter Update ---
-        // 1. Prediction update: Increase error covariance.
+        // Kalman Filter Update
         P = P + Q;
-
-        // 2. Measurement update: Calculate Kalman Gain.
         double K = P / (P + R);
-
-        // 3. Update the estimate with the measurement.
         kFilteredDistance = kFilteredDistance + K * (measurement - kFilteredDistance);
-
-        // 4. Update the error covariance.
         P = (1 - K) * P;
-        // --------------------------------
 
-        // Convert the filtered value to the requested unit.
         switch (unit) {
             case MM:   return kFilteredDistance;
             case CM:   return kFilteredDistance / 10.0;

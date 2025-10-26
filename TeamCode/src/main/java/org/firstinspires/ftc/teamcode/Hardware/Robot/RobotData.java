@@ -2,47 +2,52 @@ package org.firstinspires.ftc.teamcode.Hardware.Robot;
 
 import org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants;
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Interfaces.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 
-public class MachineData implements Enums {
+public class RobotData implements Enums {
 
 
-    public MachineData add(OpMode opModeType) {
+    public RobotData add(OpMode opModeType) {
         SystemConstants.opModeType = opModeType;
         return this;
     }
 
-    public MachineData getLoopTime(boolean flag) {
+    public RobotData getLoopTime(boolean flag) {
         SystemConstants.telemetryAddLoopTime = flag;
         return this;
     }
 
-    public MachineData setAutoOnBlue(boolean flag) {
+    public RobotData setAutoOnBlue(boolean flag) {
         SystemConstants.autoOnBlue = flag;
         return this;
     }
 
-    public MachineData setUsingOpenCv(boolean flag) {
+    public RobotData setUsingOpenCv(boolean flag) {
         SystemConstants.usingOpenCvCamera = flag;
         return this;
     }
 
-    public MachineData setUsingAprilTag(boolean flag) {
+    public RobotData setUsingAprilTag(boolean flag) {
         SystemConstants.usingAprilTagCamera = flag;
         return this;
     }
 
-    public MachineData setUsingAcceleration(boolean flag) {
+    public RobotData setUsingAcceleration(boolean flag) {
         DriveConstants.usingAcceleration = flag;
         return this;
     }
 
-    public MachineData setUsingExponentialInput(boolean flag) {
+    public RobotData setUsingExponentialInput(boolean flag) {
         DriveConstants.usingExponentialInput = flag;
         return this;
     }
 
-    public MachineData setMultithreading(boolean flag) {
+    public RobotData setUsingFieldCentric(boolean flag) {
+        DriveConstants.usingFieldCentric = flag;
+        return this;
+    }
+
+    public RobotData setMultithreading(boolean flag) {
         SystemConstants.multithreading = flag;
         return this;
     }
