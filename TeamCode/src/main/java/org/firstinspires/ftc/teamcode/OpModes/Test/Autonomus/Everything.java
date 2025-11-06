@@ -2,12 +2,11 @@ package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
-import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Robot;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.RobotData;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Data;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
@@ -15,62 +14,41 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 @Config
 @Autonomous(name = "ValuesAutoTuner", group = "tuning")
 public class Everything extends ExoMode {
-    private Robot robot;
     private AutoDrive auto;
+    private SwerveDrive swerve;
 
-    public static double R = 5;
+    private GamepadEx g1;
 
-    private GamepadEx g2;
+    public static double x = 0, y = 0, head = 0;
 
     @Override
     protected void Init() {
-        robot = new Robot()
-                .addData(new RobotData()
+        new Data()
                         .add(Enums.OpMode.AUTONOMUS)
                         .setAutoOnBlue(false)
                         .getLoopTime(true)
                         .setUsingOpenCv(false)
                         .setUsingAprilTag(false)
                         .setUsingAcceleration(false)
-                        .setUsingExponentialInput(false))
-                .construct(this);
+                        .setUsingExponentialInput(false);
 
-
-        g2 = new GamepadEx(gamepad2);
+        swerve = new SwerveDrive(this);
+        g1 = new GamepadEx(gamepad1);
     }
 
     @Override
     protected void WhenStarted() {
-        auto = new AutoDrive(this, robot, new Pose())
+        auto = new AutoDrive(this, swerve, new Pose())
                 .pause()
                 .disableWheelMotors();
-
-        g2 = new GamepadEx(gamepad2);
-
     }
-
-    @Override
-    protected void InitializeThreads() {}
 
     @Override
     protected void Loop() {
         Pose position = auto.getPosition();
-        g2.readButtons();
+        g1.readButtons();
 
-        if (g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
-            auto.setPose(new Pose(0, 0, Math.toRadians(45)));
-
-        //robot.hardware.telemetry.addData("x: ", position.x);
-        //robot.hardware.telemetry.addData("y: ", position.y);
-        //robot.hardware.telemetry.addData("head: ", position.heading);
-
-        //robot.hardware.telemetry.addData("intake extension: ", robot.system.intake.extension.getPosition());
-        //robot.hardware.telemetry.addData("outtake extension: ", robot.system.outtake.extension.getPosition());
-
-        //robot.hardware.telemetry.addData("ultrasonic left (Inch): ", robot.drive.left.getDistance(DistanceUnit.INCH));
-        //robot.hardware.telemetry.addData("ultrasonic right (Inch): ", robot.drive.right.getDistance(DistanceUnit.INCH));
-        //robot.hardware.telemetry.addData("ultrasonic front (Inch): ", robot.drive.right.getDistance(DistanceUnit.INCH));
-
-        //robot.hardware.telemetry.update();
+        //if (g1.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
+        //    auto.setPose(new Pose(x, y, Math.toRadians(head)));
     }
 }

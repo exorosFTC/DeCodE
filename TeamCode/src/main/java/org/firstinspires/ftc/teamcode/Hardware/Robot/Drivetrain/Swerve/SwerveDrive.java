@@ -26,11 +26,15 @@ import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.FindShort
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.AbsoluteAnalogEncoder;
+import org.firstinspires.ftc.teamcode.Pathing.Localizer.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
@@ -38,15 +42,18 @@ import java.util.List;
 
 public class SwerveDrive extends SwerveKinematics {
     private final Hardware hardware;
-    private final LinearOpMode opMode;
+
+    public final PinpointLocalizer localizer;
+    public Pose position = new Pose();
 
     public final PIDController angularC;
     public double targetHeading = 0;
+    public ElapsedTime timer;
 
     private boolean lockHeadingToGoal = false;
 
     private double lastX = 0, lastY = 0, lastHead = 0;
-    public SwerveModule rightFrontModule, leftFrontModule, leftBackModule, rightBackModule;
+    public SwerveModule leftFrontModule, rightFrontModule, rightBackModule, leftBackModule;
     public SwerveModule[] modules;
 
 
@@ -54,23 +61,26 @@ public class SwerveDrive extends SwerveKinematics {
     public SwerveDrive(LinearOpMode opMode) {
         hardware = Hardware.getInstance(opMode);
 
+
         rightFrontModule = new SwerveModule(hardware.motors.get(RightFront),
                                             hardware.CRservos.get(RightFront_servo),
-                                            new AbsoluteAnalogEncoder(hardware.analog.get(RightFront_encoder)));
+                                            new AbsoluteAnalogEncoder(hardware.analog.get(RightFront_encoder)).zero(-2.861));
         leftFrontModule = new SwerveModule(hardware.motors.get(LeftFront),
                                             hardware.CRservos.get(LeftFront_servo),
-                                            new AbsoluteAnalogEncoder(hardware.analog.get(LeftFront_encoder)));
+                                            new AbsoluteAnalogEncoder(hardware.analog.get(LeftFront_encoder)).zero(-3.0335));
         leftBackModule = new SwerveModule(hardware.motors.get(LeftBack),
                                             hardware.CRservos.get(LeftBack_servo),
-                                            new AbsoluteAnalogEncoder(hardware.analog.get(LeftBack_encoder)));
+                                            new AbsoluteAnalogEncoder(hardware.analog.get(LeftBack_encoder)).zero(2.926));
         rightBackModule = new SwerveModule(hardware.motors.get(RightBack),
                                             hardware.CRservos.get(RightBack_servo),
-                                            new AbsoluteAnalogEncoder(hardware.analog.get(RightBack_encoder)));
-
-        this.opMode = opMode;
+                                            new AbsoluteAnalogEncoder(hardware.analog.get(RightBack_encoder)).zero(0.763));
 
         modules = new SwerveModule[]{rightFrontModule, leftFrontModule, leftBackModule, rightBackModule};
+
+
+        localizer = new PinpointLocalizer(opMode.hardwareMap);
         angularC = new PIDController(AngularP, 0, AngularD);
+        timer = new ElapsedTime();
     }
 
 
@@ -80,35 +90,52 @@ public class SwerveDrive extends SwerveKinematics {
             modules[i].setDirection(directions.get(i));
     }
 
+    public void setPID(double p, double i, double d) {
+        for (int a = 0; a < 4; a++)
+            modules[a].setPID(p, i, d);
+    }
+
 
 
     public void update(Pose velocity) {
+        localizer.update();
+
+        position = localizer.getRobotPosition();
+
         if (opModeType == Enums.OpMode.TELE_OP) {
             if (usingExponentialInput)
                 velocity = exponential(velocity);
             if (usingAcceleration)
                 velocity = accelerate(velocity);
             if (usingFieldCentric)
-                velocity = velocity.rotate_matrix(-hardware.localizer.getAngle());
+                velocity = velocity.rotate_matrix(-position.heading);
+
 
             if (!lockHeadingToGoal) {
                 //pid for skew correction
-                if (velocity.heading > 0.1) targetHeading = hardware.localizer.getAngle();
-                else { velocity.heading = angularC.calculate(FindShortestPath(hardware.localizer.getAngle(), targetHeading)); }
+                if (Math.abs(velocity.heading) < 0.01 && timer.milliseconds() > 600) {
+                    velocity.heading = -angularC.calculate(FindShortestPath(position.heading, targetHeading));
+                } else {
+                    if (Math.abs(velocity.heading) > 0.01)
+                        timer.reset();
+                    targetHeading = position.heading;
+                }
             } else {
-                //idk if this works tbh
                 Point target;
-                Pose current = hardware.localizer.getRobotPosition();
 
                 if (autoOnBlue) target = blueGoalPosition;
                 else target = redGoalPosition;
 
-                double rawTargetHeading = Math.atan2(target.y - current.y, target.x - current.x);
+                double rawTargetHeading = Math.atan2(target.y - position.y, target.x - position.x);
                 targetHeading = (rawTargetHeading < 0) ? rawTargetHeading + 2 * Math.PI : rawTargetHeading;
 
-                velocity.heading = angularC.calculate(FindShortestPath(current.heading, targetHeading));
+                velocity.heading = -angularC.calculate(FindShortestPath(position.heading, targetHeading));
             }
         }
+
+        if (Math.abs(velocity.x) < 0.01 &&  Math.abs(velocity.y) < 0.01 && Math.abs(velocity.heading) < 0.01)
+            setLocked(true);
+        else setLocked(false);
 
         List<SwerveModuleState> states = super.robot2wheel(velocity);
 
@@ -128,9 +155,10 @@ public class SwerveDrive extends SwerveKinematics {
 
 
     private Pose exponential(Pose velocity) {
-        return new Pose(Math.pow(velocity.x, 3),
-                Math.pow(velocity.y, 3),
-                Math.pow(velocity.heading, 3));
+        return new Pose(
+                velocity.x * velocity.x * velocity.x,
+                velocity.y * velocity.y * velocity.y,
+                velocity.heading * velocity.heading * velocity.heading);
     }
 
     private Pose accelerate(Pose velocity) {

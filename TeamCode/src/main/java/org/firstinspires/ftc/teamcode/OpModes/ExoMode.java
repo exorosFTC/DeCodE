@@ -7,8 +7,6 @@ public abstract class ExoMode extends LinearOpMode {
 
     protected abstract void WhenStarted();
 
-    protected abstract void InitializeThreads();
-
     protected abstract void Loop();
 
     protected void WaitForStart() { super.waitForStart(); }

@@ -4,50 +4,50 @@ import org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 
-public class RobotData implements Enums {
+public class Data implements Enums {
 
 
-    public RobotData add(OpMode opModeType) {
+    public Data add(OpMode opModeType) {
         SystemConstants.opModeType = opModeType;
         return this;
     }
 
-    public RobotData getLoopTime(boolean flag) {
+    public Data getLoopTime(boolean flag) {
         SystemConstants.telemetryAddLoopTime = flag;
         return this;
     }
 
-    public RobotData setAutoOnBlue(boolean flag) {
+    public Data setAutoOnBlue(boolean flag) {
         SystemConstants.autoOnBlue = flag;
         return this;
     }
 
-    public RobotData setUsingOpenCv(boolean flag) {
+    public Data setUsingOpenCv(boolean flag) {
         SystemConstants.usingOpenCvCamera = flag;
         return this;
     }
 
-    public RobotData setUsingAprilTag(boolean flag) {
+    public Data setUsingAprilTag(boolean flag) {
         SystemConstants.usingAprilTagCamera = flag;
         return this;
     }
 
-    public RobotData setUsingAcceleration(boolean flag) {
+    public Data setUsingAcceleration(boolean flag) {
         DriveConstants.usingAcceleration = flag;
         return this;
     }
 
-    public RobotData setUsingExponentialInput(boolean flag) {
+    public Data setUsingExponentialInput(boolean flag) {
         DriveConstants.usingExponentialInput = flag;
         return this;
     }
 
-    public RobotData setUsingFieldCentric(boolean flag) {
+    public Data setUsingFieldCentric(boolean flag) {
         DriveConstants.usingFieldCentric = flag;
         return this;
     }
 
-    public RobotData setMultithreading(boolean flag) {
+    public Data setMultithreading(boolean flag) {
         SystemConstants.multithreading = flag;
         return this;
     }

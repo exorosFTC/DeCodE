@@ -1,41 +1,40 @@
 package org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.BreakBeam;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IndexerMotor;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IntakeColor;
-import static org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems.Indexer.elements;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IntakeMotor;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems.Intake;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems.Tilt;
-import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.ColorSensorEx;
 
 public class ScoringSystem {
     private final Hardware hardware;
-    private final LinearOpMode opMode;
-
-    private final ElapsedTime timer;
-    private final ColorSensorEx color;
 
     public Intake intake;
     public Indexer indexer;
     public Shooter shooter;
     public Tilt tilt;
 
-    private boolean isIntakeEnabled = true;
-    private boolean isShooterEnabled = false;
+    public ElapsedTime timer;
+
+    public boolean isIntakeEnabled = true;
+    public boolean isShooterEnabled = false;
 
     public ScoringSystem(LinearOpMode opMode) {
         this.hardware = Hardware.getInstance(opMode);
-        this.opMode = opMode;
+
 
         timer = new ElapsedTime();
-        color = new ColorSensorEx(opMode, IntakeColor);
 
         intake = new Intake(opMode);
         indexer = new Indexer(opMode);
@@ -51,18 +50,37 @@ public class ScoringSystem {
     }
 
     public void updateIntake() {
-        boolean beam = hardware.digital.get(BreakBeam).getState();
-        if (!beam) return;
+        double distance = hardware.color.get(IntakeColor).getDistance(DistanceUnit.MM);
 
-        timer.reset();
-        while (opMode.opModeIsActive() && timer.seconds() < 1.6 && !color.hasArtifact()) {}
+        hardware.telemetry.addData("ELEMENT 1", indexer.elements.get(0));
+        hardware.telemetry.addData("ELEMENT 2", indexer.elements.get(1));
+        hardware.telemetry.addData("ELEMENT 3", indexer.elements.get(2));
+        hardware.telemetry.addData("distance", distance);
+        hardware.telemetry.addData("AMPS", hardware.motors.get(IntakeMotor).getCurrent(CurrentUnit.AMPS));
+        hardware.telemetry.addData("hasArtifact", distance < 78);
+        hardware.telemetry.addData("indexer pos", hardware.motors.get(IndexerMotor).getCurrentPosition());
 
-        if (color.hasArtifact()) { elements.set(0, color.getArtifactColor());}
-        else { elements.set(0, Enums.ArtifactColor.PURPLE); } //for now just pretend it's purple
+        if (hardware.motors.get(IntakeMotor).getCurrent(CurrentUnit.AMPS) > 8.5)
+            new Thread(() -> {
+                 intake.reverse();
+                try { Thread.sleep(200); } catch (InterruptedException e) {}
+                intake.on();
+            }).start();
 
-        if (elements.get(2) != Enums.ArtifactColor.NONE) {
-            isIntakeEnabled = false;
-            isShooterEnabled = true;
+        if (distance > 78 && indexer.elements.get(0) != Enums.ArtifactColor.NONE) indexer.elements.set(0, Enums.ArtifactColor.NONE);
+        if (distance > 78 || indexer.isBusy()) return;
+
+        double g = hardware.color.get(IntakeColor).green(),
+                b = hardware.color.get(IntakeColor).blue();
+
+        if (g > b) indexer.elements.set(0, Enums.ArtifactColor.GREEN);
+        else indexer.elements.set(0, Enums.ArtifactColor.PURPLE);
+
+
+
+        if (indexer.elements.get(2) != Enums.ArtifactColor.NONE) {
+            //isIntakeEnabled = false;
+            //isShooterEnabled = true;
 
             intake.off();
         } else { indexer.index(1); }

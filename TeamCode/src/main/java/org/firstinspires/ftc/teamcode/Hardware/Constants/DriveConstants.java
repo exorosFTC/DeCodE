@@ -7,10 +7,9 @@ public class DriveConstants {
     public static double RANGE = 3.3;
     public static boolean VALUE_REJECTION = false;
 
-    public static boolean usingAcceleration = true;
-    public static boolean usingExponentialInput = true;
+    public static boolean usingAcceleration = false;
+    public static boolean usingExponentialInput = false;
     public static boolean usingFieldCentric = true;
-    public static boolean useMotorFlipping = true;
 
 
     public static double DRIVE_W = 9, DRIVE_L = 9; //to be tuned
@@ -18,18 +17,18 @@ public class DriveConstants {
 
 
     public static double accelerationScalar = 0.08;
-    public static double driveSensitivity = 0.6;
+    public static double driveSensitivity = 0.5;
 
 
 
     // auto PID
     public static final double LinearP = 0.1,
                                 LinearD = 0.000000004;
-    public static final double AngularP = 0.3,
-                                AngularD = 0.02;
+    public static final double AngularP = 0.1,
+                                AngularD = 0;
 
     // swerve PID
-    public static final double swerveP = 0.6,
+    public static final double swerveP = 0.5,
                                 swerveD = 0.1;
     public static double K_STATIC = 0.03;
 

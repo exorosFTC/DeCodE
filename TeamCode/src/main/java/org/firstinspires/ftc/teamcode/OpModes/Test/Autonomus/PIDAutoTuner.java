@@ -11,8 +11,8 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Robot;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.RobotData;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Data;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 @Config
 @Autonomous(name = "MovementPIDTuner", group = "tuning")
 public class PIDAutoTuner extends ExoMode {
-    private Robot robot;
+    private SwerveDrive swerve;
     private AutoDrive auto;
 
     public static double linP = LinearP, angP = AngularP;
@@ -31,28 +31,21 @@ public class PIDAutoTuner extends ExoMode {
 
     @Override
     protected void Init() {
-        robot = new Robot()
-                .addData(new RobotData()
+        new Data()
                         .add(Enums.OpMode.AUTONOMUS)
                         .setAutoOnBlue(false)
                         .getLoopTime(true)
                         .setUsingOpenCv(false)
                         .setUsingAprilTag(false)
                         .setUsingAcceleration(false)
-                        .setUsingExponentialInput(false))
-                .construct(this);
+                        .setUsingExponentialInput(false);
 
         g2 = new GamepadEx(gamepad2);
     }
 
     @Override
     protected void WhenStarted() {
-        auto = new AutoDrive(this, robot, new Pose());
-    }
-
-    @Override
-    protected void InitializeThreads() {
-
+        auto = new AutoDrive(this, swerve, new Pose());
     }
 
     @Override

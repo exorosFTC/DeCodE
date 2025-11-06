@@ -13,7 +13,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Robot;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
@@ -21,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class AutoDrive {
-    private final SwerveDrive drive;
+    private final SwerveDrive swerve;
 
 
     private Thread driveThread;
@@ -70,8 +69,8 @@ public class AutoDrive {
 
 
 
-    public AutoDrive(LinearOpMode opMode, Robot robot, Pose startPose) {
-        this.drive = robot.drive;
+    public AutoDrive(LinearOpMode opMode, SwerveDrive swerve, Pose startPose) {
+        this.swerve = swerve;
         this.position = startPose;
 
         linearC = new PIDController(LinearP, 0, LinearD);
@@ -86,8 +85,8 @@ public class AutoDrive {
         startDriveThread();
     }
 
-    public AutoDrive(LinearOpMode opMode, Robot robot) {
-        this.drive = robot.drive;
+    public AutoDrive(LinearOpMode opMode, SwerveDrive swerve) {
+        this.swerve = swerve;
 
         linearC = new PIDController(LinearP, 0, LinearD);
         angularC = new PIDController(AngularP, 0, AngularD);
@@ -106,8 +105,8 @@ public class AutoDrive {
     private void startDriveThread() {
         driveThread = new Thread(() -> {
                 while (opMode.opModeIsActive()) {
-                    hardware.localizer.update();
-                    position = hardware.localizer.getRobotPosition();
+                    swerve.localizer.update();
+                    position = swerve.localizer.getRobotPosition();
 
                     hardware.telemetry.addData("x: ", position.x);
                     hardware.telemetry.addData("y: ", position.y);
@@ -117,7 +116,7 @@ public class AutoDrive {
                     hardware.bulk.clearCache(Enums.Hubs.ALL);
 
                     if (isPaused && !previousIsPaused) {    // stop the robot when paused
-                        drive.update(new Pose());
+                        swerve.update(new Pose());
                         previousIsPaused = true;
                         continue;
                     }
@@ -129,7 +128,7 @@ public class AutoDrive {
                     if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
                         driveTo(position);
 
-                    drive.update(driveVector);
+                    swerve.update(driveVector);
                 }
         });
 
@@ -254,7 +253,7 @@ public class AutoDrive {
     }
 
     public AutoDrive setPose(Pose pose) {
-        hardware.localizer.setPositionEstimate(
+        swerve.localizer.setPositionEstimate(
                 new Pose(pose.x, pose.y, pose.heading)
         );
         return this;
@@ -265,13 +264,13 @@ public class AutoDrive {
 
 
     public AutoDrive disableWheelMotors() {
-        drive.disable();
+        swerve.disable();
         return this;
     }
 
     public void end() {
         driveThread.interrupt();
-        drive.disable();
+        swerve.disable();
 
         opMode.stop();
     }

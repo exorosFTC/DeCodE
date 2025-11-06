@@ -29,7 +29,6 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.Hardware.Util.MotionHardware.Init;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.HubBulkRead;
-import org.firstinspires.ftc.teamcode.Pathing.Localizer.PinpointLocalizer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +41,6 @@ public class Hardware {
     public final MultipleTelemetry telemetry;
     public final HubBulkRead bulk;
 
-    public final PinpointLocalizer localizer;
     public final HuskyLens huskyLens;
 
 
@@ -79,7 +77,6 @@ public class Hardware {
         this.telemetry = new MultipleTelemetry(opMode.telemetry, FtcDashboard.getInstance().getTelemetry());
         this.bulk = new HubBulkRead(opMode.hardwareMap, LynxModule.BulkCachingMode.MANUAL);
         this.huskyLens = opMode.hardwareMap.get(HuskyLens.class, cameraConfigurationName);
-        this.localizer = new PinpointLocalizer(opMode.hardwareMap);
 
         batteryVoltageSensor = opMode.hardwareMap.voltageSensor.iterator().next();
 
@@ -92,7 +89,7 @@ public class Hardware {
 
         for (String CRServoName: CRServoNamesList)
             if (!CRServoName.isEmpty())
-                CRservos.put(CRServoName, Init.initializeServo(hardwareMap.get(CRServo.class, CRServoName)));
+                CRservos.put(CRServoName, hardwareMap.get(CRServo.class, CRServoName));
 
         // add all motors into a list
         for (String motorName : MotorNamesList)

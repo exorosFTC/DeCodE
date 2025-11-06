@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.In
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
@@ -18,11 +19,13 @@ public class Indexer {
     private final LinearOpMode opMode;
     private final ElapsedTime timer;
 
-    public static final double TICKS_PER_REVOLUTION = 384.5 * 0.5;
-    public static double HOMING_POWER = 0.5; //in the indexing direction
-    public static double INDEXING_POWER = 0.5;
+    public static final double TICKS_PER_REVOLUTION = 384.5 * 2;
+    public static double HOMING_POWER = 0.4; //in the indexing direction
+    public static double INDEXING_POWER = 1;
 
-    public static List<Enums.ArtifactColor> elements = Arrays.asList(
+    public int target = 0;
+
+    public List<Enums.ArtifactColor> elements = Arrays.asList(
             Enums.ArtifactColor.NONE, Enums.ArtifactColor.NONE, Enums.ArtifactColor.NONE
     );
 
@@ -32,38 +35,53 @@ public class Indexer {
 
         timer = new ElapsedTime();
 
+        hardware.motors.get(IndexerMotor).setDirection(DcMotorSimple.Direction.REVERSE);
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        hardware.motors.get(IndexerMotor).setTargetPosition(0);
+        hardware.motors.get(IndexerMotor).setPower(1);
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        hardware.motors.get(IndexerMotor).setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
 
     public void home() {
         timer.reset();
 
-        while (!hardware.digital.get(IndexerLimit).getState() && opMode.opModeIsActive() && timer.seconds() < 1.6) {
+        hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        hardware.motors.get(IndexerMotor).setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        while (hardware.digital.get(IndexerLimit).getState() && opMode.opModeIsActive() && timer.seconds() < 1.6) {
             hardware.motors.get(IndexerMotor).setPower(HOMING_POWER);
         }
 
-        off();
-        try { Thread.sleep(100); } catch (InterruptedException e) {} //wait for magnet snap
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        hardware.motors.get(IndexerMotor).setTargetPosition(0);
+        hardware.motors.get(IndexerMotor).setPower(1);
+        hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     public void index(int balls) {
         balls = Math.max(1, Math.min(balls, 2)); //indexing 3 spots is useless, limit to 2
         double pos = hardware.motors.get(IndexerMotor).getCurrentPosition();
 
-        hardware.motors.get(IndexerMotor).setTargetPosition((int) (pos + balls * TICKS_PER_REVOLUTION / 3));
-        hardware.motors.get(IndexerMotor).setPower(INDEXING_POWER);
+        if (elements.get(3 - balls) != Enums.ArtifactColor.NONE) pos += TICKS_PER_REVOLUTION / 6;
+
+        target = (int) (pos + balls * TICKS_PER_REVOLUTION / 3);
+        hardware.motors.get(IndexerMotor).setTargetPosition(target);
+        hardware.motors.get(IndexerMotor).setPower(elements.get(3 - balls) != Enums.ArtifactColor.NONE ? 0.4 : INDEXING_POWER);
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         sideswipe(balls, false);
 
-        new Thread(() -> {
-            while (hardware.motors.get(IndexerMotor).isBusy() && opMode.opModeIsActive()) {}
-            off();
-        }).start();
+        if (elements.get(0) != Enums.ArtifactColor.NONE) {
+            new Thread(() -> {
+                while (hardware.motors.get(IndexerMotor).isBusy() && opMode.opModeIsActive()) {}
+
+                target = (int) (target - TICKS_PER_REVOLUTION / 6);
+                hardware.motors.get(IndexerMotor).setTargetPosition(target);
+                hardware.motors.get(IndexerMotor).setPower(0.4);
+                hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }).start();
+        }
     }
 
     public void shoot(int balls) {
@@ -128,4 +146,6 @@ public class Indexer {
 
 
     public void off () { hardware.motors.get(IndexerMotor).setMotorDisable(); }
+
+    public boolean isBusy() { return Math.abs(target - hardware.motors.get(IndexerMotor).getCurrentPosition()) > 10;}
 }

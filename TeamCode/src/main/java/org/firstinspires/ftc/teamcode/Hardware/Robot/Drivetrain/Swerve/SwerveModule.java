@@ -8,13 +8,9 @@ import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.s
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PwmControl;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
-import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -24,31 +20,21 @@ import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.AbsoluteAnalogEnco
 public class SwerveModule {
     private final DcMotorEx motor;
     private final CRServo servo;
-    private final AbsoluteAnalogEncoder encoder;
+    public final AbsoluteAnalogEncoder encoder;
     private final PIDFController controller = new PIDFController(swerveP, 0, swerveD, 0);
 
     private boolean wheelFlipped = false;
 
-    private SwerveModuleState currentState = new SwerveModuleState(0, 0);
-    private SwerveModuleState targetState = new SwerveModuleState(0, 0);
+    public SwerveModuleState currentState = new SwerveModuleState(0, 0);
+    public SwerveModuleState targetState = new SwerveModuleState(0, 0);
 
 
 
-    public SwerveModule(HardwareMap hardwareMap, String motor_name, String servo_name, String encoder_name) {
-        motor = hardwareMap.get(DcMotorEx.class, motor_name);
-        servo = hardwareMap.get(CRServo.class, servo_name);
-        encoder = new AbsoluteAnalogEncoder(hardwareMap.get(AnalogInput.class, encoder_name));
-
-        initialize();
-    }
 
     public SwerveModule(DcMotorEx motor, CRServo servo, AbsoluteAnalogEncoder encoder) {
         this.motor = motor;
         this.servo = servo;
         this.encoder = encoder;
-
-        // uncomment if you didn't initialize them properly before
-        // initialize();
     }
 
 
@@ -81,11 +67,7 @@ public class SwerveModule {
         if (Double.isNaN(power)) power = 0;
 
         servo.setPower(power + (Math.abs(error) > 0.02 ? K_STATIC : 0) * Math.signum(power));
-
-        if (currentState.getModuleVelocity() != targetState.getModuleVelocity()) {
-            motor.setPower(wheelFlipped ? -power : power);
-            targetState.setModuleVelocity(currentState.getModuleVelocity());
-        }
+        motor.setPower(wheelFlipped ? -targetState.getModuleVelocity() : targetState.getModuleVelocity());
     }
 
     public double getTargetRotation() {
@@ -94,19 +76,5 @@ public class SwerveModule {
 
     public double getModuleRotation() {
         return normalizeRadians(currentState.getModuleAngle() - Math.PI);
-    }
-
-
-
-    public void initialize() {
-        MotorConfigurationType motorConfigurationType = motor.getMotorType().clone();
-        motorConfigurationType.setAchieveableMaxRPMFraction(1);
-        motor.setMotorType(motorConfigurationType);
-
-        motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        ((ServoImplEx) servo).setPwmRange(new PwmControl.PwmRange(500, 2500, 5000));
     }
 }

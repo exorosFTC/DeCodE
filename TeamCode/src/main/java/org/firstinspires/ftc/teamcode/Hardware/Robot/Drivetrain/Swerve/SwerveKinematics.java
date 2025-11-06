@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.DRIVE_W;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.DRIVE_L;
-import static org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus.Everything.R;
 
 import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
@@ -10,36 +9,49 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 import java.util.Arrays;
 import java.util.List;
 
-abstract class SwerveKinematics {
+public class SwerveKinematics {
     protected boolean locked = false;
 
     /**Performing inverse kinematics to determine each module's state from a drivetrain state*/
     public List<SwerveModuleState> robot2wheel(Pose p) {
-        double x = p.x, y = p.y, heading = p.heading;
-        List<SwerveModuleState> states;
+        final double vx = p.x, vy = p.y, omega = p.heading;
+        final double L = DRIVE_L;   // half length (front/back)
+        final double W = DRIVE_W;   // half width  (left/right)
 
-        double  a = x - heading * (DRIVE_L / R),
-                b = x + heading * (DRIVE_L / R),
-                c = y - heading * (DRIVE_W / R),
-                d = y + heading * (DRIVE_W / R);
+        // Wheel positions (x_i, y_i) in robot frame: x forward, y left
+        // FR: (+L, -W), FL: (+L, +W), BL: (-L, +W), BR: (-L, -W)
 
-        // angle in range [-π, +π]
-        if (locked) {
-            states = Arrays.asList(
-                    new SwerveModuleState(0, Math.PI / 4),     // FR lock
-                    new SwerveModuleState(0, -Math.PI / 4),    // FL lock
-                    new SwerveModuleState(0, Math.PI / 4),     // BL lock
-                    new SwerveModuleState(0, -Math.PI / 4));   // BR lock
-        } else {
-            states = Arrays.asList(
-                    new SwerveModuleState(Math.hypot(b, c), Math.atan2(b, c)),     // FR speeds
-                    new SwerveModuleState(Math.hypot(b, d), Math.atan2(b, d)),     // FL speeds
-                    new SwerveModuleState(Math.hypot(a, d), Math.atan2(a, d)),     // BL speeds
-                    new SwerveModuleState(Math.hypot(a, c), Math.atan2(a, c)));    // BR speeds
-        }
+        // FR
+        double vxf = vx - omega * (-W);    // = vx + omega*W
+        double vyf = vy + omega * (+L);
+        SwerveModuleState FR = new SwerveModuleState(Math.hypot(vxf, vyf), Math.atan2(vyf, vxf));
 
-        return normalizeSpeeds(states);
+        // FL
+        double vxl = vx - omega * (+W);
+        double vyl = vy + omega * (+L);
+        SwerveModuleState FL = new SwerveModuleState(Math.hypot(vxl, vyl), Math.atan2(vyl, vxl));
+
+        // BL
+        double vxb = vx - omega * (+W);
+        double vyb = vy + omega * (-L);
+        SwerveModuleState BL = new SwerveModuleState(Math.hypot(vxb, vyb), Math.atan2(vyb, vxb));
+
+        // BR
+        double vxr = vx - omega * (-W);    // = vx + omega*W
+        double vyr = vy + omega * (-L);
+        SwerveModuleState BR = new SwerveModuleState(Math.hypot(vxr, vyr), Math.atan2(vyr, vxr));
+
+        if (locked)
+            return normalizeSpeeds(Arrays.asList(
+                    new SwerveModuleState(0, Math.PI / 4),     // FR
+                    new SwerveModuleState(0, -Math.PI / 4),      // FL
+                    new SwerveModuleState(0, -Math.PI * 3 / 4),  // BL
+                    new SwerveModuleState(0, Math.PI * 3 / 4)  // BR
+            ));
+
+        return normalizeSpeeds(Arrays.asList(FR, FL, BL, BR));
     }
+
 
     /**Performing forward kinematics to determine drivetrain's state from module states*/
     public Pose wheel2robot(List<SwerveModuleState> states) {

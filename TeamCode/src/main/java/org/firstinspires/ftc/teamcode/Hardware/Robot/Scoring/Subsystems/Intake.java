@@ -12,20 +12,21 @@ public class Intake {
     private final Hardware hardware;
     private final LinearOpMode opMode;
 
-    public static double ON = 1;
+    public boolean on = false;
 
     public Intake(LinearOpMode opMode) {
         this.hardware = Hardware.getInstance(opMode);
         this.opMode = opMode;
 
-        hardware.motors.get(IntakeMotor).setDirection(DcMotorSimple.Direction.REVERSE);
         hardware.motors.get(IntakeMotor).setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         hardware.motors.get(IntakeMotor).setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
     }
 
 
 
-    public void on() { hardware.motors.get(IntakeMotor).setPower(ON); }
+    public void on() { on = true; hardware.motors.get(IntakeMotor).setPower(1); }
 
-    public void off() { hardware.motors.get(IntakeMotor).setMotorDisable(); }
+    public void reverse() { on = true; hardware.motors.get(IntakeMotor).setPower(-1); }
+
+    public void off() { on = false; hardware.motors.get(IntakeMotor).setMotorDisable(); }
 }

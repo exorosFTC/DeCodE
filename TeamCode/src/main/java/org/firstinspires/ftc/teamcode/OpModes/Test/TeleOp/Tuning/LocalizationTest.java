@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Mecanum.MecanumD
 import org.firstinspires.ftc.teamcode.Pathing.Localizer.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
-@TeleOp(name = "RR Localizer", group = "tuning")
+@TeleOp(group = "tuning")
 public class LocalizationTest extends LinearOpMode {
     private PinpointLocalizer localizer;
     private Hardware hardware;
