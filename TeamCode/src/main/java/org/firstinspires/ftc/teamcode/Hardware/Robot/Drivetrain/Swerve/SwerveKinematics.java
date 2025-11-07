@@ -11,6 +11,7 @@ import java.util.List;
 
 public class SwerveKinematics {
     protected boolean locked = false;
+    protected boolean lockedX = false;
 
     /**Performing inverse kinematics to determine each module's state from a drivetrain state*/
     public List<SwerveModuleState> robot2wheel(Pose p) {
@@ -40,6 +41,14 @@ public class SwerveKinematics {
         double vxr = vx - omega * (-W);    // = vx + omega*W
         double vyr = vy + omega * (-L);
         SwerveModuleState BR = new SwerveModuleState(Math.hypot(vxr, vyr), Math.atan2(vyr, vxr));
+
+        if (lockedX)
+            return normalizeSpeeds(Arrays.asList(
+                    new SwerveModuleState(0, -Math.PI / 4),     // FR
+                    new SwerveModuleState(0, Math.PI / 4),      // FL
+                    new SwerveModuleState(0, Math.PI * 3 / 4),  // BL
+                    new SwerveModuleState(0, -Math.PI * 3 / 4)  // BR
+            ));
 
         if (locked)
             return normalizeSpeeds(Arrays.asList(
@@ -92,6 +101,8 @@ public class SwerveKinematics {
     }
 
     protected void setLocked(boolean locked) { this.locked = locked; }
+
+    protected void setLockedX(boolean lockedX) { this.lockedX = lockedX; }
 
     protected boolean isLocked() { return locked; }
 }

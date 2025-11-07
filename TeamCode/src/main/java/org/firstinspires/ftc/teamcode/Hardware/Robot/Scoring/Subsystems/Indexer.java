@@ -22,12 +22,14 @@ public class Indexer {
     public static final double TICKS_PER_REVOLUTION = 384.5 * 2;
     public static double HOMING_POWER = 0.4; //in the indexing direction
     public static double INDEXING_POWER = 1;
+    public static double SHOOTING_POWER = 0.8;
 
     public int target = 0;
 
     public List<Enums.ArtifactColor> elements = Arrays.asList(
             Enums.ArtifactColor.NONE, Enums.ArtifactColor.NONE, Enums.ArtifactColor.NONE
     );
+    public Enums.ArtifactColor previousLastElement = Enums.ArtifactColor.NONE;
 
     public Indexer(LinearOpMode opMode) {
         this.hardware = Hardware.getInstance(opMode);
@@ -89,7 +91,7 @@ public class Indexer {
         double pos = hardware.motors.get(IndexerMotor).getCurrentPosition();
 
         hardware.motors.get(IndexerMotor).setTargetPosition((int) (pos - balls * TICKS_PER_REVOLUTION / 3));
-        hardware.motors.get(IndexerMotor).setPower(INDEXING_POWER);
+        hardware.motors.get(IndexerMotor).setPower(SHOOTING_POWER);
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         sideswipe(balls, true);
@@ -132,6 +134,8 @@ public class Indexer {
                 elements.set(2, elements.get(1));
                 elements.set(1, elements.get(0));
                 elements.set(0, copy);
+
+                previousLastElement = elements.get(0);
             } break;
             case 2: {
                 Enums.ArtifactColor copy = elements.get(0);
@@ -139,6 +143,8 @@ public class Indexer {
                 elements.set(0, elements.get(1));
                 elements.set(1, elements.get(2));
                 elements.set(2, copy);
+
+                previousLastElement = elements.get(1);
             } break;
             default: {}
         }

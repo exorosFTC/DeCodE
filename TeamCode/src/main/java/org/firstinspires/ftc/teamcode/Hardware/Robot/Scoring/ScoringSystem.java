@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.BreakBeam;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.blueGoalPosition;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.redGoalPosition;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IndexerMotor;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IntakeColor;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IntakeMotor;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.autoOnBlue;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -45,8 +48,8 @@ public class ScoringSystem {
 
 
     public void update() {
-        if (isIntakeEnabled) updateIntake();
-        else if (isShooterEnabled) shooter.update();
+        updateIntake();
+        updateShooter();
     }
 
     public void updateIntake() {
@@ -55,6 +58,8 @@ public class ScoringSystem {
         hardware.telemetry.addData("ELEMENT 1", indexer.elements.get(0));
         hardware.telemetry.addData("ELEMENT 2", indexer.elements.get(1));
         hardware.telemetry.addData("ELEMENT 3", indexer.elements.get(2));
+        hardware.telemetry.addData("isIntakeEnabled", isIntakeEnabled);
+        hardware.telemetry.addData("isShooterEnabled", isShooterEnabled);
         hardware.telemetry.addData("distance", distance);
         hardware.telemetry.addData("AMPS", hardware.motors.get(IntakeMotor).getCurrent(CurrentUnit.AMPS));
         hardware.telemetry.addData("hasArtifact", distance < 78);
@@ -67,8 +72,11 @@ public class ScoringSystem {
                 intake.on();
             }).start();
 
+        if (indexer.elements.contains(Enums.ArtifactColor.NONE) && !isIntakeEnabled)
+            isIntakeEnabled = true;
+
         if (distance > 78 && indexer.elements.get(0) != Enums.ArtifactColor.NONE) indexer.elements.set(0, Enums.ArtifactColor.NONE);
-        if (distance > 78 || indexer.isBusy()) return;
+        if (distance > 78 || indexer.isBusy() || !isIntakeEnabled) return;
 
         double g = hardware.color.get(IntakeColor).green(),
                 b = hardware.color.get(IntakeColor).blue();
@@ -79,10 +87,18 @@ public class ScoringSystem {
 
 
         if (indexer.elements.get(2) != Enums.ArtifactColor.NONE) {
-            //isIntakeEnabled = false;
-            //isShooterEnabled = true;
+            isIntakeEnabled = false;
 
             intake.off();
         } else { indexer.index(1); }
+    }
+
+    public void updateShooter() {
+        if (!isShooterEnabled) return;
+
+        double distance = POSE.distanceTo(autoOnBlue ? blueGoalPosition : redGoalPosition);
+
+        shooter.setDistance(distance);
+        shooter.update();
     }
 }

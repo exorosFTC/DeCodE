@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
+import java.util.function.BooleanSupplier;
 
 public class AutoDrive {
     private final SwerveDrive swerve;
@@ -193,17 +193,17 @@ public class AutoDrive {
         return this;
     }
 
-    public AutoDrive waitAction(Supplier<Boolean> action) {
-        while (!action.get() && opMode.opModeIsActive()) { opMode.idle(); }
+    public AutoDrive waitAction(BooleanSupplier action) {
+        while (!action.getAsBoolean() && opMode.opModeIsActive()) { opMode.idle(); }
         return this;
     }
 
-    public AutoDrive waitAction(Supplier<Boolean> action, Runnable inLoop) {
-        while (!action.get() && opMode.opModeIsActive()) { inLoop.run(); }
+    public AutoDrive waitAction(BooleanSupplier action, Runnable inLoop) {
+        while (!action.getAsBoolean() && opMode.opModeIsActive()) { inLoop.run(); }
         return this;
     }
 
-    public AutoDrive waitActionTimeFailSafe(Supplier<Boolean> action,
+    public AutoDrive waitActionTimeFailSafe(BooleanSupplier action,
                                             Runnable inLoop,
                                             double ms,
                                             Runnable failSafe) {
@@ -212,8 +212,8 @@ public class AutoDrive {
 
         do {
             inLoop.run();
-            if (action.get()) useFailSafe = false;
-        } while(!action.get() && opMode.opModeIsActive() && waitTimer.time(TimeUnit.MILLISECONDS) < ms);
+            if (action.getAsBoolean()) useFailSafe = false;
+        } while(!action.getAsBoolean() && opMode.opModeIsActive() && waitTimer.time(TimeUnit.MILLISECONDS) < ms);
 
         if (useFailSafe)
             failSafe.run();
@@ -221,7 +221,7 @@ public class AutoDrive {
         return this;
     }
 
-    public AutoDrive waitActionTimeFailSafe(Supplier<Boolean> action,
+    public AutoDrive waitActionTimeFailSafe(BooleanSupplier action,
                                             double ms,
                                             Runnable failSafe) {
          return waitActionTimeFailSafe(action,
@@ -230,7 +230,7 @@ public class AutoDrive {
                 failSafe);
     }
 
-    public AutoDrive waitActionTimeFailSafe(Supplier<Boolean> action,
+    public AutoDrive waitActionTimeFailSafe(BooleanSupplier action,
                                             double ms) {
         return waitActionTimeFailSafe(action,
                 opMode::idle,

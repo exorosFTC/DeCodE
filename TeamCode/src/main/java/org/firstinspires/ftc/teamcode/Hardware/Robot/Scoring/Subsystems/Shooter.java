@@ -17,20 +17,19 @@ public class Shooter {
     private final PIDController controller;
 
     private double distance;
-    private boolean on = false;
+    public boolean on = false;
 
-    public static final double TICKS_PER_REV = 28 * 20.0;
-    public static final double MAX_RPS = 6000.0 / 60.0;
+    public static final double MAX_RPS = 2400;
 
-    public double targetVelocity = 0;
+    public double targetPower = 0;
     public double targetAngle = 0;
 
     public double kS = 0.05;
     public double kV = 1.0 / (0.8*MAX_RPS); // scale so targetRPS* kV ≈ needed power; 0.8 accounts for losses
 
-    public double kP = 0.;
+    public double kP = 1.;
     public double kI = 0;
-    public double kD = 0;
+    public double kD = 0.3;
 
 
     public Shooter(LinearOpMode opMode) {
@@ -50,17 +49,19 @@ public class Shooter {
 
     public void setDistance(double distance) { this.distance = distance; }
 
+    public boolean ready() { return Math.abs(targetPower * MAX_RPS - hardware.motors.get(ShooterMotor1).getVelocity()) < 20; }
+
 
 
     public void update() {
         if (!on) return;
         controller.setPID(kP, kI, kD);
 
-        targetVelocity();
+        targetPower();
         targetAngle();
 
-        double ff = kS * Math.signum(targetVelocity) + kV * targetVelocity;
-        double power = clamp(ff + controller.calculate(hardware.motors.get(ShooterMotor1).getVelocity(), targetVelocity), -1.0, 1.0);
+        double ff = kS * Math.signum(targetPower) + kV * targetPower;
+        double power = clamp(ff + controller.calculate(hardware.motors.get(ShooterMotor1).getVelocity(), targetPower), -1.0, 1.0);
 
 
         hardware.motors.get(ShooterMotor1).setPower(power);
@@ -68,7 +69,7 @@ public class Shooter {
     }
 
     //TODO: figure these out
-    private void targetVelocity() {}
+    private void targetPower() {}
 
     private void targetAngle() {}
 

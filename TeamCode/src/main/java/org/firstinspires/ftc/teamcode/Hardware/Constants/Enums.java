@@ -39,19 +39,9 @@ public interface Enums {
         NONE,
     }
 
-    enum IndexerPos{
-        COLLECT_1(0),
-        COLLECT_2(120),
-        COLLECT_3(240);
-
-        private final int deg;
-
-        IndexerPos(int deg) {
-            this.deg = deg;
-        }
-
-        public int getDeg() {
-            return deg;
-        }
+    enum HeadingMode {
+        PATH_TANGENT,
+        FACE_GOAL,
+        FIXED
     }
 }

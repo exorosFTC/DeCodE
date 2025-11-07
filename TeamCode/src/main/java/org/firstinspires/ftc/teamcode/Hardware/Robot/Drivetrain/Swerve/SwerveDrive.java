@@ -90,9 +90,13 @@ public class SwerveDrive extends SwerveKinematics {
             modules[i].setDirection(directions.get(i));
     }
 
-    public void setPID(double p, double i, double d) {
+    public void setModulePID(double p, double i, double d) {
         for (int a = 0; a < 4; a++)
             modules[a].setPID(p, i, d);
+    }
+
+    public void setHeadingPID(double p, double i, double d) {
+        angularC.setPID(p, i, d);
     }
 
 
@@ -126,9 +130,7 @@ public class SwerveDrive extends SwerveKinematics {
                 if (autoOnBlue) target = blueGoalPosition;
                 else target = redGoalPosition;
 
-                double rawTargetHeading = Math.atan2(target.y - position.y, target.x - position.x);
-                targetHeading = (rawTargetHeading < 0) ? rawTargetHeading + 2 * Math.PI : rawTargetHeading;
-
+                targetHeading = Math.atan2(target.y - position.y, target.x - position.x);
                 velocity.heading = -angularC.calculate(FindShortestPath(position.heading, targetHeading));
             }
         }
@@ -194,5 +196,9 @@ public class SwerveDrive extends SwerveKinematics {
 
     public void setLocked(boolean locked) { super.setLocked(locked); }
 
+    public void setLockedX(boolean lockedX) { super.setLockedX(locked); }
+
     public void lockHeadingToGoal(boolean lock) { lockHeadingToGoal = lock; }
+
+    public boolean isHeadingLockedToGoal() { return lockHeadingToGoal; }
 }

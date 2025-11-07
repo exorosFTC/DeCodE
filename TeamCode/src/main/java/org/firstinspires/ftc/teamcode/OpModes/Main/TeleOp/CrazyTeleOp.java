@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.OpModes.Main.TeleOp;
 
 
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularD;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IndexerLimit;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.telemetryAddLoopTime;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -17,6 +20,7 @@ import org.firstinspires.ftc.teamcode.Hardware.Util.TriggerManager;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
+@Config
 @TeleOp(name = "😈🔥", group = "main")
 public class CrazyTeleOp extends ExoMode {
     private double startLoopTime;
@@ -28,6 +32,7 @@ public class CrazyTeleOp extends ExoMode {
     private GamepadEx g1, g2;
     private TriggerManager intakeTriggers, shooterTriggers;
 
+    public static double p = AngularP, d = AngularD;
 
 
     @Override
@@ -58,6 +63,7 @@ public class CrazyTeleOp extends ExoMode {
                             else system.intake.on(); })
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.A),
                             () -> system.intake.reverse())
+
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER),
                             () -> system.indexer.index(1))
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER),
@@ -65,11 +71,33 @@ public class CrazyTeleOp extends ExoMode {
 
         shooterTriggers = new TriggerManager()
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_UP),
-                            () -> {})
-                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_DOWN),
-                            () -> {})
+                            () -> {
+                            if (system.shooter.on) {
+                                system.isShooterEnabled = false;
+                                system.shooter.off();
+                            }
+                            else {
+                                system.isShooterEnabled = true;
+                                system.shooter.on();
+                            }})
+                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT),
+                            () -> {
+                            swerve.setLockedX(true);
+
+                            system.indexer.shoot(3);
+                            while (system.indexer.isBusy() && opModeIsActive()) {}
+
+                            system.shooter.off();
+                            system.isShooterEnabled = false;
+                            system.isIntakeEnabled = true;
+
+                            swerve.setLockedX(false);
+                            })
+
+                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER),   // add these in both cases
+                        () -> system.indexer.index(1))
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER),
-                            () -> {});
+                        () -> system.indexer.home());
     }
 
     @Override
@@ -81,6 +109,9 @@ public class CrazyTeleOp extends ExoMode {
                         g1.getLeftX(),
                         g1.getRightX() * 0.5
                 ));
+
+                swerve.setHeadingPID(p, 0, d);
+                swerve.lockHeadingToGoal(g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1);
 
                 g1.readButtons();
                 hardware.bulk.clearCache(Enums.Hubs.ALL);
@@ -100,6 +131,9 @@ public class CrazyTeleOp extends ExoMode {
         else if (system.isShooterEnabled)
             shooterTriggers.check();
 
+        hardware.telemetry.addData("targetHeading", swerve.targetHeading);
+        hardware.telemetry.addData("x", swerve.localizer.getRobotPosition().x);
+        hardware.telemetry.addData("y", swerve.localizer.getRobotPosition().y);
 
         system.update();
         updateTelemetry();

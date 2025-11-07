@@ -7,24 +7,24 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 
 public class PinpointLocalizer {
-
     private GoBildaPinpointDriver pinpoint;
-    private Pose currentPose = new Pose(0, 0, 0);
 
 
     public PinpointLocalizer(HardwareMap hardwareMap) {
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, PinpointName);
 
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,       // in front
-                                        GoBildaPinpointDriver.EncoderDirection.FORWARD);    // to the left
+                                        GoBildaPinpointDriver.EncoderDirection.REVERSED);    // to the left
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
-        pinpoint.setOffsets(12.6697, -6.6626, DistanceUnit.CM);
+        //12.6697 -6.6626
+        pinpoint.setOffsets(0, 0, DistanceUnit.CM);
         pinpoint.resetPosAndIMU();
     }
 
@@ -33,7 +33,7 @@ public class PinpointLocalizer {
         pinpoint.update();
         double rawHeading = pinpoint.getHeading(AngleUnit.RADIANS);
 
-        currentPose = new Pose(
+        DriveConstants.POSE = new Pose(
                 pinpoint.getPosX(DistanceUnit.CM),
                 pinpoint.getPosY(DistanceUnit.CM),
                 (rawHeading < 0) ? rawHeading + 2 * Math.PI : rawHeading
@@ -41,11 +41,11 @@ public class PinpointLocalizer {
     }
 
     public Pose getRobotPosition() {
-        return currentPose;
+        return DriveConstants.POSE;
     }
 
     public double getAngle() {
-        return currentPose.heading;
+        return DriveConstants.POSE.heading;
     }
 
     public double getAngularVelocity() {
@@ -56,7 +56,7 @@ public class PinpointLocalizer {
         pinpoint.setPosX(pose.x, DistanceUnit.CM);
         pinpoint.setPosY(pose.y, DistanceUnit.CM);
         pinpoint.setHeading(-pose.heading, AngleUnit.RADIANS);
-        currentPose = pose;
+        DriveConstants.POSE = pose;
     }
 
 }
