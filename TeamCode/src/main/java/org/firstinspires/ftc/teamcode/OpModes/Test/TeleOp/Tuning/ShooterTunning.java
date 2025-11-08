@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp.Tuning;
 
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.blueGoalPosition;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.redGoalPosition;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ShooterMotor1;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ShooterMotor2;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems.Shooter.MAX_RPS;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -13,6 +16,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Data;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems.Shooter;
@@ -27,7 +31,7 @@ public class ShooterTunning extends LinearOpMode {
 
     private GamepadEx g1;
 
-    public static double kS, kV, kP, kI, kD;
+    public static double kP, kI, kD;
     public static double power, angle;
 
     public boolean lockHeading = false;
@@ -39,6 +43,16 @@ public class ShooterTunning extends LinearOpMode {
         shooter = new Shooter(this);
 
         g1 = new GamepadEx(gamepad1);
+
+        new Data()
+                .add(Enums.OpMode.TELE_OP)
+                .setAutoOnBlue(false)
+                .getLoopTime(true)
+                .setUsingOpenCv(false)
+                .setUsingAprilTag(false)
+                .setUsingAcceleration(false)
+                .setUsingExponentialInput(false)
+                .setUsingFieldCentric(true);
 
         kP = shooter.kP;
         kI = shooter.kI;
@@ -55,10 +69,7 @@ public class ShooterTunning extends LinearOpMode {
                                 g1.getLeftX(),
                                 g1.getRightX() * 0.5));
 
-                if (g1.wasJustPressed(GamepadKeys.Button.B)) {
-                    lockHeading = !lockHeading;
-                    swerve.lockHeadingToGoal(lockHeading);
-                }
+                swerve.lockHeadingToGoal(g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1);
 
                 g1.readButtons();
                 hardware.bulk.clearCache(Enums.Hubs.ALL);
@@ -66,7 +77,7 @@ public class ShooterTunning extends LinearOpMode {
         }).start();
 
         while (opModeIsActive()) {
-            double distance = swerve.localizer.getRobotPosition().distanceTo(blueGoalPosition);
+            double distance = swerve.localizer.getRobotPosition().distanceTo(autoOnBlue ? blueGoalPosition : redGoalPosition);
 
             shooter.kP = kP;
             shooter.kI = kI;
@@ -82,6 +93,11 @@ public class ShooterTunning extends LinearOpMode {
             hardware.telemetry.addData("velocity targert", shooter.targetPower * MAX_RPS);
             hardware.telemetry.addData("velocity", hardware.motors.get(ShooterMotor2).getVelocity(AngleUnit.DEGREES));
             hardware.telemetry.addData("ready", shooter.ready());
+
+            hardware.telemetry.addData("x", POSE.x);
+            hardware.telemetry.addData("y", POSE.y);
+            hardware.telemetry.addData("head", POSE.heading);
+
             hardware.bulk.clearCache(Enums.Hubs.ALL);
             hardware.telemetry.update();
         }

@@ -5,17 +5,15 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 public class DriveConstants {
     public static double RANGE = 3.3;
-    public static boolean VALUE_REJECTION = false;
 
-    public static Pose POSE = new Pose();
+    public static Pose POSE = new Pose(0, 0, Math.toRadians(270));
 
     public static boolean usingAcceleration = false;
     public static boolean usingExponentialInput = false;
-    public static boolean usingFieldCentric = false;
+    public static boolean usingFieldCentric = true;
 
 
     public static double DRIVE_W = 9, DRIVE_L = 9; //to be tuned
-    public final double R = Math.hypot(DRIVE_W, DRIVE_L) / 2;
 
 
     public static double accelerationScalar = 0.08;
@@ -35,7 +33,7 @@ public class DriveConstants {
 
 
     public static double tileLengthCM = 60.96;
-    public static Point redGoalPosition = new Point(2.7 * tileLengthCM, -2.7 * tileLengthCM);
-    public static Point blueGoalPosition = new Point(2.7 * tileLengthCM, 2.7 * tileLengthCM);
+    public static Point redGoalPosition = new Point(3 * tileLengthCM, -3 * tileLengthCM);
+    public static Point blueGoalPosition = new Point(3 * tileLengthCM, 3 * tileLengthCM);
 
 }

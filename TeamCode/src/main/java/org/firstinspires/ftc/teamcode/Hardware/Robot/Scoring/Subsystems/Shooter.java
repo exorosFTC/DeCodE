@@ -1,8 +1,14 @@
 package org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems;
 
 import static androidx.core.math.MathUtils.clamp;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.blueGoalPosition;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.redGoalPosition;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ShooterHoodServo;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ShooterMotor1;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ShooterMotor2;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.autoOnBlue;
+import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.clip;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -21,6 +27,8 @@ public class Shooter {
     public boolean on = false;
 
     public static final double MAX_RPS = 600;
+    public static final double MAX_ANGLE = 1;
+    public static final double MIN_ANGLE = 0;
 
     public double targetPower = 0;
     public double targetAngle = 0;
@@ -47,8 +55,6 @@ public class Shooter {
         hardware.motors.get(ShooterMotor2).setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    public void setDistance(double distance) { this.distance = distance; }
-
     public boolean ready() {
         hardware.telemetry.addData("target RPS", targetPower * MAX_RPS);
         hardware.telemetry.addData("current RPS", hardware.motors.get(ShooterMotor2).getVelocity(AngleUnit.DEGREES));
@@ -62,22 +68,30 @@ public class Shooter {
 
     public void update() {
         if (!on) return;
+
         controller.setPID(kP, kI, kD);
+        distance = POSE.distanceTo(autoOnBlue ? blueGoalPosition : redGoalPosition);
 
         targetPower();
         targetAngle();
 
         double pid = controller.calculate(hardware.motors.get(ShooterMotor2).getVelocity(AngleUnit.DEGREES), targetPower * MAX_RPS);
-        this.POWER += pid;
+        this.POWER = (POWER + pid) * (13.0 / hardware.batteryVoltageSensor.getVoltage()); // normalize with battery voltage
 
         hardware.motors.get(ShooterMotor1).setPower(this.POWER);
         hardware.motors.get(ShooterMotor2).setPower(this.POWER);
+
+        hardware.servos.get(ShooterHoodServo).setPosition(targetAngle);
     }
 
     //TODO: figure these out
-    private void targetPower() {}
+    private void targetPower() {
+        targetPower = clip(distance / 440, 0, 1);
+    }
 
-    private void targetAngle() {}
+    private void targetAngle() {
+        targetAngle = clamp(distance / 440 * 3, MIN_ANGLE, MAX_ANGLE);
+    }
 
 
 
@@ -85,6 +99,7 @@ public class Shooter {
 
     public void off() {
         this.on = false;
+        this.targetPower = 0;
         this.POWER = 0;
 
         hardware.motors.get(ShooterMotor1).setMotorDisable();

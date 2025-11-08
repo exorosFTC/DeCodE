@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.A
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearD;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearP;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.FindShortestPath;
 
 import com.arcrobotics.ftclib.controller.PIDController;
@@ -106,7 +107,7 @@ public class AutoDrive {
         driveThread = new Thread(() -> {
                 while (opMode.opModeIsActive()) {
                     swerve.localizer.update();
-                    position = swerve.localizer.getRobotPosition();
+                    position = POSE;
 
                     hardware.telemetry.addData("x: ", position.x);
                     hardware.telemetry.addData("y: ", position.y);
@@ -124,6 +125,10 @@ public class AutoDrive {
                     if (isPaused) continue;
 
                     updateDriveVector();
+
+                    hardware.telemetry.addData("drive x", driveVector.x);
+                    hardware.telemetry.addData("drive y", driveVector.y);
+                    hardware.telemetry.addData("drive heading", driveVector.heading);
 
                     if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
                         driveTo(position);
@@ -279,48 +284,17 @@ public class AutoDrive {
 
 
     private void updateDriveVector() {
-        double radians = normalizeAngleRad(position.heading);
-        double targetVelX, targetVelY;
+        double targetVelX, targetVelY, targetVelHeading;
 
-
-        if (Math.abs(target.x - position.x) > 4.6) {
-            linearC.setP(LinearP);
-            targetVelX = linearC.calculate(position.x, target.x);
-        } else {
-            linearC.setP(0.04);
-            targetVelX = linearC.calculate(position.x, target.x);
-        }
-
-
-        if (Math.abs(target.y - position.y) > 4) {
-            linearC.setP(LinearP);
-            targetVelY = linearC.calculate(position.y, target.y);
-        } else {
-            linearC.setP(0.04);
-            targetVelY = linearC.calculate(position.y, target.y);
-        }
-
-        double targetVelHeading = angularC.calculate(FindShortestPath(radians, target.heading));
-
-        double velocityMagnitude = Math.sqrt(targetVelX * targetVelX + targetVelY * targetVelY);
-        double turnRadius = velocityMagnitude / (Math.abs(targetVelHeading) + 1e-6);
-        double centripetalAcc = velocityMagnitude * velocityMagnitude / (turnRadius + 1e-6);
-
-        double driftCompensationX = -centripetalAcc * Math.sin(radians);
-        double driftCompensationY = centripetalAcc * Math.cos(radians);
-
-        targetVelX += driftCompensationX - 0.1;
-        targetVelY += driftCompensationY;
-
-        // convert the adjusted vector to the field-centric coordinate system.
-        Pose vector = new Pose(targetVelX, targetVelY, 0);
-        Point rotatedDiff = vector.point().rotate_matrix(-radians);
+        targetVelX = -linearC.calculate(position.x, target.x);
+        targetVelY = -linearC.calculate(position.y, target.y);
+        targetVelHeading = -angularC.calculate(FindShortestPath(position.heading, target.heading));
 
         // build the final drive vector using the rotated linear outputs and the angular command.
         driveVector = new Pose(
-                rotatedDiff.x,
-                rotatedDiff.y,
-                targetVelHeading).multiplyBy(13.0 / hardware.batteryVoltageSensor.getVoltage());
+                Math.abs(targetVelX) > busyThreshold ? targetVelX : 0,
+                Math.abs(targetVelY) > busyThreshold ? targetVelY : 0,
+                Math.abs(targetVelHeading) > busyThreshold ? targetVelHeading : 0).multiplyBy(13.0 / hardware.batteryVoltageSensor.getVoltage());
     }
 
 

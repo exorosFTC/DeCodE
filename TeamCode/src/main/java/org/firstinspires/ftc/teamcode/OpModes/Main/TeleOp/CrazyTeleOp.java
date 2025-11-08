@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.OpModes.Main.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularD;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IndexerLimit;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.telemetryAddLoopTime;
 
@@ -44,8 +45,6 @@ public class CrazyTeleOp extends ExoMode {
         swerve = new SwerveDrive(this);
         system = new ScoringSystem(this);
 
-        swerve.localizer.setPositionEstimate(new Pose(0, 0, Math.toRadians(90)));
-
         new Data()
                 .add(Enums.OpMode.TELE_OP)
                 .setAutoOnBlue(false)
@@ -56,6 +55,7 @@ public class CrazyTeleOp extends ExoMode {
                 .setUsingExponentialInput(false)
                 .setUsingFieldCentric(true);
 
+        swerve.localizer.setPositionEstimate(POSE);
 
         intakeTriggers = new TriggerManager()
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.B),
@@ -74,33 +74,31 @@ public class CrazyTeleOp extends ExoMode {
         shooterTriggers = new TriggerManager()
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_UP),
                             () -> {
-                            if (system.shooter.on) {
-                                system.isShooterEnabled = false;
-                                system.shooter.targetPower = 0;
+                            if (system.shooter.on)
                                 system.shooter.off();
-                            }
-                            else {
-                                system.isShooterEnabled = true;
-                                system.shooter.targetPower = 0.85;
-                                system.shooter.on();
-                            }})
+                            else system.shooter.on();
+                            })
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT),
                             () -> {
                             swerve.setLockedX(true);
                             hardware.telemetry.clear();
-
-                            while (!system.shooter.ready() && opModeIsActive()) {}
 
                             if (system.intake.on) {
                                 system.isIntakeEnabled = false;
                                 system.intake.off();
                             }
 
+                            while (!system.shooter.ready() && opModeIsActive()) {
+                                if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER))
+                                    break; // fail safe, in case of idk
+                                g2.readButtons();
+                            }
+
+
                             system.indexer.shoot(3);
-                            while (system.indexer.isBusy() && opModeIsActive()) { system.updateShooter(); }
+                            while (system.indexer.isBusy() && opModeIsActive()) { system.shooter.update(); }
 
                             system.shooter.off();
-                            system.isShooterEnabled = false;
                             system.isIntakeEnabled = true;
                             system.indexer.previousLastElement = Enums.ArtifactColor.NONE;
 

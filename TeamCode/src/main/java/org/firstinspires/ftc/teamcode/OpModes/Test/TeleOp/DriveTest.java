@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularD;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.swerveD;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.swerveP;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.opModeType;
@@ -20,7 +21,7 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 @Config
 @TeleOp(group = "test", name = "DRIVE")
 public class DriveTest extends LinearOpMode {
-    private SwerveDrive drive;
+    private SwerveDrive swerve;
     private Hardware hardware;
 
     private GamepadEx g1;
@@ -31,7 +32,7 @@ public class DriveTest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        drive = new SwerveDrive(this);
+        swerve = new SwerveDrive(this);
         hardware = new Hardware(this);
 
         opModeType = Enums.OpMode.TELE_OP;
@@ -41,12 +42,18 @@ public class DriveTest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            drive.update(new Pose(
+            swerve.update(new Pose(
                     -g1.getLeftY(),
                     g1.getLeftX(),
                     g1.getRightX() * 0.5
             ));
 
+            hardware.telemetry.addData("x", POSE.x);
+            hardware.telemetry.addData("y", POSE.y);
+            hardware.telemetry.addData("heading", POSE.heading);
+
+            hardware.telemetry.update();
+            
             g1.readButtons();
             hardware.bulk.clearCache(Enums.Hubs.ALL);
         }

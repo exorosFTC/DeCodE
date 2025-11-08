@@ -31,11 +31,14 @@ public class PIDAutoTuner extends ExoMode {
 
     @Override
     protected void Init() {
+        swerve = new SwerveDrive(this);
+
         new Data()
                         .add(Enums.OpMode.AUTONOMUS)
                         .setAutoOnBlue(false)
                         .getLoopTime(true)
                         .setUsingOpenCv(false)
+                        .setUsingFieldCentric(false)
                         .setUsingAprilTag(false)
                         .setUsingAcceleration(false)
                         .setUsingExponentialInput(false);

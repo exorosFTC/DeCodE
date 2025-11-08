@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularD;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.accelerationScalar;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.blueGoalPosition;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.redGoalPosition;
@@ -44,7 +45,6 @@ public class SwerveDrive extends SwerveKinematics {
     private final Hardware hardware;
 
     public final PinpointLocalizer localizer;
-    public Pose position = new Pose();
 
     public final PIDController angularC;
     public double targetHeading = 0;
@@ -104,25 +104,21 @@ public class SwerveDrive extends SwerveKinematics {
     public void update(Pose velocity) {
         localizer.update();
 
-        position = localizer.getRobotPosition();
-
         if (opModeType == Enums.OpMode.TELE_OP) {
             if (usingExponentialInput)
                 velocity = exponential(velocity);
             if (usingAcceleration)
                 velocity = accelerate(velocity);
-            if (usingFieldCentric)
-                velocity = velocity.rotate_matrix(-position.heading);
 
 
             if (!lockHeadingToGoal) {
                 //pid for skew correction
                 if (Math.abs(velocity.heading) < 0.01 && timer.milliseconds() > 600) {
-                    velocity.heading = -angularC.calculate(FindShortestPath(position.heading, targetHeading));
+                    velocity.heading = -angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
                 } else {
                     if (Math.abs(velocity.heading) > 0.01)
                         timer.reset();
-                    targetHeading = position.heading;
+                    targetHeading = POSE.heading;
                 }
             } else {
                 Point target;
@@ -130,12 +126,15 @@ public class SwerveDrive extends SwerveKinematics {
                 if (autoOnBlue) target = blueGoalPosition;
                 else target = redGoalPosition;
 
-                targetHeading = Math.atan2(target.y - position.y, target.x - position.x);
-                velocity.heading = -angularC.calculate(FindShortestPath(position.heading, targetHeading));
+                targetHeading = Math.atan2(target.y - POSE.y, target.x - POSE.x);
+                velocity.heading = -angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
             }
         }
 
-        if (Math.abs(velocity.x) < 0.01 &&  Math.abs(velocity.y) < 0.01 && Math.abs(velocity.heading) < 0.01)
+        if (usingFieldCentric || opModeType == Enums.OpMode.AUTONOMUS)
+            velocity = velocity.rotate_matrix(-POSE.heading);
+
+        if (Math.abs(velocity.x) < 0.001 &&  Math.abs(velocity.y) < 0.001 && Math.abs(velocity.heading) < 0.001)
             setLocked(true);
         else setLocked(false);
 
