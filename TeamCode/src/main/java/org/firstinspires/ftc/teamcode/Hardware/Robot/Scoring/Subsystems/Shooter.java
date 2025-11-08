@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 
 public class Shooter {
@@ -19,17 +20,16 @@ public class Shooter {
     private double distance;
     public boolean on = false;
 
-    public static final double MAX_RPS = 2400;
+    public static final double MAX_RPS = 600;
 
     public double targetPower = 0;
     public double targetAngle = 0;
 
-    public double kS = 0.05;
-    public double kV = 1.0 / (0.8*MAX_RPS); // scale so targetRPS* kV ≈ needed power; 0.8 accounts for losses
+    private double POWER = 0;
 
-    public double kP = 1.;
-    public double kI = 0;
-    public double kD = 0.3;
+    public double kP = 1e-4;
+    public double kI = 1e-8;
+    public double kD = 0;
 
 
     public Shooter(LinearOpMode opMode) {
@@ -49,7 +49,14 @@ public class Shooter {
 
     public void setDistance(double distance) { this.distance = distance; }
 
-    public boolean ready() { return Math.abs(targetPower * MAX_RPS - hardware.motors.get(ShooterMotor1).getVelocity()) < 20; }
+    public boolean ready() {
+        hardware.telemetry.addData("target RPS", targetPower * MAX_RPS);
+        hardware.telemetry.addData("current RPS", hardware.motors.get(ShooterMotor2).getVelocity(AngleUnit.DEGREES));
+        hardware.telemetry.addData("ready", Math.abs(targetPower * MAX_RPS - hardware.motors.get(ShooterMotor2).getVelocity(AngleUnit.DEGREES)) < 20);
+        hardware.telemetry.update();
+
+        return Math.abs(targetPower * MAX_RPS - hardware.motors.get(ShooterMotor2).getVelocity(AngleUnit.DEGREES)) < 20;
+    }
 
 
 
@@ -60,12 +67,11 @@ public class Shooter {
         targetPower();
         targetAngle();
 
-        double ff = kS * Math.signum(targetPower) + kV * targetPower;
-        double power = clamp(ff + controller.calculate(hardware.motors.get(ShooterMotor1).getVelocity(), targetPower), -1.0, 1.0);
+        double pid = controller.calculate(hardware.motors.get(ShooterMotor2).getVelocity(AngleUnit.DEGREES), targetPower * MAX_RPS);
+        this.POWER += pid;
 
-
-        hardware.motors.get(ShooterMotor1).setPower(power);
-        hardware.motors.get(ShooterMotor2).setPower(power);
+        hardware.motors.get(ShooterMotor1).setPower(this.POWER);
+        hardware.motors.get(ShooterMotor2).setPower(this.POWER);
     }
 
     //TODO: figure these out
@@ -79,6 +85,7 @@ public class Shooter {
 
     public void off() {
         this.on = false;
+        this.POWER = 0;
 
         hardware.motors.get(ShooterMotor1).setMotorDisable();
         hardware.motors.get(ShooterMotor2).setMotorDisable();

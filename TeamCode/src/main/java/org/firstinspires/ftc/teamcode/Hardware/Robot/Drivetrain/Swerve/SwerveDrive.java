@@ -196,7 +196,7 @@ public class SwerveDrive extends SwerveKinematics {
 
     public void setLocked(boolean locked) { super.setLocked(locked); }
 
-    public void setLockedX(boolean lockedX) { super.setLockedX(locked); }
+    public void setLockedX(boolean lockedX) { super.setLockedX(lockedX); }
 
     public void lockHeadingToGoal(boolean lock) { lockHeadingToGoal = lock; }
 

@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp.Tuning;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.blueGoalPosition;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ShooterMotor1;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ShooterMotor2;
+import static org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems.Shooter.MAX_RPS;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -38,11 +40,11 @@ public class ShooterTunning extends LinearOpMode {
 
         g1 = new GamepadEx(gamepad1);
 
-        kS = shooter.kS;
-        kV = shooter.kV;
         kP = shooter.kP;
         kI = shooter.kI;
         kD = shooter.kD;
+
+        shooter.on = true;
 
         waitForStart();
 
@@ -66,8 +68,6 @@ public class ShooterTunning extends LinearOpMode {
         while (opModeIsActive()) {
             double distance = swerve.localizer.getRobotPosition().distanceTo(blueGoalPosition);
 
-            shooter.kS = kS;
-            shooter.kV = kV;
             shooter.kP = kP;
             shooter.kI = kI;
             shooter.kD = kD;
@@ -79,7 +79,9 @@ public class ShooterTunning extends LinearOpMode {
             shooter.update();
 
             hardware.telemetry.addData("distance", distance);
+            hardware.telemetry.addData("velocity targert", shooter.targetPower * MAX_RPS);
             hardware.telemetry.addData("velocity", hardware.motors.get(ShooterMotor2).getVelocity(AngleUnit.DEGREES));
+            hardware.telemetry.addData("ready", shooter.ready());
             hardware.bulk.clearCache(Enums.Hubs.ALL);
             hardware.telemetry.update();
         }

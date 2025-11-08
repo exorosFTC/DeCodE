@@ -22,9 +22,10 @@ public class Indexer {
     public static final double TICKS_PER_REVOLUTION = 384.5 * 2;
     public static double HOMING_POWER = 0.4; //in the indexing direction
     public static double INDEXING_POWER = 1;
-    public static double SHOOTING_POWER = 0.8;
+    public static double SHOOTING_POWER = 0.6;
 
-    public int target = 0;
+    private static final int offset = 9;
+    public int target = -offset;
 
     public List<Enums.ArtifactColor> elements = Arrays.asList(
             Enums.ArtifactColor.NONE, Enums.ArtifactColor.NONE, Enums.ArtifactColor.NONE
@@ -39,7 +40,7 @@ public class Indexer {
 
         hardware.motors.get(IndexerMotor).setDirection(DcMotorSimple.Direction.REVERSE);
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        hardware.motors.get(IndexerMotor).setTargetPosition(0);
+        hardware.motors.get(IndexerMotor).setTargetPosition(-offset);
         hardware.motors.get(IndexerMotor).setPower(1);
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
@@ -55,19 +56,21 @@ public class Indexer {
             hardware.motors.get(IndexerMotor).setPower(HOMING_POWER);
         }
 
+        target = -offset;
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        hardware.motors.get(IndexerMotor).setTargetPosition(0);
+        hardware.motors.get(IndexerMotor).setTargetPosition(target);
         hardware.motors.get(IndexerMotor).setPower(1);
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        sideswipe(3, true);
     }
 
     public void index(int balls) {
         balls = Math.max(1, Math.min(balls, 2)); //indexing 3 spots is useless, limit to 2
-        double pos = hardware.motors.get(IndexerMotor).getCurrentPosition();
 
-        if (elements.get(3 - balls) != Enums.ArtifactColor.NONE) pos += TICKS_PER_REVOLUTION / 6;
+        if (elements.get(3 - balls) != Enums.ArtifactColor.NONE) target = (int) (target + TICKS_PER_REVOLUTION / 5);
 
-        target = (int) (pos + balls * TICKS_PER_REVOLUTION / 3);
+        target = (int) (target + balls * TICKS_PER_REVOLUTION / 3);
         hardware.motors.get(IndexerMotor).setTargetPosition(target);
         hardware.motors.get(IndexerMotor).setPower(elements.get(3 - balls) != Enums.ArtifactColor.NONE ? 0.4 : INDEXING_POWER);
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -78,7 +81,7 @@ public class Indexer {
             new Thread(() -> {
                 while (hardware.motors.get(IndexerMotor).isBusy() && opMode.opModeIsActive()) {}
 
-                target = (int) (target - TICKS_PER_REVOLUTION / 6);
+                target = (int) (target - TICKS_PER_REVOLUTION / 5);
                 hardware.motors.get(IndexerMotor).setTargetPosition(target);
                 hardware.motors.get(IndexerMotor).setPower(0.4);
                 hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -88,9 +91,9 @@ public class Indexer {
 
     public void shoot(int balls) {
         balls = Math.max(1, Math.min(balls, 3));
-        double pos = hardware.motors.get(IndexerMotor).getCurrentPosition();
 
-        hardware.motors.get(IndexerMotor).setTargetPosition((int) (pos - balls * TICKS_PER_REVOLUTION / 3));
+        target = (int) (target - balls * TICKS_PER_REVOLUTION / 3);
+        hardware.motors.get(IndexerMotor).setTargetPosition(target);
         hardware.motors.get(IndexerMotor).setPower(SHOOTING_POWER);
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
 

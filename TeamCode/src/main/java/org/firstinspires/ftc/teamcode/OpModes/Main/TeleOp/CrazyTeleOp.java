@@ -44,6 +44,8 @@ public class CrazyTeleOp extends ExoMode {
         swerve = new SwerveDrive(this);
         system = new ScoringSystem(this);
 
+        swerve.localizer.setPositionEstimate(new Pose(0, 0, Math.toRadians(90)));
+
         new Data()
                 .add(Enums.OpMode.TELE_OP)
                 .setAutoOnBlue(false)
@@ -74,24 +76,36 @@ public class CrazyTeleOp extends ExoMode {
                             () -> {
                             if (system.shooter.on) {
                                 system.isShooterEnabled = false;
+                                system.shooter.targetPower = 0;
                                 system.shooter.off();
                             }
                             else {
                                 system.isShooterEnabled = true;
+                                system.shooter.targetPower = 0.85;
                                 system.shooter.on();
                             }})
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT),
                             () -> {
                             swerve.setLockedX(true);
+                            hardware.telemetry.clear();
+
+                            while (!system.shooter.ready() && opModeIsActive()) {}
+
+                            if (system.intake.on) {
+                                system.isIntakeEnabled = false;
+                                system.intake.off();
+                            }
 
                             system.indexer.shoot(3);
-                            while (system.indexer.isBusy() && opModeIsActive()) {}
+                            while (system.indexer.isBusy() && opModeIsActive()) { system.updateShooter(); }
 
                             system.shooter.off();
                             system.isShooterEnabled = false;
                             system.isIntakeEnabled = true;
+                            system.indexer.previousLastElement = Enums.ArtifactColor.NONE;
 
                             swerve.setLockedX(false);
+                            swerve.setLocked(true);
                             })
 
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER),   // add these in both cases
@@ -128,8 +142,7 @@ public class CrazyTeleOp extends ExoMode {
 
         if (system.isIntakeEnabled)
             intakeTriggers.check();
-        else if (system.isShooterEnabled)
-            shooterTriggers.check();
+        shooterTriggers.check();
 
         hardware.telemetry.addData("targetHeading", swerve.targetHeading);
         hardware.telemetry.addData("x", swerve.localizer.getRobotPosition().x);

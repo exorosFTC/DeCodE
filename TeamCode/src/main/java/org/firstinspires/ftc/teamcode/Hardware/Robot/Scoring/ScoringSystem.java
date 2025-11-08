@@ -33,6 +33,9 @@ public class ScoringSystem {
     public boolean isIntakeEnabled = true;
     public boolean isShooterEnabled = false;
 
+    private double lastDistance = 1000;
+    private int loopCount = 0;
+
     public ScoringSystem(LinearOpMode opMode) {
         this.hardware = Hardware.getInstance(opMode);
 
@@ -64,6 +67,8 @@ public class ScoringSystem {
         hardware.telemetry.addData("AMPS", hardware.motors.get(IntakeMotor).getCurrent(CurrentUnit.AMPS));
         hardware.telemetry.addData("hasArtifact", distance < 78);
         hardware.telemetry.addData("indexer pos", hardware.motors.get(IndexerMotor).getCurrentPosition());
+        hardware.telemetry.addData("isBusy indexer", indexer.isBusy());
+        hardware.telemetry.addData("indexer target", indexer.target);
 
         if (hardware.motors.get(IntakeMotor).getCurrent(CurrentUnit.AMPS) > 8.5)
             new Thread(() -> {
@@ -75,11 +80,15 @@ public class ScoringSystem {
         if (indexer.elements.contains(Enums.ArtifactColor.NONE) && !isIntakeEnabled)
             isIntakeEnabled = true;
 
+
+
         if (distance > 78 && indexer.elements.get(0) != Enums.ArtifactColor.NONE) indexer.elements.set(0, Enums.ArtifactColor.NONE);
-        if (distance > 78 || indexer.isBusy() || !isIntakeEnabled) return;
+        if (distance > 78 || indexer.isBusy() || !isIntakeEnabled || Math.abs(distance - lastDistance) > 3 ) { lastDistance = distance; return; }
 
         double g = hardware.color.get(IntakeColor).green(),
                 b = hardware.color.get(IntakeColor).blue();
+
+        hardware.telemetry.addData("Color", g > b ? Enums.ArtifactColor.GREEN : Enums.ArtifactColor.PURPLE);
 
         if (g > b) indexer.elements.set(0, Enums.ArtifactColor.GREEN);
         else indexer.elements.set(0, Enums.ArtifactColor.PURPLE);
@@ -90,7 +99,10 @@ public class ScoringSystem {
             isIntakeEnabled = false;
 
             intake.off();
-        } else { indexer.index(1); }
+        } else {
+            try { Thread.sleep(50); } catch (InterruptedException e) {} // wait for the artifact to fall
+            indexer.index(1);
+        }
     }
 
     public void updateShooter() {
