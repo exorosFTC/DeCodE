@@ -22,7 +22,7 @@ public class Indexer {
     public static final double TICKS_PER_REVOLUTION = 384.5 * 2;
     public static double HOMING_POWER = 0.4; //in the indexing direction
     public static double INDEXING_POWER = 1;
-    public static double SHOOTING_POWER = 0.6;
+    public static double SHOOTING_POWER = 0.9;
 
     private static final int offset = 9;
     public int target = -offset;
@@ -98,11 +98,6 @@ public class Indexer {
         hardware.motors.get(IndexerMotor).setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         sideswipe(balls, true);
-
-        new Thread(() -> {
-            while (hardware.motors.get(IndexerMotor).isBusy() && opMode.opModeIsActive()) {}
-            home();
-        }).start();
     }
 
     private void sideswipe(int balls, boolean reverse) { //so the name of the robot :)

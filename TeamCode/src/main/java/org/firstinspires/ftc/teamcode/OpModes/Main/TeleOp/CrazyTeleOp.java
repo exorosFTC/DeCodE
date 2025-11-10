@@ -5,13 +5,17 @@ import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.A
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IndexerLimit;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IndexerMotor;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IntakeMotor;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.telemetryAddLoopTime;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
@@ -55,8 +59,6 @@ public class CrazyTeleOp extends ExoMode {
                 .setUsingExponentialInput(false)
                 .setUsingFieldCentric(true);
 
-        swerve.localizer.setPositionEstimate(POSE);
-
         intakeTriggers = new TriggerManager()
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.B),
                             () -> {
@@ -80,6 +82,8 @@ public class CrazyTeleOp extends ExoMode {
                             })
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT),
                             () -> {
+                            if (system.shooter.targetPower == 0) return;
+
                             swerve.setLockedX(true);
                             hardware.telemetry.clear();
 
@@ -89,13 +93,30 @@ public class CrazyTeleOp extends ExoMode {
                             }
 
                             while (!system.shooter.ready() && opModeIsActive()) {
-                                if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER))
+                                if (g2.wasJustPressed(GamepadKeys.Button.X))
                                     break; // fail safe, in case of idk
                                 g2.readButtons();
+                                system.shooter.update();
                             }
+                            system.indexer.shoot(1);
+                            while (system.indexer.isBusy() && opModeIsActive()) { system.shooter.update(); }
 
+                            while (!system.shooter.ready() && opModeIsActive()) {
+                                if (g2.wasJustPressed(GamepadKeys.Button.X))
+                                    break; // fail safe, in case of idk
+                                g2.readButtons();
+                                system.shooter.update();
+                            }
+                            system.indexer.shoot(1);
+                            while (system.indexer.isBusy() && opModeIsActive()) { system.shooter.update(); }
 
-                            system.indexer.shoot(3);
+                            while (!system.shooter.ready() && opModeIsActive()) {
+                                if (g2.wasJustPressed(GamepadKeys.Button.X))
+                                    break; // fail safe, in case of idk
+                                g2.readButtons();
+                                system.shooter.update();;
+                            }
+                            system.indexer.shoot(1);
                             while (system.indexer.isBusy() && opModeIsActive()) { system.shooter.update(); }
 
                             system.shooter.off();
@@ -104,6 +125,8 @@ public class CrazyTeleOp extends ExoMode {
 
                             swerve.setLockedX(false);
                             swerve.setLocked(true);
+
+                            system.indexer.home();
                             })
 
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER),   // add these in both cases

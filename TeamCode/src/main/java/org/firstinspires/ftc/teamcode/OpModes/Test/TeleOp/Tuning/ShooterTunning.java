@@ -1,11 +1,8 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp.Tuning;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.blueGoalPosition;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.redGoalPosition;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ShooterMotor1;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.goalPosition;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ShooterMotor2;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems.Shooter.MAX_RPS;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -33,8 +30,6 @@ public class ShooterTunning extends LinearOpMode {
 
     public static double kP, kI, kD;
     public static double power, angle;
-
-    public boolean lockHeading = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -77,7 +72,7 @@ public class ShooterTunning extends LinearOpMode {
         }).start();
 
         while (opModeIsActive()) {
-            double distance = swerve.localizer.getRobotPosition().distanceTo(autoOnBlue ? blueGoalPosition : redGoalPosition);
+            double distance = swerve.localizer.getRobotPosition().distanceTo(goalPosition);
 
             shooter.kP = kP;
             shooter.kI = kI;
@@ -96,7 +91,7 @@ public class ShooterTunning extends LinearOpMode {
 
             hardware.telemetry.addData("x", POSE.x);
             hardware.telemetry.addData("y", POSE.y);
-            hardware.telemetry.addData("head", POSE.heading);
+            hardware.telemetry.addData("head", Math.round(Math.toDegrees(POSE.heading)));
 
             hardware.bulk.clearCache(Enums.Hubs.ALL);
             hardware.telemetry.update();

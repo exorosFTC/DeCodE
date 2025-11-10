@@ -4,8 +4,8 @@ import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.A
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.accelerationScalar;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.blueGoalPosition;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.redGoalPosition;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.goalPosition;
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.startPose;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.usingAcceleration;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.usingExponentialInput;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.usingFieldCentric;
@@ -21,22 +21,18 @@ import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.Ri
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RightFront;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RightFront_encoder;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RightFront_servo;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.opModeType;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.FindShortestPath;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.Pathing.Localizer.PinpointLocalizer;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 import java.util.List;
@@ -81,6 +77,14 @@ public class SwerveDrive extends SwerveKinematics {
         localizer = new PinpointLocalizer(opMode.hardwareMap);
         angularC = new PIDController(AngularP, 0, AngularD);
         timer = new ElapsedTime();
+
+        hardware.telemetry.addData("x", startPose.x);
+        hardware.telemetry.addData("y", startPose.y);
+        hardware.telemetry.addData("head", startPose.heading);
+        try { Thread.sleep(300); } catch (Exception e) {}
+
+        targetHeading = startPose.heading;
+        localizer.setPositionEstimate(startPose);
     }
 
 
@@ -121,18 +125,13 @@ public class SwerveDrive extends SwerveKinematics {
                     targetHeading = POSE.heading;
                 }
             } else {
-                Point target;
-
-                if (autoOnBlue) target = blueGoalPosition;
-                else target = redGoalPosition;
-
-                targetHeading = Math.atan2(target.y - POSE.y, target.x - POSE.x);
+                targetHeading = Math.atan2(goalPosition.y - POSE.y, goalPosition.x - POSE.x);
                 velocity.heading = -angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
             }
         }
 
         if (usingFieldCentric || opModeType == Enums.OpMode.AUTONOMUS)
-            velocity = velocity.rotate_matrix(-POSE.heading);
+            velocity = velocity.rotate_matrix(-POSE.heading + startPose.heading);
 
         if (Math.abs(velocity.x) < 0.001 &&  Math.abs(velocity.y) < 0.001 && Math.abs(velocity.heading) < 0.001)
             setLocked(true);

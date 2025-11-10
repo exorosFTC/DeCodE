@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 
@@ -61,6 +62,7 @@ public class MotorTest extends LinearOpMode {
 
             hardware.telemetry.addData("Motor: ", current.getKey());
             hardware.telemetry.addData("Position: ", motor.getCurrentPosition());
+            hardware.telemetry.addData("AMPS", motor.getCurrent(CurrentUnit.AMPS));
 
 
 

@@ -52,6 +52,7 @@ public class ScoringSystem {
         hardware.telemetry.addData("isIntakeEnabled", isIntakeEnabled);
         hardware.telemetry.addData("hasArtifact", distance < 78);
         hardware.telemetry.addData("isBusy indexer", indexer.isBusy());
+        hardware.telemetry.addData("distance", distance);
 
         if (hardware.motors.get(IntakeMotor).getCurrent(CurrentUnit.AMPS) > 8.5)
             new Thread(() -> {
@@ -60,15 +61,16 @@ public class ScoringSystem {
                 intake.on();
             }).start();
 
-        if (Math.abs(distance - lastDistance) > 3) loopCount += 1;
+        if (Math.abs(distance - lastDistance) < 2) loopCount += 1;
         else loopCount = 0;
 
         lastDistance = distance;
 
 
+        if (indexer.elements.contains(Enums.ArtifactColor.NONE) && !isIntakeEnabled) isIntakeEnabled = true;
 
         if (distance > 78 && indexer.elements.get(0) != Enums.ArtifactColor.NONE) indexer.elements.set(0, Enums.ArtifactColor.NONE);
-        if (distance > 78 || indexer.isBusy() || !isIntakeEnabled || loopCount < 2 ) return;
+        if (distance > 78 || indexer.isBusy() || !isIntakeEnabled || loopCount < 3) return;
 
 
 
@@ -80,6 +82,9 @@ public class ScoringSystem {
 
         if (indexer.elements.get(2) != Enums.ArtifactColor.NONE) {
             isIntakeEnabled = false;
+
+            intake.reverse();
+            try { Thread.sleep(200); } catch (InterruptedException e) {}
             intake.off();
         } else indexer.index(1);
     }

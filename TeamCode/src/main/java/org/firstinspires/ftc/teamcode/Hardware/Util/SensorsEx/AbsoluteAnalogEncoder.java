@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx;
 
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.RANGE;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.VALUE_REJECTION;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -55,7 +54,7 @@ public class AbsoluteAnalogEncoder {
         double delta = AngleUnit.normalizeRadians(pos - pastPosition);
 
         // checks for crazy values when the encoder is close to zero
-        if (!VALUE_REJECTION || Math.abs(delta) > 0.1 || Math.abs(delta) < 1) {
+        if (Math.abs(delta) > 0.1 || Math.abs(delta) < 1) {
             pastPosition = pos;
         }
 

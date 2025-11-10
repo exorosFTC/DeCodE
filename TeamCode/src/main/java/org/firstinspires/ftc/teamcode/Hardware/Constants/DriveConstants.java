@@ -6,7 +6,8 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 public class DriveConstants {
     public static double RANGE = 3.3;
 
-    public static Pose POSE = new Pose(0, 0, Math.toRadians(270));
+    public static Pose startPose = new Pose(0, 0, Math.toRadians(270));
+    public static Pose POSE = startPose;
 
     public static boolean usingAcceleration = false;
     public static boolean usingExponentialInput = false;
@@ -33,7 +34,5 @@ public class DriveConstants {
 
 
     public static double tileLengthCM = 60.96;
-    public static Point redGoalPosition = new Point(3 * tileLengthCM, -3 * tileLengthCM);
-    public static Point blueGoalPosition = new Point(3 * tileLengthCM, 3 * tileLengthCM);
-
+    public static Point goalPosition = new Point(3.5 * tileLengthCM, -3 * tileLengthCM);
 }

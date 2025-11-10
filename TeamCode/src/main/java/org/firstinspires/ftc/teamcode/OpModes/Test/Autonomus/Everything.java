@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;

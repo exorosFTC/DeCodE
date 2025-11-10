@@ -55,7 +55,7 @@ public class PinpointLocalizer {
     public void setPositionEstimate(Pose pose) {
         pinpoint.setPosX(pose.x, DistanceUnit.CM);
         pinpoint.setPosY(pose.y, DistanceUnit.CM);
-        pinpoint.setHeading(-pose.heading, AngleUnit.RADIANS);
+        pinpoint.setHeading(pose.heading, AngleUnit.RADIANS);
         DriveConstants.POSE = pose;
     }
 
