@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve;
+package org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve;
 
 public class SwerveModuleState {
     private double moduleVelocity;

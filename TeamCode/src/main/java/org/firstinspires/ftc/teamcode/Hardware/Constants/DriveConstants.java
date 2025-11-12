@@ -9,8 +9,6 @@ public class DriveConstants {
     public static Pose startPose = new Pose(0, 0, Math.toRadians(270));
     public static Pose POSE = startPose;
 
-    public static boolean usingAcceleration = false;
-    public static boolean usingExponentialInput = false;
     public static boolean usingFieldCentric = true;
 
 
@@ -34,5 +32,5 @@ public class DriveConstants {
 
 
     public static double tileLengthCM = 60.96;
-    public static Point goalPosition = new Point(3.5 * tileLengthCM, -3 * tileLengthCM);
+    public static Point goalPosition = new Point(3.2 * tileLengthCM, -3 * tileLengthCM);
 }

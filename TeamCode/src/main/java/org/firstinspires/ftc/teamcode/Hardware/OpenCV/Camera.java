@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.Hardware.OpenCV;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.cameraConfigurationName;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -38,7 +36,7 @@ public class Camera {
 
     private void initCamera(){
         int cameraMonitorViewId = opMode.hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", opMode.hardwareMap.appContext.getPackageName());
-        camera = OpenCvCameraFactory.getInstance().createWebcam(opMode.hardwareMap.get(WebcamName.class, cameraConfigurationName), cameraMonitorViewId);
+        camera = OpenCvCameraFactory.getInstance().createWebcam(opMode.hardwareMap.get(WebcamName.class, "ExoCamera"), cameraMonitorViewId);
     }
 
     public void setPipeline(Enums.Pipelines desiredPipeline) {
@@ -92,7 +90,7 @@ public class Camera {
         public void onClose() { opMode.idle(); }
     }); }
 
-    protected String getCameraName() { return cameraConfigurationName; }
+    protected String getCameraName() { return "ExoCamera"; }
 
     public int getWidth() { return WIDTH; }
 

@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.Pathing.Localizer;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.PinpointName;
-
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -17,7 +15,7 @@ public class PinpointLocalizer {
 
 
     public PinpointLocalizer(HardwareMap hardwareMap) {
-        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, PinpointName);
+        pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "ExoPinpoint");
 
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,       // in front
                                         GoBildaPinpointDriver.EncoderDirection.REVERSED);    // to the left

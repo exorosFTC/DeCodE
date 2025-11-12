@@ -6,7 +6,6 @@ import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 
 public class Data implements Enums {
 
-
     public Data add(OpMode opModeType) {
         SystemConstants.opModeType = opModeType;
         return this;
@@ -32,25 +31,9 @@ public class Data implements Enums {
         return this;
     }
 
-    public Data setUsingAcceleration(boolean flag) {
-        DriveConstants.usingAcceleration = flag;
-        return this;
-    }
-
-    public Data setUsingExponentialInput(boolean flag) {
-        DriveConstants.usingExponentialInput = flag;
-        return this;
-    }
-
     public Data setUsingFieldCentric(boolean flag) {
         DriveConstants.usingFieldCentric = flag;
         return this;
     }
-
-    public Data setMultithreading(boolean flag) {
-        SystemConstants.multithreading = flag;
-        return this;
-    }
-
 
 }

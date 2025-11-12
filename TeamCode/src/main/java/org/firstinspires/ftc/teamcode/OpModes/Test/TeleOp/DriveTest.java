@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularD;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.swerveD;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.swerveP;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.opModeType;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -13,9 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve.SwerveDrive;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Mecanum.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 @Config
@@ -31,7 +28,7 @@ public class DriveTest extends LinearOpMode {
 
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         swerve = new SwerveDrive(this);
         hardware = new Hardware(this);
 
@@ -42,6 +39,10 @@ public class DriveTest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
+            g1.readButtons();
+            swerve.read();
+
+            hardware.localizer.update();
             swerve.update(new Pose(
                     -g1.getLeftY(),
                     g1.getLeftX(),
@@ -53,8 +54,8 @@ public class DriveTest extends LinearOpMode {
             hardware.telemetry.addData("heading", POSE.heading);
 
             hardware.telemetry.update();
-            
-            g1.readButtons();
+            swerve.write();
+
             hardware.bulk.clearCache(Enums.Hubs.ALL);
         }
     }

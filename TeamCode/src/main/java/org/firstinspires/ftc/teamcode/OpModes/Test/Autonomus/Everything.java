@@ -1,14 +1,12 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Data;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve.SwerveDrive;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
@@ -30,9 +28,7 @@ public class Everything extends ExoMode {
                         .setAutoOnBlue(false)
                         .getLoopTime(true)
                         .setUsingOpenCv(false)
-                        .setUsingAprilTag(false)
-                        .setUsingAcceleration(false)
-                        .setUsingExponentialInput(false);
+                        .setUsingAprilTag(false);
 
         swerve = new SwerveDrive(this);
         g1 = new GamepadEx(gamepad1);

@@ -12,9 +12,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Drivetrain.Swerve.SwerveDrive;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 import java.util.concurrent.TimeUnit;
@@ -36,7 +35,6 @@ public class AutoDrive {
     private double failSafeTimeMs = Double.POSITIVE_INFINITY;
     private final ElapsedTime failSafeTimer = new ElapsedTime();
 
-    private Pose position = new Pose();
     private Pose target = new Pose();
     private Pose driveVector = new Pose();
 
@@ -72,12 +70,12 @@ public class AutoDrive {
 
     public AutoDrive(LinearOpMode opMode, SwerveDrive swerve, Pose startPose) {
         this.swerve = swerve;
-        this.position = startPose;
+        POSE = startPose;
 
         linearC = new PIDController(LinearP, 0, LinearD);
         angularC = new PIDController(AngularP, 0, AngularD);
 
-        setPose(position);
+        setPose(POSE);
 
         this.opMode = opMode;
         hardware = Hardware.getInstance(opMode);
@@ -92,7 +90,7 @@ public class AutoDrive {
         linearC = new PIDController(LinearP, 0, LinearD);
         angularC = new PIDController(AngularP, 0, AngularD);
 
-        setPose(position);
+        setPose(POSE);
 
         this.opMode = opMode;
         hardware = Hardware.getInstance(opMode);
@@ -106,12 +104,12 @@ public class AutoDrive {
     private void startDriveThread() {
         driveThread = new Thread(() -> {
                 while (opMode.opModeIsActive()) {
-                    swerve.localizer.update();
-                    position = POSE;
+                    hardware.localizer.update();
+                    swerve.read();
 
-                    hardware.telemetry.addData("x: ", position.x);
-                    hardware.telemetry.addData("y: ", position.y);
-                    hardware.telemetry.addData("head: ", Math.toDegrees(position.heading));
+                    hardware.telemetry.addData("x: ", POSE.x);
+                    hardware.telemetry.addData("y: ", POSE.y);
+                    hardware.telemetry.addData("head: ", Math.toDegrees(POSE.heading));
 
                     hardware.telemetry.update();
                     hardware.bulk.clearCache(Enums.Hubs.ALL);
@@ -131,9 +129,10 @@ public class AutoDrive {
                     hardware.telemetry.addData("drive heading", driveVector.heading);
 
                     if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
-                        driveTo(position);
+                        driveTo(POSE);
 
                     swerve.update(driveVector);
+                    swerve.write();
                 }
         });
 
@@ -187,7 +186,7 @@ public class AutoDrive {
         updateDriveVector();
         while (isBusy() && opMode.opModeIsActive()) { inLoop.run(); }
 
-        driveTo(new Pose(position.x, position.y, position.heading));
+        driveTo(new Pose(POSE.x, POSE.y, POSE.heading));
 
         return this;
     }
@@ -258,7 +257,7 @@ public class AutoDrive {
     }
 
     public AutoDrive setPose(Pose pose) {
-        swerve.localizer.setPositionEstimate(
+        hardware.localizer.setPositionEstimate(
                 new Pose(pose.x, pose.y, pose.heading)
         );
         return this;
@@ -286,15 +285,14 @@ public class AutoDrive {
     private void updateDriveVector() {
         double targetVelX, targetVelY, targetVelHeading;
 
-        targetVelX = -linearC.calculate(position.x, target.x);
-        targetVelY = -linearC.calculate(position.y, target.y);
-        targetVelHeading = -angularC.calculate(FindShortestPath(position.heading, target.heading));
+        targetVelX = -linearC.calculate(POSE.x, target.x);
+        targetVelY = -linearC.calculate(POSE.y, target.y);
+        targetVelHeading = -angularC.calculate(FindShortestPath(POSE.heading, target.heading));
 
-        // build the final drive vector using the rotated linear outputs and the angular command.
         driveVector = new Pose(
                 Math.abs(targetVelX) > busyThreshold ? targetVelX : 0,
                 Math.abs(targetVelY) > busyThreshold ? targetVelY : 0,
-                Math.abs(targetVelHeading) > busyThreshold ? targetVelHeading : 0).multiplyBy(13.0 / hardware.batteryVoltageSensor.getVoltage());
+                Math.abs(targetVelHeading) > busyThreshold ? targetVelHeading : 0).multiplyBy(13.0 / hardware.batteryVoltage);
     }
 
 
@@ -319,7 +317,7 @@ public class AutoDrive {
     }
 
 
-    public Pose getPosition() { return position; }
+    public Pose getPosition() { return POSE; }
 
     public boolean isBusy() { return !driveVector.closeToZero(busyThreshold); }
 

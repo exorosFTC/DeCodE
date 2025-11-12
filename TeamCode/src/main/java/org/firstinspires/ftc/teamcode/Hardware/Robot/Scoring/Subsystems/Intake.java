@@ -1,32 +1,47 @@
 package org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.IntakeMotor;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.SystemBase;
 
-public class Intake {
+public class Intake extends SystemBase {
     private final Hardware hardware;
     private final LinearOpMode opMode;
 
-    public boolean on = false;
+    public double intakeVoltage = 0;
 
     public Intake(LinearOpMode opMode) {
         this.hardware = Hardware.getInstance(opMode);
         this.opMode = opMode;
-
-        hardware.motors.get(IntakeMotor).setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        hardware.motors.get(IntakeMotor).setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
     }
 
 
+    @Override
+    public void read() {
+        if (!on) return;
 
-    public void on() { on = true; hardware.motors.get(IntakeMotor).setPower(1); }
+        intakeVoltage = hardware.IntakeMotor.getCurrent(CurrentUnit.AMPS);
+    }
 
-    public void reverse() { on = true; hardware.motors.get(IntakeMotor).setPower(-1); }
+    @Override
+    public void write() {}
 
-    public void off() { on = false; hardware.motors.get(IntakeMotor).setMotorDisable(); }
+    @Override
+    public void on() {
+        super.on();
+        hardware.IntakeMotor.setPower(1);
+    }
+
+    public void reverse() {
+        super.on();
+        hardware.IntakeMotor.setPower(-1);
+    }
+
+    @Override
+    public void off() {
+        super.off();
+        hardware.IntakeMotor.setMotorDisable();
+    }
 }

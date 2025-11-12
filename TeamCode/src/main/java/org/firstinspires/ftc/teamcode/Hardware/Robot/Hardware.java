@@ -1,37 +1,26 @@
 package org.firstinspires.ftc.teamcode.Hardware.Robot;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.AnalogNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.CRServoNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.DigitalNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.MotorNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RevColorNameList;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RevDistanceNameList;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.RevTouchNameList;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.ServoNamesList;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.HardwareNames.cameraConfigurationName;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.ColorRangeSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-import org.firstinspires.ftc.teamcode.Hardware.Util.MotionHardware.Init;
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.HubBulkRead;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.firstinspires.ftc.teamcode.Pathing.Localizer.PinpointLocalizer;
 
 public class Hardware {
     private static Hardware instance;
@@ -41,25 +30,45 @@ public class Hardware {
     public final MultipleTelemetry telemetry;
     public final HubBulkRead bulk;
 
+    public final PinpointLocalizer localizer;
     public final HuskyLens huskyLens;
 
+    public double batteryVoltage = 14;
+
+    public final DcMotorEx
+            LeftFront,
+            LeftBack,
+            RightBack,
+            RightFront,
+            IntakeMotor,
+            IndexerMotor,
+            Shooter1,
+            Shooter2;
+
+    public CRServo
+            LeftFront_servo,
+            LeftBack_servo,
+            RightFront_servo,
+            RightBack_servo;
+
+    public Servo
+            TiltLeftServo,
+            TiltRightServo,
+            ShooterHoodServo;
+
+    public DigitalChannel
+            IndexerLimit;
+
+    public AnalogInput
+            RightFront_encoder,
+            RightBack_encoder,
+            LeftFront_encoder,
+            LeftBack_encoder;
+
+    public RevColorSensorV3
+            IntakeColor;
 
 
-    public Map<String, Servo> servos = new HashMap<>();
-    public Map<String , CRServo> CRservos = new HashMap<>();
-
-    public Map<String, AnalogInput> analog = new HashMap<>();
-    public Map<String, DigitalChannel> digital = new HashMap<>();
-
-
-
-    public Map<String, ColorRangeSensor> color = new HashMap<>();
-    public Map<String, Rev2mDistanceSensor> distance = new HashMap<>();
-    public Map<String, RevTouchSensor> touch = new HashMap<>();
-
-
-
-    public Map<String, DcMotorEx> motors = new HashMap<>();
 
 
 
@@ -76,44 +85,73 @@ public class Hardware {
     public Hardware(LinearOpMode opMode) {
         this.telemetry = new MultipleTelemetry(opMode.telemetry, FtcDashboard.getInstance().getTelemetry());
         this.bulk = new HubBulkRead(opMode.hardwareMap, LynxModule.BulkCachingMode.MANUAL);
-        this.huskyLens = opMode.hardwareMap.get(HuskyLens.class, cameraConfigurationName);
+        this.huskyLens = opMode.hardwareMap.get(HuskyLens.class, "ExoCamera");
+        this.localizer = new PinpointLocalizer(opMode.hardwareMap);
 
         batteryVoltageSensor = opMode.hardwareMap.voltageSensor.iterator().next();
 
         this.hardwareMap = opMode.hardwareMap;
 
-        // add all servos into a list
-        for (String servoName : ServoNamesList)
-            if (!servoName.isEmpty())
-                servos.put(servoName, Init.initializeServo(hardwareMap.get(Servo.class, servoName)));
+        try { Thread.sleep(200); } catch (InterruptedException e) {}
 
-        for (String CRServoName: CRServoNamesList)
-            if (!CRServoName.isEmpty())
-                CRservos.put(CRServoName, hardwareMap.get(CRServo.class, CRServoName));
+        LeftFront = hardwareMap.get(DcMotorEx.class, "LF");
+        LeftBack = hardwareMap.get(DcMotorEx.class, "LB");
+        RightFront = hardwareMap.get(DcMotorEx.class, "RF");
+        RightBack = hardwareMap.get(DcMotorEx.class, "RB");
 
-        // add all motors into a list
-        for (String motorName : MotorNamesList)
-            if (!motorName.isEmpty())
-                motors.put(motorName, Init.initializeMotor(hardwareMap.get(DcMotorEx.class, motorName)));
+        IntakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
+        IndexerMotor = hardwareMap.get(DcMotorEx.class, "indexer");
+        Shooter1 = hardwareMap.get(DcMotorEx.class, "shooter1");
+        Shooter2 = hardwareMap.get(DcMotorEx.class, "shooter2");
 
-        for (String analogName : AnalogNamesList)
-            if (!analogName.isEmpty())
-                analog.put(analogName, hardwareMap.get(AnalogInput.class, analogName));
+        LeftFront_servo = hardwareMap.get(CRServo.class, "LF servo");
+        LeftBack_servo = hardwareMap.get(CRServo.class, "LB servo");
+        RightFront_servo = hardwareMap.get(CRServo.class, "RF servo");
+        RightBack_servo = hardwareMap.get(CRServo.class, "RB servo");
 
-        for (String digitalName : DigitalNamesList)
-            if (!digitalName.isEmpty())
-                digital.put(digitalName, hardwareMap.get(DigitalChannel.class, digitalName));
+        TiltLeftServo = hardwareMap.get(Servo.class, "TiltL");
+        TiltRightServo = hardwareMap.get(Servo.class, "TiltR");
+        ShooterHoodServo = hardwareMap.get(Servo.class, "hood");
 
-        for (String distanceName : RevDistanceNameList)
-            if (!distanceName.isEmpty())
-                distance.put(distanceName, hardwareMap.get(Rev2mDistanceSensor.class, distanceName));
+        IndexerLimit = hardwareMap.get(DigitalChannel.class, "indexerLim");
 
-        for (String colorName : RevColorNameList)
-            if (!colorName.isEmpty())
-                color.put(colorName, hardwareMap.get(RevColorSensorV3.class, colorName));
+        IntakeColor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
 
-        for (String touchName : RevTouchNameList)
-            if (!touchName.isEmpty())
-                touch.put(touchName, hardwareMap.get(RevTouchSensor.class, touchName));
+        RightFront_encoder = hardwareMap.get(AnalogInput.class, "RF encoder");
+        RightBack_encoder = hardwareMap.get(AnalogInput.class, "RB encoder");
+        LeftFront_encoder = hardwareMap.get(AnalogInput.class, "LF encoder");
+        LeftBack_encoder = hardwareMap.get(AnalogInput.class, "LB encoder");
+
+
+        Shooter1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        Shooter1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        Shooter1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        Shooter2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        Shooter2.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        Shooter2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        Shooter2.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        IntakeMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        IntakeMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+
+        IndexerMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        ((ServoImplEx) TiltLeftServo).setPwmRange(new PwmControl.PwmRange(500, 2500, 5000));
+        ((ServoImplEx) TiltRightServo).setPwmRange(new PwmControl.PwmRange(500, 2500, 5000));
+    }
+
+    public void read(SystemBase system, SystemBase swerve) {
+        bulk.clearCache(Enums.Hubs.ALL);
+        batteryVoltage = batteryVoltageSensor.getVoltage();
+        localizer.update();
+
+        system.read();
+        swerve.read();
+    }
+
+    public void write(SystemBase system, SystemBase swerve) {
+        system.write();
+        swerve.write();
     }
 }
