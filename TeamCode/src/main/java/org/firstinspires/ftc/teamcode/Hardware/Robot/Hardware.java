@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Hardware.Robot;
 
+import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.startPose;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.dfrobot.HuskyLens;
@@ -91,8 +93,6 @@ public class Hardware {
         batteryVoltageSensor = opMode.hardwareMap.voltageSensor.iterator().next();
 
         this.hardwareMap = opMode.hardwareMap;
-
-        try { Thread.sleep(200); } catch (InterruptedException e) {}
 
         LeftFront = hardwareMap.get(DcMotorEx.class, "LF");
         LeftBack = hardwareMap.get(DcMotorEx.class, "LB");

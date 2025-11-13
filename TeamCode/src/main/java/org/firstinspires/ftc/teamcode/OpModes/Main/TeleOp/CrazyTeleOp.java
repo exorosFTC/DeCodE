@@ -33,7 +33,8 @@ public class CrazyTeleOp extends ExoMode {
     private GamepadEx g1, g2;
     private TriggerManager intakeTriggers, shooterTriggers;
 
-    public static double p = AngularP, d = AngularD;
+    public static double swerveP = AngularP, swerveD = AngularD;
+    public static double shooterP = Shooter.kP, shooterD = Shooter.kD;
 
     public static double c2_angle_adjust = 0,
             c_angle_close = 0,
@@ -48,9 +49,6 @@ public class CrazyTeleOp extends ExoMode {
 
         swerve = new SwerveDrive(this);
         system = new ScoringSystem(this);
-
-        try { Thread.sleep(300); } catch (InterruptedException e) {}
-        hardware.localizer.setPositionEstimate(startPose);
 
         c2_angle_adjust = Shooter.c2_angle_adjust;
         c_angle_close = Shooter.c_angle_close;
@@ -92,7 +90,7 @@ public class CrazyTeleOp extends ExoMode {
                         () -> {
                             system.indexer.index(1);
                             if (!system.intake.on) {
-                                while (system.indexer.isBusy() && opModeIsActive()) {}
+                                while (system.indexer.isBusy() && opModeIsActive()) { system.read(); system.write();}
                                 system.indexer.off();
                             }
                         })
@@ -100,12 +98,16 @@ public class CrazyTeleOp extends ExoMode {
                         () -> system.indexer.home())
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON),
                         () -> system.indexer.sideswipe(3, true))
-                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.A),              // tilting for driver 1
+                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.X),              // tilting for driver 1
                         () -> {
                             system.tilt.on();
-                            try { Thread.sleep(1200); } catch (InterruptedException e) {}
+                            try { Thread.sleep(1500); } catch (InterruptedException e) {}
                             system.tilt.off();
                         });
+
+        try { Thread.sleep(150); } catch (InterruptedException e) {}
+        hardware.localizer.setPositionEstimate(startPose);
+        try { Thread.sleep(150); } catch (InterruptedException e) {}
 
         hardware.telemetry.addLine("INIT READY 😈😈😈");
         hardware.telemetry.update();
@@ -114,39 +116,33 @@ public class CrazyTeleOp extends ExoMode {
     @Override
     protected void WhenStarted() {
         hardware.telemetry.clearAll();
-
-        new Thread(() -> {
-
-            while (opModeIsActive()) {
-                g1.readButtons();
-                g2.readButtons();
-
-                if (system.isIntakeEnabled)
-                    intakeTriggers.check();
-                shooterTriggers.check();
-
-                swerve.update(new Pose(
-                        -g1.getLeftY(),
-                        g1.getLeftX(),
-                        g1.getRightX() * 0.2)
-                );
-                system.update();
-            }
-        }).start();
-
         system.indexer.home();
     }
 
     @Override
     protected void Loop() {
         hardware.read(system, swerve);
+        g1.readButtons();
+        g2.readButtons();
 
         Shooter.c2_angle_adjust = c2_angle_adjust;
         Shooter.c_angle_close = c_angle_close;
         Shooter.c_angle_far = c_angle_far;
         Shooter.c_power = c_power;
 
-        swerve.setHeadingPID(p, 0, d);
+        swerve.update(new Pose(
+                -g1.getLeftY(),
+                g1.getLeftX(),
+                g1.getRightX() * 0.2)
+        );
+        system.update();
+
+        if (system.isIntakeEnabled)
+            intakeTriggers.check();
+        shooterTriggers.check();
+
+        swerve.setHeadingPID(swerveP, 0, swerveD);
+        system.shooter.setPID(shooterP, 0, shooterD);
         swerve.lockHeadingToGoal(g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1);
 
         hardware.write(system, swerve);

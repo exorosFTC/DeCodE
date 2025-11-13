@@ -19,10 +19,10 @@ public class Shooter extends SystemBase {
     public double wheelVelocity = 0;
 
     public static final double MAX_RPS = 600;
-    public static double c2_angle_adjust = 0.006,
-                         c_angle_close = 0.0015,
+    public static double c2_angle_adjust = 0.003,
+                         c_angle_close = 0.008,
                          c_angle_far = 0,
-                         c_power = 0.0026;
+                         c_power = 0.0031;
 
     public double targetPower = 0;
     public double targetAngle = 0;
@@ -31,11 +31,11 @@ public class Shooter extends SystemBase {
     private double POWER = 0;
     public double TARGET = 0;
 
-    private final double threshold = 9;
+    private final double threshold = 5;
 
-    public double kP = 12e-4;
-    public double kI = 0;
-    public double kD = 9e-5;
+    public static double kP = 0.0003;
+    public static double kI = 0;
+    public static double kD = 0.00016;
 
 
     public Shooter(LinearOpMode opMode) {
@@ -56,6 +56,8 @@ public class Shooter extends SystemBase {
 
         hardware.telemetry.addData("velocity", wheelVelocity);
         hardware.telemetry.addData("velocity target", TARGET);
+        hardware.telemetry.addData("power", POWER);
+        hardware.telemetry.update();
 
         distance = POSE.distanceTo(goalPosition);
 
@@ -76,12 +78,15 @@ public class Shooter extends SystemBase {
 
     private void targetAngle() {
         if (distance < 300) {
-            targetAngle = clamp(distance * c_angle_close - (this.TARGET - threshold) * c2_angle_adjust, 0.05, 1);
+            targetAngle = clamp(distance * c_angle_close / 300 - (this.TARGET - threshold) * c2_angle_adjust, 0.05, 1);
         } else {
-            targetAngle = clamp(distance * c_angle_far - (this.TARGET- threshold) * c2_angle_adjust, 0.05, 1);
+            targetAngle = clamp(distance * c_angle_far / 450 - (this.TARGET- threshold) * c2_angle_adjust, 0.05, 1);
         }
     }
 
+    public void setPID(double p, double i, double d) {
+        controller.setPID(p, i, d);
+    }
 
 
 
