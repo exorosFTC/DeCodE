@@ -84,9 +84,9 @@ public class ScoringSystem extends SystemBase {
             intake.off();
         }
 
-        while (!shooter.ready() && this.opMode.opModeIsActive()) { shooter.read(); shooter.update(); indexer.read(); shooter.write(); hardware.bulk.clearCache(Enums.Hubs.ALL); }
+        while (!shooter.ready() && this.opMode.opModeIsActive()) {}
         indexer.shoot(3);
-        while (indexer.isBusy() && this.opMode.opModeIsActive()) { shooter.read(); shooter.update(); indexer.read(); shooter.write(); hardware.bulk.clearCache(Enums.Hubs.ALL); }
+        while (indexer.isBusy() && this.opMode.opModeIsActive()) {}
 
 
         shooter.off();

@@ -21,7 +21,7 @@ public class Indexer extends SystemBase {
     public static double INDEXING_POWER = 1;
     public static double SHOOTING_POWER = 1;
 
-    private static final int offset = 10;
+    private static final int offset = 19;
 
     public int target = -offset;
     public int indexerPosition = 0;
@@ -51,7 +51,7 @@ public class Indexer extends SystemBase {
         hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         hardware.IndexerMotor.setPower(HOMING_POWER);
-        while (indexerLimit && opMode.opModeIsActive() && timer.seconds() < 1.6) { read(); hardware.bulk.clearCache(Enums.Hubs.ALL); }
+        while (indexerLimit && opMode.opModeIsActive() && timer.seconds() < 1.6) {}
 
         target = -offset;
 
@@ -73,7 +73,7 @@ public class Indexer extends SystemBase {
         // if there is an artefact in the front
         if (elements.get(0) != Enums.ArtifactColor.NONE) {
             // wait for reaching the overshot position
-            while (isBusy() && opMode.opModeIsActive()) { read(); write(); hardware.bulk.clearCache(Enums.Hubs.ALL); }
+            while (isBusy() && opMode.opModeIsActive()) {}
 
             // come back so the transfer arm is down
             runTarget(
@@ -82,7 +82,7 @@ public class Indexer extends SystemBase {
             );
 
             // wait to reach and disable the indexer
-            while (isBusy() && opMode.opModeIsActive()) { read(); write(); hardware.bulk.clearCache(Enums.Hubs.ALL); }
+            while (isBusy() && opMode.opModeIsActive()) {}
             off();
         }
     }

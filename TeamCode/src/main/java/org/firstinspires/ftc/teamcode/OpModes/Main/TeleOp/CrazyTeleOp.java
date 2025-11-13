@@ -90,7 +90,7 @@ public class CrazyTeleOp extends ExoMode {
                         () -> {
                             system.indexer.index(1);
                             if (!system.intake.on) {
-                                while (system.indexer.isBusy() && opModeIsActive()) { system.read(); system.write();}
+                                while (system.indexer.isBusy() && opModeIsActive()) {}
                                 system.indexer.off();
                             }
                         })
@@ -98,7 +98,7 @@ public class CrazyTeleOp extends ExoMode {
                         () -> system.indexer.home())
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON),
                         () -> system.indexer.sideswipe(3, true))
-                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.X),              // tilting for driver 1
+                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.X),
                         () -> {
                             system.tilt.on();
                             try { Thread.sleep(1500); } catch (InterruptedException e) {}
@@ -116,36 +116,43 @@ public class CrazyTeleOp extends ExoMode {
     @Override
     protected void WhenStarted() {
         hardware.telemetry.clearAll();
+
+        new Thread(() -> {
+            while (opModeIsActive()) {
+                hardware.read(system, swerve);
+                g1.readButtons();
+
+                swerve.update(new Pose(
+                        -g1.getLeftY(),
+                        g1.getLeftX(),
+                        g1.getRightX() * 0.2)
+                );
+                swerve.setHeadingPID(swerveP, 0, swerveD);
+                swerve.lockHeadingToGoal(g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1);
+
+                hardware.write(system, swerve);
+            }
+        }).start();
+
         system.indexer.home();
     }
 
     @Override
     protected void Loop() {
-        hardware.read(system, swerve);
-        g1.readButtons();
         g2.readButtons();
+
+        if (system.isIntakeEnabled)
+            intakeTriggers.check();
+        shooterTriggers.check();
 
         Shooter.c2_angle_adjust = c2_angle_adjust;
         Shooter.c_angle_close = c_angle_close;
         Shooter.c_angle_far = c_angle_far;
         Shooter.c_power = c_power;
 
-        swerve.update(new Pose(
-                -g1.getLeftY(),
-                g1.getLeftX(),
-                g1.getRightX() * 0.2)
-        );
         system.update();
-
-        if (system.isIntakeEnabled)
-            intakeTriggers.check();
-        shooterTriggers.check();
-
-        swerve.setHeadingPID(swerveP, 0, swerveD);
         system.shooter.setPID(shooterP, 0, shooterD);
-        swerve.lockHeadingToGoal(g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1);
 
-        hardware.write(system, swerve);
         updateTelemetry();
     }
 

@@ -19,8 +19,8 @@ public class Shooter extends SystemBase {
     public double wheelVelocity = 0;
 
     public static final double MAX_RPS = 600;
-    public static double c2_angle_adjust = 0.003,
-                         c_angle_close = 0.008,
+    public static double c2_angle_adjust = 0.01,
+                         c_angle_close = 1.3,
                          c_angle_far = 0,
                          c_power = 0.0031;
 
@@ -54,10 +54,10 @@ public class Shooter extends SystemBase {
     public void update() {
         if (!on) return;
 
-        hardware.telemetry.addData("velocity", wheelVelocity);
-        hardware.telemetry.addData("velocity target", TARGET);
-        hardware.telemetry.addData("power", POWER);
-        hardware.telemetry.update();
+        //hardware.telemetry.addData("velocity", wheelVelocity);
+        //hardware.telemetry.addData("velocity target", TARGET);
+        //hardware.telemetry.addData("power", POWER);
+        //hardware.telemetry.update();
 
         distance = POSE.distanceTo(goalPosition);
 
@@ -78,9 +78,9 @@ public class Shooter extends SystemBase {
 
     private void targetAngle() {
         if (distance < 300) {
-            targetAngle = clamp(distance * c_angle_close / 300 - (this.TARGET - threshold) * c2_angle_adjust, 0.05, 1);
+            targetAngle = clamp(distance  / 300 * c_angle_close - (this.TARGET - threshold) * c2_angle_adjust, 0.05, 1);
         } else {
-            targetAngle = clamp(distance * c_angle_far / 450 - (this.TARGET- threshold) * c2_angle_adjust, 0.05, 1);
+            targetAngle = clamp(distance * c_angle_far - (this.TARGET- threshold) * c2_angle_adjust, 0.05, 1);
         }
     }
 
