@@ -20,7 +20,7 @@ public class Shooter extends SystemBase {
 
     public static final double MAX_RPS = 600;
     public static double c2_angle_adjust = 0.01,
-                         c_angle_close = 1.3,
+                         c_angle_close = 1,
                          c_angle_far = 0,
                          c_power = 0.0031;
 

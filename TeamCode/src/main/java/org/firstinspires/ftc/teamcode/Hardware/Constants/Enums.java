@@ -44,4 +44,9 @@ public interface Enums {
         FACE_GOAL,
         FIXED
     }
+
+    enum SwerveMode {
+        ECHO,
+        SPORT
+    }
 }

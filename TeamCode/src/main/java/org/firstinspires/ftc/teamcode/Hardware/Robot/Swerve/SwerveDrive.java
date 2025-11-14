@@ -27,6 +27,8 @@ public class SwerveDrive extends SystemBase {
 
     public List<SwerveModuleState> states;
 
+    private SlewRateLimiter limX, limY;
+
     private final ElapsedTime timer;
     public final PIDController angularC;
     public double targetHeading;
@@ -61,6 +63,9 @@ public class SwerveDrive extends SystemBase {
 
         angularC = new PIDController(AngularP, 0, AngularD);
         targetHeading = startPose.heading;
+
+        limX = new SlewRateLimiter(0);
+        limY = new SlewRateLimiter(0);
     }
 
 
@@ -77,6 +82,11 @@ public class SwerveDrive extends SystemBase {
 
     public void setHeadingPID(double p, double i, double d) {
         angularC.setPID(p, i, d);
+    }
+
+    public void setSlewRate(double rate) {
+        limX.setRate(rate);
+        limY.setRate(rate);
     }
 
 
@@ -96,6 +106,9 @@ public class SwerveDrive extends SystemBase {
             velocity.heading = -angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
         }
 
+        velocity.x = limX.calculate(velocity.x);
+        velocity.y = limY.calculate(velocity.y);
+
         if (usingFieldCentric || opModeType == Enums.OpMode.AUTONOMUS)
             velocity = velocity.rotate_matrix(-POSE.heading + startPose.heading);
 
@@ -103,7 +116,7 @@ public class SwerveDrive extends SystemBase {
             for (int i = 0; i < 4; i++) {
                 states.get(i).setModuleVelocity(0);
             }
-        } else states = SwerveKinematics.robot2wheel(velocity);
+        } else { SwerveKinematics.setLockedX(false); states = SwerveKinematics.robot2wheel(velocity); }
 
         for (int i = 0; i < 4; i++) {
             modules[i].setTargetState(states.get(i));
@@ -130,7 +143,10 @@ public class SwerveDrive extends SystemBase {
 
     public void setLockedX(boolean lockedX) { SwerveKinematics.setLocked(lockedX); }
 
+    public void setMode(Enums.SwerveMode mode) { SwerveKinematics.setMode(mode); }
+
     public void lockHeadingToGoal(boolean lock) { lockHeadingToGoal = lock; }
+
 
 
 

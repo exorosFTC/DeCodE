@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
@@ -20,14 +21,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 public class AutoDrive {
+    private final Hardware hardware;
     private final SwerveDrive swerve;
+    private final ScoringSystem system;
 
 
     private Thread driveThread;
     private final LinearOpMode opMode;
     private final ElapsedTime waitTimer;
-
-    private final Hardware hardware;
 
     public final PIDController linearC, angularC;
     private double busyThreshold = 0.19;
@@ -68,8 +69,9 @@ public class AutoDrive {
 
 
 
-    public AutoDrive(LinearOpMode opMode, SwerveDrive swerve, Pose startPose) {
+    public AutoDrive(LinearOpMode opMode, SwerveDrive swerve, ScoringSystem system, Pose startPose) {
         this.swerve = swerve;
+        this.system = system;
         POSE = startPose;
 
         linearC = new PIDController(LinearP, 0, LinearD);
@@ -84,8 +86,9 @@ public class AutoDrive {
         startDriveThread();
     }
 
-    public AutoDrive(LinearOpMode opMode, SwerveDrive swerve) {
+    public AutoDrive(LinearOpMode opMode, SwerveDrive swerve, ScoringSystem system) {
         this.swerve = swerve;
+        this.system = system;
 
         linearC = new PIDController(LinearP, 0, LinearD);
         angularC = new PIDController(AngularP, 0, AngularD);
@@ -104,15 +107,7 @@ public class AutoDrive {
     private void startDriveThread() {
         driveThread = new Thread(() -> {
                 while (opMode.opModeIsActive()) {
-                    hardware.localizer.update();
-                    swerve.read();
-
-                    hardware.telemetry.addData("x: ", POSE.x);
-                    hardware.telemetry.addData("y: ", POSE.y);
-                    hardware.telemetry.addData("head: ", Math.toDegrees(POSE.heading));
-
-                    hardware.telemetry.update();
-                    hardware.bulk.clearCache(Enums.Hubs.ALL);
+                    hardware.read(swerve, system);
 
                     if (isPaused && !previousIsPaused) {    // stop the robot when paused
                         swerve.update(new Pose());
@@ -127,12 +122,13 @@ public class AutoDrive {
                     hardware.telemetry.addData("drive x", driveVector.x);
                     hardware.telemetry.addData("drive y", driveVector.y);
                     hardware.telemetry.addData("drive heading", driveVector.heading);
+                    hardware.telemetry.update();
 
                     if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
                         driveTo(POSE);
 
                     swerve.update(driveVector);
-                    swerve.write();
+                    hardware.write(swerve, system);
                 }
         });
 

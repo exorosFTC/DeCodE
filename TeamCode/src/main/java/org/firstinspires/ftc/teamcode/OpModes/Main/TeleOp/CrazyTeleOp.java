@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Data;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.Subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve.SwerveKinematics;
 import org.firstinspires.ftc.teamcode.Hardware.Util.TriggerManager;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
@@ -31,8 +32,9 @@ public class CrazyTeleOp extends ExoMode {
     private ScoringSystem system;
 
     private GamepadEx g1, g2;
-    private TriggerManager intakeTriggers, shooterTriggers;
+    private TriggerManager intakeTriggers, shooterTriggers, swerveTriggers;
 
+    public static double slewRate = 0;
     public static double swerveP = AngularP, swerveD = AngularD;
     public static double shooterP = Shooter.kP, shooterD = Shooter.kD;
 
@@ -97,13 +99,22 @@ public class CrazyTeleOp extends ExoMode {
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER),
                         () -> system.indexer.home())
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON),
-                        () -> system.indexer.sideswipe(3, true))
-                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.X),
+                        () -> system.indexer.sideswipe(3, true));
+
+        swerveTriggers = new TriggerManager()
+                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER),
+                        () -> swerve.setMode(Enums.SwerveMode.SPORT))
+                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER),
+                        () -> swerve.setMode(Enums.SwerveMode.ECHO))
+                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.A),
+                        () -> swerve.setLockedX(!SwerveKinematics.isLockedX()))
+                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.X),
                         () -> {
                             system.tilt.on();
                             try { Thread.sleep(1500); } catch (InterruptedException e) {}
                             system.tilt.off();
                         });
+
 
         try { Thread.sleep(150); } catch (InterruptedException e) {}
         hardware.localizer.setPositionEstimate(startPose);
@@ -127,6 +138,10 @@ public class CrazyTeleOp extends ExoMode {
                         g1.getLeftX(),
                         g1.getRightX() * 0.2)
                 );
+
+                swerveTriggers.check();
+
+                swerve.setSlewRate(slewRate);
                 swerve.setHeadingPID(swerveP, 0, swerveD);
                 swerve.lockHeadingToGoal(g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1);
 

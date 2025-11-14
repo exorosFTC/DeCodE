@@ -3,15 +3,18 @@ package org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.DRIVE_W;
 import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.DRIVE_L;
 
+import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 
 public class SwerveKinematics {
     private static boolean locked = false;
     private static boolean lockedX = false;
+    private static Enums.SwerveMode mode = Enums.SwerveMode.SPORT;
 
     /**Performing inverse kinematics to determine each module's state from a drivetrain state*/
     public static List<SwerveModuleState> robot2wheel(Pose pose) {
@@ -25,10 +28,12 @@ public class SwerveKinematics {
                c = vx - omega * (DRIVE_W),
                d = vy + omega * (-DRIVE_L);
 
-        SwerveModuleState FR = new SwerveModuleState(Math.hypot(a, b), Math.atan2(b, a)); // FR
-        SwerveModuleState FL = new SwerveModuleState(Math.hypot(c, b), Math.atan2(b, c)); // FL
-        SwerveModuleState BL = new SwerveModuleState(Math.hypot(c, d), Math.atan2(d, c)); // BL
-        SwerveModuleState BR = new SwerveModuleState(Math.hypot(a, d), Math.atan2(d, a)); // BR
+        double multiplier = mode == Enums.SwerveMode.SPORT ? 1 : 0.6;
+
+        SwerveModuleState FR = new SwerveModuleState(Math.hypot(a, b) * multiplier, Math.atan2(b, a)); // FR
+        SwerveModuleState FL = new SwerveModuleState(Math.hypot(c, b) * multiplier, Math.atan2(b, c)); // FL
+        SwerveModuleState BL = new SwerveModuleState(Math.hypot(c, d) * multiplier, Math.atan2(d, c)); // BL
+        SwerveModuleState BR = new SwerveModuleState(Math.hypot(a, d) * multiplier, Math.atan2(d, a)); // BR
 
         if (lockedX)
             return normalizeSpeeds(Arrays.asList(
@@ -37,8 +42,7 @@ public class SwerveKinematics {
                     new SwerveModuleState(0, Math.PI * 3 / 4),  // BL
                     new SwerveModuleState(0, -Math.PI * 3 / 4)  // BR
             ));
-
-        if (locked)
+        else if (locked)
             return normalizeSpeeds(Arrays.asList(
                     new SwerveModuleState(0, Math.PI / 4),     // FR
                     new SwerveModuleState(0, -Math.PI / 4),      // FL
@@ -88,9 +92,14 @@ public class SwerveKinematics {
         return states;
     }
 
+
+    public static void setMode(Enums.SwerveMode mode) { SwerveKinematics.mode = mode; }
+
     public static void setLocked(boolean locked) { SwerveKinematics.locked = locked; }
 
     public static void setLockedX(boolean lockedX) { SwerveKinematics.locked = lockedX; }
 
     public static boolean isLocked() { return locked; }
+
+    public static boolean isLockedX() { return lockedX; }
 }

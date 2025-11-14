@@ -12,6 +12,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Data;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
@@ -20,7 +22,9 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 @Config
 @Autonomous(name = "MovementPIDTuner", group = "tuning")
 public class PIDAutoTuner extends ExoMode {
+    private Hardware hardware;
     private SwerveDrive swerve;
+    private ScoringSystem system;
     private AutoDrive auto;
 
     public static double linP = LinearP, angP = AngularP;
@@ -31,14 +35,16 @@ public class PIDAutoTuner extends ExoMode {
 
     @Override
     protected void Init() {
+        hardware = Hardware.getInstance(this);
         swerve = new SwerveDrive(this);
+        system = new ScoringSystem(this);
 
         new Data()
                         .add(Enums.OpMode.AUTONOMUS)
                         .setAutoOnBlue(false)
                         .getLoopTime(true)
                         .setUsingOpenCv(false)
-                        .setUsingFieldCentric(false)
+                        .setUsingFieldCentric(true)
                         .setUsingAprilTag(false);
 
         g2 = new GamepadEx(gamepad2);
@@ -46,7 +52,7 @@ public class PIDAutoTuner extends ExoMode {
 
     @Override
     protected void WhenStarted() {
-        auto = new AutoDrive(this, swerve, new Pose());
+        auto = new AutoDrive(this, swerve, system, new Pose());
     }
 
     @Override
