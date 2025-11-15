@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
-import org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants;
-import org.firstinspires.ftc.teamcode.Hardware.Util.SensorsEx.GoBildaPinpointDriver;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 

@@ -6,7 +6,7 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 
 @TeleOp(name = "Transfer Raw Test", group = "Test")
 public class TransferRawTest extends LinearOpMode {

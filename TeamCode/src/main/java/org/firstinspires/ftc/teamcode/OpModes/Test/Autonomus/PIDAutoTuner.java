@@ -1,20 +1,20 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearD;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.LinearD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.LinearP;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Data;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.ScoringSystem;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve.SwerveDrive;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
@@ -39,7 +39,7 @@ public class PIDAutoTuner extends ExoMode {
         swerve = new SwerveDrive(this);
         system = new ScoringSystem(this);
 
-        new Data()
+        new SystemData()
                         .add(Enums.OpMode.AUTONOMUS)
                         .setAutoOnBlue(false)
                         .getLoopTime(true)

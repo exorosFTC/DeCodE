@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.Pathing;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 

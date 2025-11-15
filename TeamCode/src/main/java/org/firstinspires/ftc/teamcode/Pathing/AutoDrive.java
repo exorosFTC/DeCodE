@@ -1,20 +1,19 @@
 package org.firstinspires.ftc.teamcode.Pathing;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearD;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.LinearP;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.LinearD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.LinearP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.FindShortestPath;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Scoring.ScoringSystem;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve.SwerveDrive;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 import java.util.concurrent.TimeUnit;

@@ -1,18 +1,18 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp;
 
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.AngularP;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.DriveConstants.POSE;
-import static org.firstinspires.ftc.teamcode.Hardware.Constants.SystemConstants.opModeType;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Hardware.Constants.Enums;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Swerve.SwerveDrive;
-import org.firstinspires.ftc.teamcode.Hardware.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 @Config
