@@ -42,10 +42,7 @@ public class PIDAutoTuner extends ExoMode {
         new SystemData()
                         .add(Enums.OpMode.AUTONOMUS)
                         .setAutoOnBlue(false)
-                        .getLoopTime(true)
-                        .setUsingOpenCv(false)
-                        .setUsingFieldCentric(true)
-                        .setUsingAprilTag(false);
+                        .getLoopTime(true);
 
         g2 = new GamepadEx(gamepad2);
     }

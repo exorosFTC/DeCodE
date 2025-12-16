@@ -280,7 +280,7 @@ public class AutoDrive {
     private void updateDriveVector() {
         double targetVelX, targetVelY, targetVelHeading;
 
-        targetVelX = -linearC.calculate(POSE.x, target.x);
+        targetVelX = linearC.calculate(POSE.x, target.x);
         targetVelY = -linearC.calculate(POSE.y, target.y);
         targetVelHeading = -angularC.calculate(FindShortestPath(POSE.heading, target.heading));
 

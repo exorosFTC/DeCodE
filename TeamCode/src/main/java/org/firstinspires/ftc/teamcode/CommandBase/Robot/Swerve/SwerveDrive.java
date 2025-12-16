@@ -3,9 +3,11 @@ package org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.STRAFING_SLEW_RATE_LIMIT;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TURNING_SLEW_RATE_LIMIT;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.usingFieldCentric;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.FindShortestPath;
 
@@ -17,12 +19,14 @@ import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.AbsoluteAnalogEncoder;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SlewRateLimiter;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 import java.util.List;
 
 public class SwerveDrive extends SystemBase {
     private final Hardware hardware;
+    public final SlewRateLimiter xLim, yLim, headLim;
 
     public List<SwerveModuleState> states;
 
@@ -43,19 +47,23 @@ public class SwerveDrive extends SystemBase {
 
         rightFrontModule = new SwerveModule(hardware.RightFront,
                                             hardware.RightFront_servo,
-                                            new AbsoluteAnalogEncoder(hardware.RightFront_encoder).zero(-2.861));
+                                            new AbsoluteAnalogEncoder(hardware.RightFront_encoder).zero(0.25));
         leftFrontModule = new SwerveModule(hardware.LeftFront,
                                             hardware.LeftFront_servo,
-                                            new AbsoluteAnalogEncoder(hardware.LeftFront_encoder).zero(-3.0335));
+                                            new AbsoluteAnalogEncoder(hardware.LeftFront_encoder).zero(-2.69));
         leftBackModule = new SwerveModule(hardware.LeftBack,
                                             hardware.LeftBack_servo,
-                                            new AbsoluteAnalogEncoder(hardware.LeftBack_encoder).zero(2.926));
+                                            new AbsoluteAnalogEncoder(hardware.LeftBack_encoder).zero(-2.54));
         rightBackModule = new SwerveModule(hardware.RightBack,
                                             hardware.RightBack_servo,
-                                            new AbsoluteAnalogEncoder(hardware.RightBack_encoder).zero(0.763));
+                                            new AbsoluteAnalogEncoder(hardware.RightBack_encoder).zero(-3.05));
 
         modules = new SwerveModule[]{rightFrontModule, leftFrontModule, leftBackModule, rightBackModule};
         states = SwerveKinematics.robot2wheel(new Pose(0, 0, 0));
+
+        xLim = new SlewRateLimiter(STRAFING_SLEW_RATE_LIMIT);
+        yLim = new SlewRateLimiter(STRAFING_SLEW_RATE_LIMIT);
+        headLim = new SlewRateLimiter(TURNING_SLEW_RATE_LIMIT);
 
 
         angularC = new PIDController(AngularP, 0, AngularD);
@@ -76,10 +84,12 @@ public class SwerveDrive extends SystemBase {
 
 
     public void update(Pose velocity) {
+        if (autoOnBlue && opModeType == Enums.OpMode.TELE_OP) velocity.negate();
+
         if (!lockHeadingToGoal) {
             //pid for skew correction
             if (Math.abs(velocity.heading) < 0.01 && timer.milliseconds() > 600) {
-                velocity.heading = -angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
+                velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
             } else {
                 if (Math.abs(velocity.heading) > 0.01)
                     timer.reset();
@@ -87,11 +97,11 @@ public class SwerveDrive extends SystemBase {
             }
         } else {
             targetHeading = Math.atan2(goalPosition.y - POSE.y, goalPosition.x - POSE.x);
-            velocity.heading = -angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
+            velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
         }
 
-        if (usingFieldCentric || opModeType == Enums.OpMode.AUTONOMUS)
-            velocity = velocity.rotate_matrix(-POSE.heading + startPose.heading);
+        // always convert to field centric, both in AUTO and TELE-OP
+        velocity = velocity.rotate_matrix(-POSE.heading + startPose.heading);
 
         if (Math.abs(velocity.x) < 0.01 && Math.abs(velocity.y) < 0.01 && Math.abs(velocity.heading) < 0.01) {
             if (SwerveKinematics.isLockedX()) states = SwerveKinematics.robot2wheel(velocity);
@@ -106,7 +116,6 @@ public class SwerveDrive extends SystemBase {
             modules[i].setTargetState(states.get(i));
             modules[i].update();
         }
-
     }
 
     public void update(List<SwerveModuleState> states) {
@@ -126,8 +135,6 @@ public class SwerveDrive extends SystemBase {
     }
 
     public void setLockedX(boolean lockedX) { SwerveKinematics.setLocked(lockedX); }
-
-    public void setMode(Enums.SwerveMode mode) { SwerveKinematics.setMode(mode); }
 
     public void lockHeadingToGoal(boolean lock) { lockHeadingToGoal = lock; }
 

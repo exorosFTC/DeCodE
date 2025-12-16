@@ -20,20 +20,4 @@ public class SystemData implements Enums {
         SystemConstants.autoOnBlue = flag;
         return this;
     }
-
-    public SystemData setUsingOpenCv(boolean flag) {
-        SystemConstants.usingOpenCvCamera = flag;
-        return this;
-    }
-
-    public SystemData setUsingAprilTag(boolean flag) {
-        SystemConstants.usingAprilTagCamera = flag;
-        return this;
-    }
-
-    public SystemData setUsingFieldCentric(boolean flag) {
-        DriveConstants.usingFieldCentric = flag;
-        return this;
-    }
-
 }

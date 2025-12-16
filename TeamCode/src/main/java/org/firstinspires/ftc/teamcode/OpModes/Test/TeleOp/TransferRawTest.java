@@ -6,6 +6,7 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 
 @TeleOp(name = "Transfer Raw Test", group = "Test")
@@ -32,8 +33,8 @@ public class TransferRawTest extends LinearOpMode {
                 shooting = !shooting;
 
                 if (shooting) {
-                    hardware.Shooter1.setPower(1);
-                    hardware.Shooter2.setPower(-1);
+                    hardware.Shooter1.setPower(0.5);
+                    hardware.Shooter2.setPower(-0.5);
                 } else {
                     hardware.Shooter1.setPower(0);
                     hardware.Shooter2.setPower(0);
@@ -44,11 +45,21 @@ public class TransferRawTest extends LinearOpMode {
                 intaking = !intaking;
 
                 if (intaking) {
-                    hardware.IntakeMotor.setPower(1);
+                    hardware.IntakeMotor.setPower(-1);
                 } else {
                     hardware.IntakeMotor.setPower(0);
                 }
             }
+
+            hardware.ShooterHoodServo.setPosition(
+                    (-g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) + g2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)) * 0.1 +
+                            hardware.ShooterHoodServo.getPosition()
+            );
+
+            hardware.telemetry.addData("Shooter1 AMPS", hardware.Shooter1.getCurrent(CurrentUnit.AMPS));
+            hardware.telemetry.addData("Shooter2 AMPS", hardware.Shooter2.getCurrent(CurrentUnit.AMPS));
+            hardware.telemetry.addData("indexer pos", hardware.IndexerMotor.getCurrentPosition());
+            hardware.telemetry.update();
 
             g2.readButtons();
         }

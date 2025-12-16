@@ -63,6 +63,11 @@ public class Pose extends Point {
         return new Pose(new_x, new_y, heading);
     }
 
+    public void negate() {
+        x = -x;
+        y = -y;
+    }
+
     public boolean closeToZero(double threshold) {
         return Math.abs(x) <= threshold
                         &&

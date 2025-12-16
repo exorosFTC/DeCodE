@@ -21,6 +21,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
 import org.firstinspires.ftc.teamcode.Pathing.Localizer.PinpointLocalizer;
 
 public class Hardware {
@@ -31,9 +32,8 @@ public class Hardware {
     public final MultipleTelemetry telemetry;
     public final HubBulkRead bulk;
 
-    public final RevBlinkinLedDriver led;
     public final PinpointLocalizer localizer;
-    public final HuskyLens huskyLens;
+    //public final LimelightEx limelight;
 
     public double batteryVoltage = 14;
 
@@ -53,10 +53,7 @@ public class Hardware {
             RightFront_servo,
             RightBack_servo;
 
-    public Servo
-            TiltLeftServo,
-            TiltRightServo,
-            ShooterHoodServo;
+    public Servo ShooterHoodServo;
 
     public DigitalChannel
             IndexerLimit;
@@ -87,14 +84,12 @@ public class Hardware {
     public Hardware(LinearOpMode opMode) {
         this.telemetry = new MultipleTelemetry(opMode.telemetry, FtcDashboard.getInstance().getTelemetry());
         this.bulk = new HubBulkRead(opMode.hardwareMap, LynxModule.BulkCachingMode.MANUAL);
-        this.huskyLens = opMode.hardwareMap.get(HuskyLens.class, "ExoCamera");
+        //this.limelight = new LimelightEx("limelight", opMode.hardwareMap);
         this.localizer = new PinpointLocalizer(opMode.hardwareMap);
 
         batteryVoltageSensor = opMode.hardwareMap.voltageSensor.iterator().next();
 
         this.hardwareMap = opMode.hardwareMap;
-
-        led = hardwareMap.get(RevBlinkinLedDriver.class, "leds");
 
 
         LeftFront = hardwareMap.get(DcMotorEx.class, "LF");
@@ -112,8 +107,6 @@ public class Hardware {
         RightFront_servo = hardwareMap.get(CRServo.class, "RF servo");
         RightBack_servo = hardwareMap.get(CRServo.class, "RB servo");
 
-        TiltLeftServo = hardwareMap.get(Servo.class, "TiltL");
-        TiltRightServo = hardwareMap.get(Servo.class, "TiltR");
         ShooterHoodServo = hardwareMap.get(Servo.class, "hood");
 
         IndexerLimit = hardwareMap.get(DigitalChannel.class, "indexerLim");
@@ -136,9 +129,6 @@ public class Hardware {
 
         IntakeMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         IntakeMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-
-        ((ServoImplEx) TiltLeftServo).setPwmRange(new PwmControl.PwmRange(500, 2500, 5000));
-        ((ServoImplEx) TiltRightServo).setPwmRange(new PwmControl.PwmRange(500, 2500, 5000));
     }
 
     public void read(SystemBase system, SystemBase swerve) {

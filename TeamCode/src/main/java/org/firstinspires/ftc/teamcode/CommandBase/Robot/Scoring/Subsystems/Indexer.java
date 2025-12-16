@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.randomization;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -9,6 +7,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +22,7 @@ public class Indexer extends SystemBase {
     public static double INDEXING_POWER = 1;
     public static double SHOOTING_POWER = 1;
 
-    private static final int offset = 30;
+    private static final int offset = 50;
 
     public boolean RAPID_FIRE = true;
 
@@ -96,7 +95,7 @@ public class Indexer extends SystemBase {
         int greenCurrentPos = elements.indexOf(Enums.ArtifactColor.GREEN);
         int greenTargetPos;
 
-        switch (randomization) {
+        switch (LimelightEx.lastValidRandomization) {
             case LEFT: greenTargetPos = 0;
             case CENTER: greenTargetPos = 1;
             case RIGHT: greenTargetPos = 2;
@@ -114,7 +113,7 @@ public class Indexer extends SystemBase {
         balls = Math.max(1, Math.min(balls, 3));
 
         runTarget(
-                (int) (target + balls * TICKS_PER_REVOLUTION / 3),
+                (int) (target + balls * TICKS_PER_REVOLUTION * 2 / 3),
                 SHOOTING_POWER
         );
 

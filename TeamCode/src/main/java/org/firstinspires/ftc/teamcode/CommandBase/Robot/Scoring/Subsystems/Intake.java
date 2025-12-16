@@ -31,12 +31,12 @@ public class Intake extends SystemBase {
     @Override
     public void on() {
         super.on();
-        hardware.IntakeMotor.setPower(1);
+        hardware.IntakeMotor.setPower(-1);
     }
 
     public void reverse() {
         super.on();
-        hardware.IntakeMotor.setPower(-1);
+        hardware.IntakeMotor.setPower(1);
     }
 
     @Override

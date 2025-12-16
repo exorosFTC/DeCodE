@@ -13,14 +13,10 @@ public interface Enums {
         AUTONOMUS
     }
 
-    enum Gamepads{
-        G1, G2,
-        BOTH,
-        NONE
-    }
-
-    enum Pipelines{
-        DETECTING_PROP,
+    enum Pipeline{
+        RANDOMIZATION,
+        BLUE_GOAL,
+        RED_GOAL
     }
 
     enum Randomization{
@@ -43,10 +39,5 @@ public interface Enums {
         PATH_TANGENT,
         FACE_GOAL,
         FIXED
-    }
-
-    enum SwerveMode {
-        ECHO,
-        SPORT
     }
 }
