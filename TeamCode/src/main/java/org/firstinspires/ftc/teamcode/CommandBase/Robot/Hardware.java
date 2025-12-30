@@ -33,7 +33,7 @@ public class Hardware {
     public final HubBulkRead bulk;
 
     public final PinpointLocalizer localizer;
-    //public final LimelightEx limelight;
+    public final LimelightEx limelight;
 
     public double batteryVoltage = 14;
 
@@ -51,12 +51,21 @@ public class Hardware {
             LeftFront_servo,
             LeftBack_servo,
             RightFront_servo,
-            RightBack_servo;
+            RightBack_servo,
 
-    public Servo ShooterHoodServo;
+            LeftFront_lift,
+            LeftBack_lift,
+            RightFront_lift,
+            RightBack_lift;
+
+    public Servo
+            ShooterHoodServo,
+            LiftRetainerServo;
 
     public DigitalChannel
-            IndexerLimit;
+            IndexerLimit,
+            LeftBreakBeam,
+            RightBreakBeam;
 
     public AnalogInput
             RightFront_encoder,
@@ -65,7 +74,10 @@ public class Hardware {
             LeftBack_encoder;
 
     public RevColorSensorV3
-            IntakeColor;
+            IntakeColor1,
+            IntakeColor2,
+            IntakeColor3;
+
 
 
 
@@ -84,7 +96,7 @@ public class Hardware {
     public Hardware(LinearOpMode opMode) {
         this.telemetry = new MultipleTelemetry(opMode.telemetry, FtcDashboard.getInstance().getTelemetry());
         this.bulk = new HubBulkRead(opMode.hardwareMap, LynxModule.BulkCachingMode.MANUAL);
-        //this.limelight = new LimelightEx("limelight", opMode.hardwareMap);
+        this.limelight = new LimelightEx("limelight", opMode.hardwareMap);
         this.localizer = new PinpointLocalizer(opMode.hardwareMap);
 
         batteryVoltageSensor = opMode.hardwareMap.voltageSensor.iterator().next();
@@ -102,21 +114,36 @@ public class Hardware {
         Shooter1 = hardwareMap.get(DcMotorEx.class, "shooter1");
         Shooter2 = hardwareMap.get(DcMotorEx.class, "shooter2");
 
+
+
         LeftFront_servo = hardwareMap.get(CRServo.class, "LF servo");
         LeftBack_servo = hardwareMap.get(CRServo.class, "LB servo");
         RightFront_servo = hardwareMap.get(CRServo.class, "RF servo");
         RightBack_servo = hardwareMap.get(CRServo.class, "RB servo");
 
+        LeftFront_lift = hardwareMap.get(CRServo.class, "LF lift");
+        LeftBack_lift = hardwareMap.get(CRServo.class, "LB lift");
+        RightFront_lift = hardwareMap.get(CRServo.class, "RF lift");
+        RightBack_lift = hardwareMap.get(CRServo.class, "RB lift");
+
         ShooterHoodServo = hardwareMap.get(Servo.class, "hood");
+        LiftRetainerServo = hardwareMap.get(Servo.class, "liftRetainer");
+
+
 
         IndexerLimit = hardwareMap.get(DigitalChannel.class, "indexerLim");
+        LeftBreakBeam = hardwareMap.get(DigitalChannel.class, "leftBreakBeam");
+        RightBreakBeam = hardwareMap.get(DigitalChannel.class, "rightBreakBeam");
 
-        IntakeColor = hardwareMap.get(RevColorSensorV3.class, "intakeColorSensor");
+        IntakeColor1 = hardwareMap.get(RevColorSensorV3.class, "color1");
+        IntakeColor2 = hardwareMap.get(RevColorSensorV3.class, "color2");
+        IntakeColor3 = hardwareMap.get(RevColorSensorV3.class, "color3");
 
         RightFront_encoder = hardwareMap.get(AnalogInput.class, "RF encoder");
         RightBack_encoder = hardwareMap.get(AnalogInput.class, "RB encoder");
         LeftFront_encoder = hardwareMap.get(AnalogInput.class, "LF encoder");
         LeftBack_encoder = hardwareMap.get(AnalogInput.class, "LB encoder");
+
 
 
         Shooter1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -132,9 +159,10 @@ public class Hardware {
     }
 
     public void read(SystemBase system, SystemBase swerve) {
+        localizer.update();
+
         bulk.clearCache(Enums.Hubs.ALL);
         batteryVoltage = batteryVoltageSensor.getVoltage();
-        localizer.update();
 
         system.read();
         swerve.read();

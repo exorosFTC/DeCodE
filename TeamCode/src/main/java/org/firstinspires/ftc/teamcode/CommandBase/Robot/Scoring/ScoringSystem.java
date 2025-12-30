@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring;
 
+import static org.firstinspires.ftc.teamcode.Pathing.Math.ShootingZoneIntersection.isInShootingZone;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.sun.tools.javac.util.List;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
@@ -20,12 +23,12 @@ public class ScoringSystem extends SystemBase {
     public Shooter shooter;
 
     public boolean isIntakeEnabled = true;
+    public double catchThreshold = 85;
 
-    private double lastDistance = 1000;
-    private int loopCount = 0;
-
-    public double colorDistance;
+    public double[] colorDistance;
     public NormalizedRGBA colorValues;
+
+
 
     public ScoringSystem(LinearOpMode opMode) {
         this.opMode = opMode;
@@ -39,53 +42,41 @@ public class ScoringSystem extends SystemBase {
 
 
     public void update() {
-        //updateIntake();
+        updateIntake();
         shooter.update();
     }
 
     public void updateIntake() {
-        colorDistance = hardware.IntakeColor.getDistance(DistanceUnit.MM);
-
-        if (Math.abs(colorDistance - lastDistance) < 2) loopCount += 1;
-        else {
-            loopCount = 0;
-            lastDistance = colorDistance;
-        }
-
-
-
         if (indexer.elements.contains(Enums.ArtifactColor.NONE) && !isIntakeEnabled) isIntakeEnabled = true;
+        if (indexer.isBusy() || !indexer.on || !isIntakeEnabled) return;
 
-        if (colorDistance > 85 && indexer.elements.get(0) != Enums.ArtifactColor.NONE) indexer.elements.set(0, Enums.ArtifactColor.NONE);
-        if (colorDistance > 85 || indexer.isBusy() || !indexer.on || !isIntakeEnabled || loopCount < 60) return;
+        colorDistance = new double[]{
+                hardware.IntakeColor1.getDistance(DistanceUnit.MM),
+                hardware.IntakeColor2.getDistance(DistanceUnit.MM),
+                hardware.IntakeColor3.getDistance(DistanceUnit.MM)
+        };
 
+        //check all 3 sensors
+        for (double distance : colorDistance) {
+            if (distance < catchThreshold) {
+                colorValues = hardware.IntakeColor1.getNormalizedColors();
 
-
-        /*intake.reverse();
-        try {
-            Thread.sleep(400);
-        } catch (InterruptedException e) {
+                if (colorValues.green > colorValues.red && colorValues.green > colorValues.blue)
+                    indexer.elements.set(0, Enums.ArtifactColor.GREEN);
+                else indexer.elements.set(0, Enums.ArtifactColor.PURPLE);
+            } else if (distance > catchThreshold && indexer.elements.get(0) != Enums.ArtifactColor.NONE)
+                indexer.elements.set(0, Enums.ArtifactColor.NONE);
         }
+
+        if (indexer.elements.contains(Enums.ArtifactColor.NONE)) return;
+
+        // when all 3 slots are full, reverse intake & move on
+        intake.reverse();
+        try { Thread.sleep(400); } catch (InterruptedException e) {}
         intake.off();
 
         isIntakeEnabled = false;
         indexer.off();
-
-        for (int i = 1; i <= 3; i++) {
-            colorValues = hardware.IntakeColor.getNormalizedColors();
-
-            if (colorValues.green > colorValues.red && colorValues.green > colorValues.blue)
-                indexer.elements.set(0, Enums.ArtifactColor.GREEN);
-            else indexer.elements.set(0, Enums.ArtifactColor.PURPLE);
-
-            if (indexer.elements.get(2) != Enums.ArtifactColor.NONE) {
-                isIntakeEnabled = false;
-                indexer.off();
-
-            } else indexer.index(1);
-
-            while (indexer.isBusy() && opMode.opModeIsActive()) {}
-        }*/
     }
 
     public void shootSequence() {
@@ -99,7 +90,7 @@ public class ScoringSystem extends SystemBase {
         if (!indexer.RAPID_FIRE) indexer.indexPattern();
 
         while (!shooter.ready() && this.opMode.opModeIsActive()) { shooter.update(); try { Thread.sleep(5); } catch (InterruptedException e) {} }
-        indexer.shoot(3);
+        if (isInShootingZone()) indexer.shoot(3);
         while (indexer.isBusy() && this.opMode.opModeIsActive()) { shooter.update(); try { Thread.sleep(5); } catch (InterruptedException e) {} }
 
 

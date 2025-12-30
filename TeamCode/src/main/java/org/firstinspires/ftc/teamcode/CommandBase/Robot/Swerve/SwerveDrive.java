@@ -47,16 +47,16 @@ public class SwerveDrive extends SystemBase {
 
         rightFrontModule = new SwerveModule(hardware.RightFront,
                                             hardware.RightFront_servo,
-                                            new AbsoluteAnalogEncoder(hardware.RightFront_encoder).zero(0.25));
+                                            new AbsoluteAnalogEncoder(hardware.RightFront_encoder).zero(-1.97));
         leftFrontModule = new SwerveModule(hardware.LeftFront,
                                             hardware.LeftFront_servo,
-                                            new AbsoluteAnalogEncoder(hardware.LeftFront_encoder).zero(-2.69));
+                                            new AbsoluteAnalogEncoder(hardware.LeftFront_encoder).zero(0.08));
         leftBackModule = new SwerveModule(hardware.LeftBack,
                                             hardware.LeftBack_servo,
-                                            new AbsoluteAnalogEncoder(hardware.LeftBack_encoder).zero(-2.54));
+                                            new AbsoluteAnalogEncoder(hardware.LeftBack_encoder).zero(-2.42));
         rightBackModule = new SwerveModule(hardware.RightBack,
                                             hardware.RightBack_servo,
-                                            new AbsoluteAnalogEncoder(hardware.RightBack_encoder).zero(-3.05));
+                                            new AbsoluteAnalogEncoder(hardware.RightBack_encoder).zero(1.77));
 
         modules = new SwerveModule[]{rightFrontModule, leftFrontModule, leftBackModule, rightBackModule};
         states = SwerveKinematics.robot2wheel(new Pose(0, 0, 0));
@@ -105,11 +105,7 @@ public class SwerveDrive extends SystemBase {
 
         if (Math.abs(velocity.x) < 0.01 && Math.abs(velocity.y) < 0.01 && Math.abs(velocity.heading) < 0.01) {
             if (SwerveKinematics.isLockedX()) states = SwerveKinematics.robot2wheel(velocity);
-            else {
-                for (int i = 0; i < 4; i++) {
-                states.get(i).setModuleVelocity(0);
-                }
-            }
+            else { for (int i = 0; i < 4; i++) { states.get(i).setModuleVelocity(0); }}
         } else { SwerveKinematics.setLockedX(false); states = SwerveKinematics.robot2wheel(velocity); }
 
         for (int i = 0; i < 4; i++) {
@@ -134,7 +130,7 @@ public class SwerveDrive extends SystemBase {
         hardware.RightBack.setMotorDisable();
     }
 
-    public void setLockedX(boolean lockedX) { SwerveKinematics.setLocked(lockedX); }
+    public void setLockedX(boolean lockedX) { SwerveKinematics.setLockedX(lockedX); }
 
     public void lockHeadingToGoal(boolean lock) { lockHeadingToGoal = lock; }
 

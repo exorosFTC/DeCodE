@@ -181,7 +181,7 @@ public class SoloTeleOp extends ExoMode {
         swerve.update(new Pose(
                 swerve.xLim.calculate(g1.getLeftY()),
                 swerve.yLim.calculate(-g1.getLeftX()),
-                swerve.headLim.calculate(-g1.getRightX() * 0.15))
+                swerve.headLim.calculate(-g1.getRightX() * 0.1))
         );
 
         if (system.isIntakeEnabled)

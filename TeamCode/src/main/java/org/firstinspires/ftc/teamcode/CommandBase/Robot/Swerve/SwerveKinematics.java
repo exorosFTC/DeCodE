@@ -11,8 +11,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SwerveKinematics {
-    private static boolean locked = false;
     private static boolean lockedX = false;
+
+
     /**Performing inverse kinematics to determine each module's state from a drivetrain state*/
     public static List<SwerveModuleState> robot2wheel(Pose pose) {
         final double vx = pose.x, vy = pose.y, omega = pose.heading;
@@ -37,17 +38,9 @@ public class SwerveKinematics {
                     new SwerveModuleState(0, Math.PI * 3 / 4),  // BL
                     new SwerveModuleState(0, -Math.PI * 3 / 4)  // BR
             ));
-        else if (locked)
-            return normalizeSpeeds(Arrays.asList(
-                    new SwerveModuleState(0, Math.PI / 4),     // FR
-                    new SwerveModuleState(0, -Math.PI / 4),      // FL
-                    new SwerveModuleState(0, -Math.PI * 3 / 4),  // BL
-                    new SwerveModuleState(0, Math.PI * 3 / 4)  // BR
-            ));
 
         return normalizeSpeeds(Arrays.asList(FR, FL, BL, BR));
     }
-
 
     /**Performing forward kinematics to determine drivetrain's state from module states*/
     public static Pose wheel2robot(List<SwerveModuleState> states) {
@@ -72,7 +65,6 @@ public class SwerveKinematics {
     }
 
 
-
     private static List<SwerveModuleState> normalizeSpeeds(List<SwerveModuleState> states) {
         double max = Double.NEGATIVE_INFINITY;
 
@@ -88,11 +80,7 @@ public class SwerveKinematics {
     }
 
 
-    public static void setLocked(boolean locked) { SwerveKinematics.locked = locked; }
-
-    public static void setLockedX(boolean lockedX) { SwerveKinematics.locked = lockedX; }
-
-    public static boolean isLocked() { return locked; }
+    public static void setLockedX(boolean lockedX) { SwerveKinematics.lockedX = lockedX; }
 
     public static boolean isLockedX() { return lockedX; }
 }

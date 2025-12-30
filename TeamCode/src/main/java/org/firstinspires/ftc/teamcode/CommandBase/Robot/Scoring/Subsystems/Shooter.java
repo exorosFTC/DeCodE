@@ -23,9 +23,9 @@ public class Shooter extends SystemBase {
     public static double kF = 0.0017;
 
     private static final double VEL_ALPHA = 0.3;
-    public static final double COAST_POWER = 0.8;
+    public static final double COAST_POWER = 0.6;
     public static final double MAX_RPS = 600;
-    public static double ANGLE_ADJUST = 0.004;
+    public static double ANGLE_ADJUST = 0;
 
     public boolean enabled = true;
 
@@ -37,7 +37,7 @@ public class Shooter extends SystemBase {
     public double wheelVelocity = 0;
 
     public double targetPower = 0;
-    public double targetAngle = 0;
+    public double targetAngle = 0.3;
 
     public double POWER = 0;
     public double TARGET = 0;
@@ -61,20 +61,20 @@ public class Shooter extends SystemBase {
         distance = POSE.distanceTo(goalPosition);
 
         if (!enabled) return;
-        if (on) {
+        /*if (on) {
             ShotSample shot = lookupShot(distance);
 
             if (shot != null) {
                 targetPower = shot.power;
                 targetAngle = shot.angle;
             }
-        }
+        }*/
 
         this.TARGET = targetPower * MAX_RPS;
         this.POWER = controller.calculate(wheelVelocity, TARGET);
 
-        if (!on) return;
-        targetAngle = clamp(targetAngle - (this.TARGET - wheelVelocity - threshold) * ANGLE_ADJUST, 0, targetAngle);  // adjust angle by velocity
+        /*if (!on) return;
+        targetAngle = clamp(targetAngle - (this.TARGET - wheelVelocity - threshold) * ANGLE_ADJUST, 0, targetAngle);  // adjust angle by velocity*/
     }
 
     private ShotSample lookupShot(double d) {

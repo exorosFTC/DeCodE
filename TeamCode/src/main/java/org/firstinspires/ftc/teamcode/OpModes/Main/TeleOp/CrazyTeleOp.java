@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes.Main.TeleOp;
 
 
+import static androidx.core.math.MathUtils.clamp;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.K_STATIC;
@@ -45,7 +46,13 @@ public class CrazyTeleOp extends ExoMode {
     private GamepadEx g1, g2;
     private TriggerManager intakeTriggers, shooterTriggers, swerveTriggers;
 
+    public static double ANGLE_ADJUST = Shooter.ANGLE_ADJUST;
+    public static double angle = 0;
+    public static double power = 0;
+
     public static double kStatic = K_STATIC;
+
+
     public static double moduleP = DriveConstants.swerveP, moduleD = DriveConstants.swerveD;
     public static double swerveP = AngularP, swerveD = AngularD;
     public static double shooterP = Shooter.kP, shooterD = Shooter.kD, shooterI = Shooter.kI, shooterF = Shooter.kF;
@@ -190,22 +197,25 @@ public class CrazyTeleOp extends ExoMode {
                 swerve.update(new Pose(
                         swerve.xLim.calculate(g1.getLeftY()),
                         swerve.yLim.calculate(-g1.getLeftX()),
-                        swerve.headLim.calculate(-g1.getRightX() * 0.2))
+                        swerve.headLim.calculate(-g1.getRightX() * 0.1))
                 );
 
                 swerveTriggers.check();
 
-                //system.shooter.targetAngle = angle - (system.shooter.TARGET - system.shooter.wheelVelocity - 5) * ANGLE_ADJUST;
-                //system.shooter.targetPower = power;
+                //system.shooter.targetAngle = clamp(angle - (system.shooter.TARGET - system.shooter.wheelVelocity) * ANGLE_ADJUST, 0, angle);
+                system.shooter.targetPower = power;
 
                 K_STATIC = kStatic;
                 swerve.setHeadingPID(swerveP, 0, swerveD);
                 swerve.setModulePID(moduleP, 0, moduleD);
                 swerve.lockHeadingToGoal(g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1);
 
-                //hardware.telemetry.addData("velocity", system.shooter.wheelVelocity);
-                //hardware.telemetry.addData("velocity target", system.shooter.TARGET);
-                //hardware.telemetry.addData("power", system.shooter.POWER);
+                hardware.telemetry.addData("x", POSE.x);
+                hardware.telemetry.addData("y", POSE.y);
+                hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
+                hardware.telemetry.addData("velocity", system.shooter.wheelVelocity);
+                hardware.telemetry.addData("velocity target", system.shooter.TARGET);
+                hardware.telemetry.addData("power", system.shooter.POWER);
                 updateTelemetry();
 
                 hardware.write(system, swerve);

@@ -24,8 +24,8 @@ public class PinpointLocalizer {
     public PinpointLocalizer(HardwareMap hardwareMap) {
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "ExoPinpoint");
 
-        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,       // in front
-                                        GoBildaPinpointDriver.EncoderDirection.REVERSED);    // to the left
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED,       // in front
+                                        GoBildaPinpointDriver.EncoderDirection.FORWARD);    // to the left
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
         //12.6697 -6.6626

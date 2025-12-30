@@ -17,12 +17,12 @@ public class Indexer extends SystemBase {
     private final LinearOpMode opMode;
     private final ElapsedTime timer;
 
-    public static final double TICKS_PER_REVOLUTION = 384.5 * 2;
-    public static double HOMING_POWER = 0.4; //in the indexing direction
+    public static final double TICKS_PER_REVOLUTION = 336;
+    public static double HOMING_POWER = 0.23; //in the indexing direction
     public static double INDEXING_POWER = 1;
     public static double SHOOTING_POWER = 1;
 
-    private static final int offset = 50;
+    private static final int offset = 0;
 
     public boolean RAPID_FIRE = true;
 
@@ -54,7 +54,7 @@ public class Indexer extends SystemBase {
         hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         hardware.IndexerMotor.setPower(-HOMING_POWER);
-        while (indexerLimit && opMode.opModeIsActive() && timer.seconds() < 1.6) {}
+        while (indexerLimit && opMode.opModeIsActive() && timer.seconds() < 2) {}
 
         target = offset;
 

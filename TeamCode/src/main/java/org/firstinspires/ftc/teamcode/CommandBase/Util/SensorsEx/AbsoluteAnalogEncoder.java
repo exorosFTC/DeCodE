@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.RANGE;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 
@@ -47,8 +45,8 @@ public class AbsoluteAnalogEncoder {
     public double getCurrentPosition(AngleUnit unit) {
         // in range [-π, +π]
         double pos = AngleUnit.normalizeRadians(((!inverted
-                ? 1 - getVoltage() / RANGE
-                : getVoltage() / RANGE)
+                ? 1 - getVoltage() / 3.3
+                : getVoltage() / 3.3)
                 * Math.PI * 2) - offset);
 
         double delta = AngleUnit.normalizeRadians(pos - pastPosition);
