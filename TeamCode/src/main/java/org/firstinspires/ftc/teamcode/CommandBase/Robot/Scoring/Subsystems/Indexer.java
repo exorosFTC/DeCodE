@@ -63,7 +63,7 @@ public class Indexer extends SystemBase {
         off();
     }
 
-    public void zero() {
+    public void returnToZero() {
         timer.reset();
         runTarget(0, SHOOTING_POWER);
 

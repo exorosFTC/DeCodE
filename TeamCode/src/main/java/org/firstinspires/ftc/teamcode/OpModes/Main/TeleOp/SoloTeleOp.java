@@ -3,15 +3,7 @@ package org.firstinspires.ftc.teamcode.OpModes.Main.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionRed;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueClose;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueFar;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseRedClose;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseRedFar;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.telemetryAddLoopTime;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -19,9 +11,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
@@ -29,6 +19,8 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.TriggerManager;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Config
 @TeleOp(name = "🍪", group = "main")
@@ -40,14 +32,18 @@ public class SoloTeleOp extends ExoMode {
     private ScoringSystem system;
 
     private GamepadEx g1;
-    public static double moduleP = DriveConstants.swerveP, moduleD = DriveConstants.swerveD;
-    public static double swerveP = AngularP, swerveD = AngularD;
-    private TriggerManager intakeTriggers, shooterTriggers;
+    private final InputBus in = new InputBus();
+    private TriggerManager intakeTriggers, shooterTriggers, swerveTriggers;
 
-    public static String poseCase = "DEFAULT";
+    private Thread swerveThread, gamepadThread;
+
+    public static double swerveP = AngularP, swerveD = AngularD;
+
+
 
     @Override
     protected void Init() {
+        // init hardware
         hardware = Hardware.getInstance(this);
         g1 = new GamepadEx(gamepad1);
 
@@ -56,150 +52,123 @@ public class SoloTeleOp extends ExoMode {
 
         new SystemData()
                 .add(Enums.OpMode.TELE_OP)
-                .setAutoOnBlue(false)
                 .getLoopTime(true);
 
+
+        // create gamepad triggers
         intakeTriggers = new TriggerManager()
-                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.B),
-                        () ->
-                            new Thread(() -> {
-                                if(system.intake.on) {
-                                    system.intake.off();
-                                    system.indexer.off();
-                                }
-                                else {
-                                    system.intake.on();
-                                    system.indexer.on();
-                                }
-                            }).start())
-                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.A),
-                        () ->
-                            new Thread(() -> {
+                .addTrigger(() -> in.evToggleIntake.getAndSet(false), () -> {
+                            if (system.intake.on && !system.intake.reversed) {
+                                system.intake.off();
+                                system.indexer.off();
+                            } else {
+                                system.intake.on();
+                                system.indexer.on();
+                            }}) // intake
+                .addTrigger(() -> in.evReverseIntake.getAndSet(false), () -> {
+                            if (system.intake.on && system.intake.reversed) {
+                                system.intake.off();
+                                system.indexer.off();
+                            } else {
                                 system.intake.reverse();
                                 system.indexer.on();
-                            }).start());
+                            }
+                        }); // reverse intake
 
         shooterTriggers = new TriggerManager()
-                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER), () -> new Thread(() -> system.shooter.on()).start() )
-                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT),
-                        () ->
-                            new Thread(() -> {
-                                system.shooter.on();
-                                try { Thread.sleep(100); } catch (InterruptedException e) {};
+                .addTrigger(() -> in.evShootSorted.getAndSet(false), () -> {
+                            while (!system.shooter.ready()) { system.update(); }
 
-                                system.indexer.setRapidFire(false);
-                                system.shootSequence();
-                            }).start())
-                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER),
-                        () ->
-                            new Thread(() -> {
-                                system.shooter.on();
-                                try { Thread.sleep(100); } catch (InterruptedException e) {};
+                            system.indexer.setRapidFire(false);
+                            system.shootSequence();
+                        })               // sorted shoot
+                .addTrigger(() -> in.evShootUnsorted.getAndSet(false), () -> {
+                            while (!system.shooter.ready()) { system.update(); }
 
-                                system.indexer.setRapidFire(true);
-                                system.shootSequence();
-                            }).start())
-                .addTrigger(() -> g1.wasJustPressed(GamepadKeys.Button.DPAD_UP),
-                        () -> new Thread(() -> system.indexer.home()).start());
+                            system.indexer.setRapidFire(true);
+                            system.shootSequence();
+                        })                // unsorted shoot
+                .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home()); // emergency homing
 
 
+        // set the right start position
         try { Thread.sleep(150); } catch (InterruptedException e) {}
         hardware.localizer.setPositionEstimate(startPose);
         try { Thread.sleep(150); } catch (InterruptedException e) {}
+
+
+        // initialize threads
+        swerveThread = new Thread(() -> {
+            while (opModeIsActive()) {
+                hardware.read(system, swerve);
+
+                swerve.update(new Pose(
+                        swerve.xLim.calculate(in.ly),
+                        swerve.yLim.calculate(-in.lx),
+                        swerve.headLim.calculate(-in.rx * 0.05))
+                );
+
+                swerve.lockHeadingToGoal(in.lockToGoal);
+                if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
+
+                updateTelemetry();
+                hardware.write(system, swerve);
+            }
+        }, "SwerveThread");
+        gamepadThread = new Thread(() -> {
+            while (opModeIsActive()) {
+                g1.readButtons();
+
+                // continuous snapshot
+                in.ly = g1.getLeftY();
+                in.lx = g1.getLeftX();
+                in.rx = g1.getRightX();
+                in.lt = g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
+                in.rt = g1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
+                in.lockToGoal = in.lt > 0.1;
+                in.rbHeld = g1.isDown(GamepadKeys.Button.RIGHT_BUMPER);
+
+                // edges -> events (one-shot)
+                if (g1.wasJustPressed(GamepadKeys.Button.B)) in.evToggleIntake.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.A)) in.evReverseIntake.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) in.evShootSorted.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) in.evShootUnsorted.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) in.evLockX.set(true);
+
+                // tiny yield to avoid maxing CPU
+                Thread.yield();
+            } }, "GamepadThread");
+
 
         hardware.telemetry.addLine("INIT READY 😈😈😈");
         hardware.telemetry.update();
     }
 
     @Override
-    protected void WaitForStart() {
-        while (opModeInInit()) {
-            g1.readButtons();
-
-            if (g1.wasJustPressed(GamepadKeys.Button.A)) {
-                try { Thread.sleep(150); } catch (InterruptedException e) {}
-                POSE = startPoseRedClose;
-                swerve.targetHeading = startPoseRedClose.heading;
-                goalPosition = goalPositionRed;
-                hardware.localizer.setPositionEstimate(startPoseRedClose);
-                SystemConstants.autoOnBlue = false;
-                poseCase = "RED CLOSE";
-                try { Thread.sleep(150); } catch (InterruptedException e) {}
-
-            } else if (g1.wasJustPressed(GamepadKeys.Button.B)) {
-                try { Thread.sleep(150); } catch (InterruptedException e) {}
-                POSE = startPoseRedFar;
-                swerve.targetHeading = startPoseRedFar.heading;
-                goalPosition = goalPositionRed;
-                hardware.localizer.setPositionEstimate(startPoseRedFar);
-                SystemConstants.autoOnBlue = false;
-                poseCase = "RED FAR";
-                try { Thread.sleep(150); } catch (InterruptedException e) {}
-
-            } else if (g1.wasJustPressed(GamepadKeys.Button.X)) {
-                try { Thread.sleep(150); } catch (InterruptedException e) {}
-                POSE = startPoseBlueClose;
-                swerve.targetHeading = startPoseBlueClose.heading;
-                goalPosition = goalPositionBlue;
-                hardware.localizer.setPositionEstimate(startPoseBlueClose);
-                SystemConstants.autoOnBlue = true;
-                poseCase = "BLUE CLOSE";
-                try { Thread.sleep(150); } catch (InterruptedException e) {}
-
-            } else if (g1.wasJustPressed(GamepadKeys.Button.Y)) {
-                try { Thread.sleep(150); } catch (InterruptedException e) {}
-                POSE = startPoseBlueFar;
-                swerve.targetHeading = startPoseBlueFar.heading;
-                goalPosition = goalPositionBlue;
-                hardware.localizer.setPositionEstimate(startPoseBlueFar);
-                SystemConstants.autoOnBlue = true;
-                poseCase = "BLUE FAR";
-                try { Thread.sleep(150); } catch (InterruptedException e) {}
-            }
-
-            hardware.telemetry.addLine("Case: " + poseCase);
-            hardware.telemetry.update();
-        }
-    }
-
-    @Override
     protected void WhenStarted() {
         hardware.telemetry.clearAll();
 
-        new Thread(() -> system.indexer.home()).start();
+        gamepadThread.start();
+        swerveThread.start();
+
+        system.indexer.home();
     }
 
     @Override
     protected void Loop() {
-        hardware.read(system, swerve);
-        g1.readButtons();
-
-        swerve.setModulePID(moduleP, 0, moduleD);
-        swerve.setHeadingPID(swerveP, 0, swerveD);
-
-        system.update();
-        swerve.update(new Pose(
-                swerve.xLim.calculate(g1.getLeftY()),
-                swerve.yLim.calculate(-g1.getLeftX()),
-                swerve.headLim.calculate(-g1.getRightX() * 0.1))
-        );
-
         if (system.isIntakeEnabled)
             intakeTriggers.check();
         shooterTriggers.check();
 
-        //swerve.lockHeadingToGoal(g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1);
+        if (in.rbHeld && !system.shooter.on) {
+            system.shooter.on();
+            system.indexer.microAdjust();
+        } else if (!in.rbHeld && system.shooter.on) system.shooter.off();
 
-        hardware.telemetry.addData("velocity", system.shooter.wheelVelocity);
-        hardware.telemetry.addData("velocity target", system.shooter.TARGET);
-        hardware.telemetry.addData("angle", system.shooter.targetAngle);
-        hardware.telemetry.addData("distance", system.shooter.distance);
-        hardware.telemetry.addData("x", POSE.x);
-        hardware.telemetry.addData("y", POSE.y);
-        hardware.telemetry.addData("heading", POSE.heading);
-        updateTelemetry();
+        system.update();
 
-        hardware.write(system, swerve);
+        try { Thread.sleep(5); } catch (InterruptedException e) {}
     }
 
 
@@ -217,5 +186,23 @@ public class SoloTeleOp extends ExoMode {
         }
 
         hardware.telemetry.update();
+    }
+
+
+
+    static class InputBus {
+        // continuous
+        volatile double lx, ly, rx;
+        volatile double lt, rt;
+        volatile boolean rbHeld;
+        volatile boolean lockToGoal;
+
+        // one-shot events
+        final AtomicBoolean evToggleIntake   = new AtomicBoolean(false);
+        final AtomicBoolean evReverseIntake  = new AtomicBoolean(false);
+        final AtomicBoolean evShootSorted    = new AtomicBoolean(false);
+        final AtomicBoolean evShootUnsorted  = new AtomicBoolean(false);
+        final AtomicBoolean evHomeIndexer    = new AtomicBoolean(false);
+        final AtomicBoolean evLockX          = new AtomicBoolean(false);
     }
 }

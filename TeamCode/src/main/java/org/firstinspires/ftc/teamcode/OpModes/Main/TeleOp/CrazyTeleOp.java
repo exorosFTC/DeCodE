@@ -36,16 +36,6 @@ public class CrazyTeleOp extends ExoMode {
     private GamepadEx g1, g2;
     private TriggerManager intakeTriggers, shooterTriggers, swerveTriggers;
 
-    private static final Gamepad.RumbleEffect SHOOTER_ON = new Gamepad.RumbleEffect.Builder()
-            .addStep(1.0, 0.0, 120)
-            .addStep(0.0, 0.0, 60)
-            .addStep(1.0, 0.0, 120)   // left double-tap = ON
-            .build();
-
-    private static final Gamepad.RumbleEffect SHOOTER_OFF = new Gamepad.RumbleEffect.Builder()
-            .addStep(0.0, 1.0, 250)   // long right buzz = OFF
-            .build();
-
     public static double ANGLE_ADJUST = 0;
     public static double angle = 0;
     public static double power = 0;
@@ -93,8 +83,6 @@ public class CrazyTeleOp extends ExoMode {
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_UP), () -> {
                     if (!system.shooter.on) { system.shooter.on(); system.indexer.microAdjust(); }
                     else system.shooter.off();
-
-                    g2.gamepad.runRumbleEffect(!system.shooter.on ? SHOOTER_ON : SHOOTER_OFF);
                 })
                 .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_LEFT),
                         () -> {

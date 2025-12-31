@@ -4,7 +4,6 @@ import static org.firstinspires.ftc.teamcode.Pathing.Math.ShootingZoneIntersecti
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.sun.tools.javac.util.List;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
@@ -101,9 +100,9 @@ public class ScoringSystem extends SystemBase {
 
         shooter.off();
         isIntakeEnabled = true;
-        indexer.previousLastElement = Enums.ArtifactColor.NONE;
 
-        indexer.zero();
+        indexer.previousLastElement = Enums.ArtifactColor.NONE;
+        indexer.returnToZero();
     }
 
     private NormalizedRGBA getColorForIndex(int i) {
