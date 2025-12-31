@@ -16,15 +16,15 @@ public class DriveConstants {
 
     public static double ODO_UPDATE_RATE_AUTO = 100,
                         ODO_UPDATE_RATE_TELEOP = 10;
-    public static double STRAFING_SLEW_RATE_LIMIT = 6.7,
-                        TURNING_SLEW_RATE_LIMIT = 8.67;
+    public static double STRAFING_SLEW_RATE_LIMIT = 5,
+                        TURNING_SLEW_RATE_LIMIT = 6.67;
 
 
     // auto PID
     public static final double LinearP = 0.1,
                                 LinearD = 0.000000004;
-    public static final double AngularP = 0,
-                                AngularD = 0;
+    public static final double AngularP = 0.015,
+                                AngularD = 0.0009;
 
     // swerve module PID
     public static final double swerveP = 0.2,

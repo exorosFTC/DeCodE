@@ -29,10 +29,10 @@ public class SwerveOffsetTuner extends LinearOpMode {
         hardware.RightBack_servo.setPower(0);
 
         while (opModeIsActive()) {
-            hardware.telemetry.addData("module 1:", RF.getCurrentPosition(AngleUnit.RADIANS));
-            hardware.telemetry.addData("module 2:", LF.getCurrentPosition(AngleUnit.RADIANS));
-            hardware.telemetry.addData("module 3:", LB.getCurrentPosition(AngleUnit.RADIANS));
-            hardware.telemetry.addData("module 4:", RB.getCurrentPosition(AngleUnit.RADIANS));
+            hardware.telemetry.addData("RF, module 1:", RF.getCurrentPosition(AngleUnit.RADIANS));
+            hardware.telemetry.addData("LF, module 2:", LF.getCurrentPosition(AngleUnit.RADIANS));
+            hardware.telemetry.addData("LB, module 3:", LB.getCurrentPosition(AngleUnit.RADIANS));
+            hardware.telemetry.addData("RB, module 4:", RB.getCurrentPosition(AngleUnit.RADIANS));
             hardware.telemetry.update();
 
             hardware.bulk.clearCache(Enums.Hubs.ALL);

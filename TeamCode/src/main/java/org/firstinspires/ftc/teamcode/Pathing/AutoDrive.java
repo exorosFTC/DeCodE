@@ -37,33 +37,11 @@ public class AutoDrive {
 
     private Pose target = new Pose();
     private Pose driveVector = new Pose();
-
+    private PurePursuitController controller = null;
 
     private boolean isPaused = false;
     private boolean previousIsPaused = false;
     private boolean usingFailSafe = false;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -103,19 +81,21 @@ public class AutoDrive {
 
 
 
+
     private void startDriveThread() {
         driveThread = new Thread(() -> {
                 while (opMode.opModeIsActive()) {
                     hardware.read(swerve, system);
 
                     if (isPaused && !previousIsPaused) {    // stop the robot when paused
-                        swerve.update(new Pose());
+                        swerve.setLockedX(true);
                         previousIsPaused = true;
                         continue;
                     }
 
                     if (isPaused) continue;
 
+                    if (controller != null) target = controller.update();
                     updateDriveVector();
 
                     hardware.telemetry.addData("drive x", driveVector.x);
@@ -145,12 +125,15 @@ public class AutoDrive {
     public AutoDrive resume() {
         isPaused = false;
         previousIsPaused = false;
+        swerve.setLockedX(false);
+
         return this;
     }
 
 
 
 
+    @Deprecated
     public AutoDrive driveTo(Pose pose) {
         this.failSafeTimeMs = Double.POSITIVE_INFINITY;
         this.usingFailSafe = false;
@@ -158,6 +141,7 @@ public class AutoDrive {
         return this;
     }
 
+    @Deprecated
     public AutoDrive driveTo(Pose pose, double ms) {
         this.failSafeTimeMs = ms;
         this.usingFailSafe = true;
@@ -165,6 +149,11 @@ public class AutoDrive {
 
         failSafeTimer.reset();
 
+        return this;
+    }
+
+    public AutoDrive drivePath(PurePursuitController controller) {
+        if (controller == null || controller.isFinished()) this.controller = controller;
         return this;
     }
 
@@ -262,7 +251,7 @@ public class AutoDrive {
 
 
 
-    public AutoDrive disableWheelMotors() {
+    public AutoDrive disableDrive() {
         swerve.disable();
         return this;
     }

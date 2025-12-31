@@ -23,9 +23,9 @@ public class ScoringSystem extends SystemBase {
     public Shooter shooter;
 
     public boolean isIntakeEnabled = true;
-    public double catchThreshold = 85;
+    public double[] catchThreshold = new double[]{70, 50, 60};
 
-    public double[] colorDistance;
+    public double[] colorDistance = new double[]{-1, -1, -1};
     public NormalizedRGBA colorValues;
 
 
@@ -57,16 +57,21 @@ public class ScoringSystem extends SystemBase {
         };
 
         //check all 3 sensors
-        for (double distance : colorDistance) {
-            if (distance < catchThreshold) {
-                colorValues = hardware.IntakeColor1.getNormalizedColors();
+        for (int i = 0; i < colorDistance.length; i++) {
+            double distance = colorDistance[i];
+
+            if (distance < catchThreshold[i]) {
+                colorValues = getColorForIndex(i);
 
                 if (colorValues.green > colorValues.red && colorValues.green > colorValues.blue)
-                    indexer.elements.set(0, Enums.ArtifactColor.GREEN);
-                else indexer.elements.set(0, Enums.ArtifactColor.PURPLE);
-            } else if (distance > catchThreshold && indexer.elements.get(0) != Enums.ArtifactColor.NONE)
-                indexer.elements.set(0, Enums.ArtifactColor.NONE);
+                    indexer.elements.set(i, Enums.ArtifactColor.GREEN);
+                else indexer.elements.set(i, Enums.ArtifactColor.PURPLE);
+
+            } else if (indexer.elements.get(i) != Enums.ArtifactColor.NONE) {
+                indexer.elements.set(i, Enums.ArtifactColor.NONE);
+            }
         }
+
 
         if (indexer.elements.contains(Enums.ArtifactColor.NONE)) return;
 
@@ -98,8 +103,18 @@ public class ScoringSystem extends SystemBase {
         isIntakeEnabled = true;
         indexer.previousLastElement = Enums.ArtifactColor.NONE;
 
-        indexer.home();
+        indexer.zero();
     }
+
+    private NormalizedRGBA getColorForIndex(int i) {
+        switch (i) {
+            case 0: return hardware.IntakeColor1.getNormalizedColors();
+            case 1: return hardware.IntakeColor2.getNormalizedColors();
+            case 2: return hardware.IntakeColor3.getNormalizedColors();
+            default: return null;
+        }
+    }
+
 
     @Override
     public void read() {

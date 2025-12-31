@@ -45,9 +45,9 @@ public class DriveTest extends LinearOpMode {
 
             hardware.localizer.update();
             swerve.update(new Pose(
-                    -g1.getLeftY(),
-                    g1.getLeftX(),
-                    g1.getRightX() * 0.1
+                    g1.getLeftY(),
+                    -g1.getLeftX(),
+                    -g1.getRightX() * 0.1
             ));
 
             hardware.telemetry.addData("x", POSE.x);

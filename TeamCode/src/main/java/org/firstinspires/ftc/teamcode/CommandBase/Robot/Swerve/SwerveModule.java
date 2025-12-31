@@ -63,6 +63,7 @@ public class SwerveModule extends SystemBase {
         if (Double.isNaN(servoPower)) servoPower = 0;
 
         servoPower = servoPower + (Math.abs(error) > 0.02 ? K_STATIC : 0) * Math.signum(servoPower);
+        targetState.setModuleVelocity(targetState.getModuleVelocity() * Math.cos(Math.abs(error)));
     }
 
     public double getTargetRotation() {

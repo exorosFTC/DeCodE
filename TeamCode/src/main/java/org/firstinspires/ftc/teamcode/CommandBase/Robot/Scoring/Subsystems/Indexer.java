@@ -18,8 +18,8 @@ public class Indexer extends SystemBase {
     private final ElapsedTime timer;
 
     public static final double TICKS_PER_REVOLUTION = 336;
-    public static double HOMING_POWER = 0.23; //in the indexing direction
-    public static double INDEXING_POWER = 1;
+    public static double HOMING_POWER = 0.2; //in the indexing direction
+    public static double INDEXING_POWER = 0.18;
     public static double SHOOTING_POWER = 1;
 
     private static final int offset = 0;
@@ -63,6 +63,14 @@ public class Indexer extends SystemBase {
         off();
     }
 
+    public void zero() {
+        timer.reset();
+        runTarget(0, SHOOTING_POWER);
+
+        while (isBusy() && opMode.opModeIsActive() && timer.seconds() < 2) {}
+        off();
+    }
+
     public void index(int balls) {
         balls = Math.max(1, Math.min(balls, 2)); //indexing 3 spots is useless, limit to 2
 
@@ -70,14 +78,20 @@ public class Indexer extends SystemBase {
         if (elements.get(3 - balls) != Enums.ArtifactColor.NONE) target = (int) (target - TICKS_PER_REVOLUTION / 5);
 
         // index and update the artefact list
-        runTarget((int) (target - balls * TICKS_PER_REVOLUTION / 3),
-                  elements.get(3 - balls) != Enums.ArtifactColor.NONE ? HOMING_POWER : INDEXING_POWER);
+        runTarget((int) (target - balls * TICKS_PER_REVOLUTION / 3), INDEXING_POWER);
         sideswipe(balls, false);
 
         // if there is an artefact in the front
         if (elements.get(0) != Enums.ArtifactColor.NONE) {
             // wait for reaching the overshot position
-            while (isBusy() && opMode.opModeIsActive()) {}
+            timer.reset();
+
+            hardware.IndexerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+            hardware.IndexerMotor.setPower(-INDEXING_POWER);
+            while (isBusy() && opMode.opModeIsActive() && timer.seconds() < 1.5 * balls) {}
+            off();
 
             // come back so the transfer arm is down
             runTarget(
@@ -113,7 +127,7 @@ public class Indexer extends SystemBase {
         balls = Math.max(1, Math.min(balls, 3));
 
         runTarget(
-                (int) (target + balls * TICKS_PER_REVOLUTION * 2 / 3),
+                (int) (target + balls * TICKS_PER_REVOLUTION * 2 / 3 * 0.95),
                 SHOOTING_POWER
         );
 
@@ -197,6 +211,15 @@ public class Indexer extends SystemBase {
 
         if (flag) SHOOTING_POWER = 1;
         else SHOOTING_POWER = 0.5;
+    }
+
+    public void microAdjust() {
+        new Thread(() -> {
+            runTarget(target - 20, INDEXING_POWER);
+
+            while (isBusy() && opMode.opModeIsActive()) {}
+            off();
+        }).start();
     }
 
 

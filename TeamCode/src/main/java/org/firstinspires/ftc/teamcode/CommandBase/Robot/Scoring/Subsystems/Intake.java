@@ -11,6 +11,7 @@ public class Intake extends SystemBase {
     private final LinearOpMode opMode;
 
     public double intakeVoltage = 0;
+    public boolean reversed = false;
 
     public Intake(LinearOpMode opMode) {
         this.hardware = Hardware.getInstance(opMode);
@@ -31,11 +32,13 @@ public class Intake extends SystemBase {
     @Override
     public void on() {
         super.on();
+        reversed = false;
         hardware.IntakeMotor.setPower(-1);
     }
 
     public void reverse() {
         super.on();
+        reversed = true;
         hardware.IntakeMotor.setPower(1);
     }
 

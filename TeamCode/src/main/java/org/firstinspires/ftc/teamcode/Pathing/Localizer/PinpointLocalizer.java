@@ -29,7 +29,7 @@ public class PinpointLocalizer {
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
         //12.6697 -6.6626
-        pinpoint.setOffsets(0, 0, DistanceUnit.CM);
+        pinpoint.setOffsets(-12, 6.1, DistanceUnit.CM);
         pinpoint.resetPosAndIMU();
 
         timer = new ElapsedTime();

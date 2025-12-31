@@ -10,35 +10,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PurePursuitController {
-    public AutoDrive auto;
     private final List<Point> path = new ArrayList<>();
-
-    public static double lookahead = 10;
-    public static int segment = 0;
-
     private Enums.HeadingMode mode = Enums.HeadingMode.PATH_TANGENT;
 
-    public PurePursuitController(AutoDrive auto) {
-        this.auto = auto;
-    }
+    public double lookahead = 10;
+    private double stopRadius = 2.0;
+
+    private int segment = 0;
+    private boolean finished = false;
 
 
 
-    public void update() {
-        if (path.size() < 2) return;
+    public Pose update() {
+        if (path.size() < 2) return new Pose();
 
         Point goal = path.get(path.size() - 1);
 
-        // stop when close to goal
-        if (POSE.distanceTo(goal) <= 2) {
-            auto.driveTo(new Pose(goal.x, goal.y, POSE.heading));
-            return;
+        if (POSE.distanceTo(goal) <= stopRadius) {
+            finished = true;
+            return new Pose(goal.x, goal.y, POSE.heading);
         }
+
+        finished = false;
 
         double r2 = lookahead * lookahead;
         Point lookaheadPoint = null;
 
-        // simple inline lookahead search
         for (int i = segment; i < path.size() - 1; i++) {
             Point a = path.get(i);
             Point b = path.get(i + 1);
@@ -56,7 +53,6 @@ public class PurePursuitController {
             double t1 = (-B - sqrt) / (2 * A);
             double t2 = (-B + sqrt) / (2 * A);
 
-            // pick the intersection that's within the segment
             if (t1 >= 0 && t1 <= 1) {
                 lookaheadPoint = new Point(a.x + d.x * t1, a.y + d.y * t1);
                 segment = i;
@@ -69,11 +65,9 @@ public class PurePursuitController {
         }
 
         if (lookaheadPoint == null) {
-            // fallback: next waypoint
             lookaheadPoint = path.get(Math.min(segment + 1, path.size() - 1));
         }
 
-        // pick heading based on mode
         double heading;
         if (mode == Enums.HeadingMode.PATH_TANGENT) {
             Point a = path.get(segment);
@@ -82,28 +76,31 @@ public class PurePursuitController {
         } else if (mode == Enums.HeadingMode.FACE_GOAL) {
             heading = Math.atan2(goal.y - POSE.y, goal.x - POSE.x);
         } else {
-            heading = segment;
+            heading = POSE.heading;
         }
 
-        // feed current lookahead to your AutoDrive
-        auto.driveTo(new Pose(lookaheadPoint.x, lookaheadPoint.y, heading));
+        return new Pose(lookaheadPoint.x, lookaheadPoint.y, heading);
     }
 
 
 
-    public void addPoint(Point point) { this.path.add(point); }
+    public PurePursuitController addPoint(Point point) { path.add(point); return this; }
 
-    public void setMode(Enums.HeadingMode mode) { this.mode = mode; }
+    public PurePursuitController setMode(Enums.HeadingMode mode) { this.mode = mode; return this; }
 
-    public void reset() { this.path.clear(); }
+    public PurePursuitController setStopRadius(double r) { stopRadius = r; return this; }
 
 
 
-    public boolean isBusy() { return this.auto.isBusy(); }
+    public void reset() {
+        path.clear();
+        segment = 0;
+        finished = false;
+    }
 
-    public Enums.HeadingMode getMode() { return this.mode; }
+    public boolean isFinished() { return finished; }
 
+    public boolean isBusy() { return !finished; }
+
+    public Enums.HeadingMode getMode() { return mode; }
 }
-
-
-
