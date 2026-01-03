@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode.Pathing;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.LinearD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.LinearP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.FindShortestPath;
 
 import com.arcrobotics.ftclib.controller.PIDController;
@@ -51,8 +52,8 @@ public class AutoDrive {
         this.system = system;
         POSE = startPose;
 
-        linearC = new PIDController(LinearP, 0, LinearD);
-        angularC = new PIDController(AngularP, 0, AngularD);
+        linearC = new PIDController(AutoLinearP, 0, AutoLinearD);
+        angularC = new PIDController(TeleOpAngularP, 0, TeleOpAngularD);
 
         setPose(POSE);
 
@@ -67,8 +68,8 @@ public class AutoDrive {
         this.swerve = swerve;
         this.system = system;
 
-        linearC = new PIDController(LinearP, 0, LinearD);
-        angularC = new PIDController(AngularP, 0, AngularD);
+        linearC = new PIDController(AutoLinearP, 0, AutoLinearD);
+        angularC = new PIDController(TeleOpAngularP, 0, TeleOpAngularD);
 
         setPose(POSE);
 
@@ -84,8 +85,10 @@ public class AutoDrive {
 
     private void startDriveThread() {
         driveThread = new Thread(() -> {
-                while (opMode.opModeIsActive()) {
-                    hardware.read(swerve, system);
+                ElapsedTime autonomousTimer = new ElapsedTime();
+
+                while (opMode.opModeIsActive() && autonomousTimer.seconds() < 29.5) {
+                    //hardware.read(swerve, system);
 
                     if (isPaused && !previousIsPaused) {    // stop the robot when paused
                         swerve.setLockedX(true);
@@ -98,17 +101,22 @@ public class AutoDrive {
                     if (controller != null) target = controller.update();
                     updateDriveVector();
 
-                    hardware.telemetry.addData("drive x", driveVector.x);
-                    hardware.telemetry.addData("drive y", driveVector.y);
-                    hardware.telemetry.addData("drive heading", driveVector.heading);
+                    hardware.telemetry.addData("x", driveVector.x);
+                    hardware.telemetry.addData("y", driveVector.y);
+                    hardware.telemetry.addData("head", driveVector.heading);
                     hardware.telemetry.update();
 
                     if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
                         driveTo(POSE);
 
                     swerve.update(driveVector);
-                    hardware.write(swerve, system);
                 }
+
+                // prevent inertia movement from the drivetrain
+                swerve.setLockedX(true);
+                swerve.update(new Pose());
+
+                startPose = POSE;
         });
 
         driveThread.start();

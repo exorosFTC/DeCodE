@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 
@@ -24,8 +24,8 @@ public class DriveTest extends LinearOpMode {
 
     private GamepadEx g1;
 
-    public static double p = AngularP;
-    public static double d = AngularD;
+    public static double p = TeleOpAngularP;
+    public static double d = TeleOpAngularD;
 
 
     @Override

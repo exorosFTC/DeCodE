@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.LinearD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.LinearP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearP;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -27,8 +27,8 @@ public class PIDAutoTuner extends ExoMode {
     private ScoringSystem system;
     private AutoDrive auto;
 
-    public static double linP = LinearP, angP = AngularP;
-    public static double linD = LinearD, angD = AngularD;
+    public static double linP = AutoLinearP, angP = TeleOpAngularP;
+    public static double linD = AutoLinearD, angD = TeleOpAngularD;
     public static double x, y, head;
 
     public GamepadEx g2;

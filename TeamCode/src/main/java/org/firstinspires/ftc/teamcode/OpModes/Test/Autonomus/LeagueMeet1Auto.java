@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseRedClose;
 
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
@@ -15,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 import org.firstinspires.ftc.teamcode.Pathing.PurePursuitController;
 
+@Autonomous(name = "RedClose", group = "main")
 public class LeagueMeet1Auto extends ExoMode {
     private Hardware hardware;
     private SwerveDrive swerve;
@@ -29,12 +32,20 @@ public class LeagueMeet1Auto extends ExoMode {
         swerve = new SwerveDrive(this);
         system = new ScoringSystem(this);
 
+        startPose = startPoseRedClose;
+        try { Thread.sleep(150); } catch (InterruptedException e) {}
+        hardware.localizer.setPositionEstimate(startPose);
+        try { Thread.sleep(150); } catch (InterruptedException e) {}
+
         new SystemData()
                 .add(Enums.OpMode.AUTONOMUS)
                 .setAutoOnBlue(false)
                 .getLoopTime(true);
 
         pathController = new PurePursuitController()
+                    .setMode(Enums.HeadingMode.FIXED)
+                    .setStopRadius(6)
+                    .setLookahead(10)
                 .addPoint(new Point());
     }
 

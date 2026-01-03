@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.STRAFING_SLEW_RATE_LIMIT;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TURNING_SLEW_RATE_LIMIT;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
@@ -31,7 +33,7 @@ public class SwerveDrive extends SystemBase {
     public List<SwerveModuleState> states;
 
     private final ElapsedTime timer;
-    public final PIDController angularC;
+    public final PIDController angularC, limelightC;
     public double targetHeading;
 
     private boolean lockHeadingToGoal = false;
@@ -47,16 +49,20 @@ public class SwerveDrive extends SystemBase {
 
         rightFrontModule = new SwerveModule(hardware.RightFront,
                                             hardware.RightFront_servo,
-                                            new AbsoluteAnalogEncoder(hardware.RightFront_encoder).zero(-1.97));
+                                            new AbsoluteAnalogEncoder(hardware.RightFront_encoder).zero(-1.97),
+                                            0);
         leftFrontModule = new SwerveModule(hardware.LeftFront,
                                             hardware.LeftFront_servo,
-                                            new AbsoluteAnalogEncoder(hardware.LeftFront_encoder).zero(0.08));
+                                            new AbsoluteAnalogEncoder(hardware.LeftFront_encoder).zero(0.08),
+                                            0.1);
         leftBackModule = new SwerveModule(hardware.LeftBack,
                                             hardware.LeftBack_servo,
-                                            new AbsoluteAnalogEncoder(hardware.LeftBack_encoder).zero(-2.42));
+                                            new AbsoluteAnalogEncoder(hardware.LeftBack_encoder).zero(-2.42),
+                                            0.1);
         rightBackModule = new SwerveModule(hardware.RightBack,
                                             hardware.RightBack_servo,
-                                            new AbsoluteAnalogEncoder(hardware.RightBack_encoder).zero(1.77));
+                                            new AbsoluteAnalogEncoder(hardware.RightBack_encoder).zero(1.77),
+                                            0);
 
         modules = new SwerveModule[]{rightFrontModule, leftFrontModule, leftBackModule, rightBackModule};
         states = SwerveKinematics.robot2wheel(new Pose(0, 0, 0));
@@ -66,7 +72,8 @@ public class SwerveDrive extends SystemBase {
         headLim = new SlewRateLimiter(TURNING_SLEW_RATE_LIMIT);
 
 
-        angularC = new PIDController(AngularP, 0, AngularD);
+        angularC = new PIDController(TeleOpAngularP, 0, TeleOpAngularD);
+        limelightC = new PIDController(TeleOpLimelightP, 0, TeleOpLimelightD);
         targetHeading = startPose.heading;
     }
 
@@ -77,9 +84,9 @@ public class SwerveDrive extends SystemBase {
             modules[a].setPID(p, i, d);
     }
 
-    public void setHeadingPID(double p, double i, double d) {
-        angularC.setPID(p, i, d);
-    }
+    public void setHeadingPID(double p, double i, double d) { angularC.setPID(p, i, d); }
+
+    public void setLimelightPID(double p, double i, double d) { limelightC.setPID(p, i, d); }
 
 
 
@@ -87,6 +94,8 @@ public class SwerveDrive extends SystemBase {
         if (autoOnBlue && opModeType == Enums.OpMode.TELE_OP) velocity.negate();
 
         if (!lockHeadingToGoal) {
+            if (hardware.limelight.enabled) hardware.limelight.stop();
+
             //pid for skew correction
             if (Math.abs(velocity.heading) < 0.01 && timer.milliseconds() > 600) {
                 velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
@@ -96,8 +105,17 @@ public class SwerveDrive extends SystemBase {
                 targetHeading = POSE.heading;
             }
         } else {
-            targetHeading = Math.atan2(goalPosition.y - POSE.y, goalPosition.x - POSE.x);
-            velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
+            if (!hardware.limelight.enabled) hardware.limelight.start();
+            hardware.limelight.read();
+
+            if (hardware.limelight.tagInSight()) {
+                hardware.telemetry.addLine("Alignment: TAG");
+                velocity.heading = limelightC.calculate(hardware.limelight.getCenterOffset());
+            } else {
+                hardware.telemetry.addLine("Alignment: ODOMETRY");
+                targetHeading = Math.atan2(goalPosition.y - POSE.y, goalPosition.x - POSE.x);
+                velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
+            }
         }
 
         // always convert to field centric, both in AUTO and TELE-OP

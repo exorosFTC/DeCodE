@@ -90,6 +90,8 @@ public class PurePursuitController {
 
     public PurePursuitController setStopRadius(double r) { stopRadius = r; return this; }
 
+    public PurePursuitController setLookahead(double l) { lookahead = l; return this; }
+
 
 
     public void reset() {

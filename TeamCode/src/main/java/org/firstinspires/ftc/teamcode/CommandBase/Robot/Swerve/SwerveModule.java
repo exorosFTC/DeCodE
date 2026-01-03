@@ -21,6 +21,7 @@ public class SwerveModule extends SystemBase {
     public final CRServo servo;
     public final AbsoluteAnalogEncoder encoder;
 
+    private double kS = 0.03;
     private final PIDFController controller = new PIDFController(swerveP, 0, swerveD, 0);
     private boolean wheelFlipped = false;
 
@@ -30,10 +31,11 @@ public class SwerveModule extends SystemBase {
     public double servoPower;
 
 
-    public SwerveModule(DcMotorEx motor, CRServo servo, AbsoluteAnalogEncoder encoder) {
+    public SwerveModule(DcMotorEx motor, CRServo servo, AbsoluteAnalogEncoder encoder, double kS) {
         this.motor = motor;
         this.servo = servo;
         this.encoder = encoder;
+        this.kS = kS;
     }
 
 
@@ -63,7 +65,11 @@ public class SwerveModule extends SystemBase {
         if (Double.isNaN(servoPower)) servoPower = 0;
 
         servoPower = servoPower + (Math.abs(error) > 0.02 ? K_STATIC : 0) * Math.signum(servoPower);
-        targetState.setModuleVelocity(targetState.getModuleVelocity() * Math.cos(Math.abs(error)));
+        targetState.setModuleVelocity(
+              //Math.signum(targetState.getModuleVelocity()) * kS +             // static friction correction
+                targetState.getModuleVelocity()
+              //* Math.cos(Math.abs(error))                           // cosine correction
+        );
     }
 
     public double getTargetRotation() {

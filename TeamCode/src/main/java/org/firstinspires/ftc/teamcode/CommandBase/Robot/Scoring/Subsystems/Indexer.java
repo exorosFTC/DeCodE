@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems;
 
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.lastValidRandomization;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -7,7 +9,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
-import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,12 +20,13 @@ public class Indexer extends SystemBase {
 
     public static final double TICKS_PER_REVOLUTION = 336;
     public static double HOMING_POWER = 0.2; //in the indexing direction
-    public static double INDEXING_POWER = 0.18;
+    public static double INDEXING_POWER = 0.4;
     public static double SHOOTING_POWER = 1;
 
     private static final int offset = 0;
 
     public boolean RAPID_FIRE = true;
+    public boolean isHome = true;
 
     public int target = offset;
     public int indexerPosition = 0;
@@ -48,13 +50,13 @@ public class Indexer extends SystemBase {
 
 
     public void home() {
-        timer.reset();
-
         hardware.IndexerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        hardware.IndexerMotor.setPower(-HOMING_POWER);
-        while (indexerLimit && opMode.opModeIsActive() && timer.seconds() < 2) {}
+        // home in the shooting direction
+        if (indexerLimit) { hardware.IndexerMotor.setPower(HOMING_POWER); timer.reset(); }
+        while (indexerLimit && opMode.opModeIsActive() && timer.seconds() < 3) {}
+        if (timer.seconds() < 3) isHome = true;
 
         target = offset;
 
@@ -63,19 +65,13 @@ public class Indexer extends SystemBase {
         off();
     }
 
-    public void returnToZero() {
-        timer.reset();
-        runTarget(0, SHOOTING_POWER);
 
-        while (isBusy() && opMode.opModeIsActive() && timer.seconds() < 2) {}
-        off();
-    }
 
     public void index(int balls) {
         balls = Math.max(1, Math.min(balls, 2)); //indexing 3 spots is useless, limit to 2
 
         // special check for indexing balls
-        if (elements.get(3 - balls) != Enums.ArtifactColor.NONE) target = (int) (target - TICKS_PER_REVOLUTION / 5);
+        if (elements.get(3 - balls) != Enums.ArtifactColor.NONE) target = (int) (target - TICKS_PER_REVOLUTION / 4.6);
 
         // index and update the artefact list
         runTarget((int) (target - balls * TICKS_PER_REVOLUTION / 3), INDEXING_POWER);
@@ -84,23 +80,19 @@ public class Indexer extends SystemBase {
         // if there is an artefact in the front
         if (elements.get(0) != Enums.ArtifactColor.NONE) {
             // wait for reaching the overshot position
-            timer.reset();
-
             hardware.IndexerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-            hardware.IndexerMotor.setPower(-INDEXING_POWER);
-            while (isBusy() && opMode.opModeIsActive() && timer.seconds() < 1.5 * balls) {}
+            hardware.IndexerMotor.setPower(-INDEXING_POWER * 13.5 / hardware.batteryVoltage);
+            while (indexerPosition > target && opMode.opModeIsActive()) {}
             off();
 
             // come back so the transfer arm is down
-            runTarget(
-                    (int) (target + TICKS_PER_REVOLUTION / 5),
-                    HOMING_POWER
-            );
 
-            // wait to reach and disable the indexer
-            while (isBusy() && opMode.opModeIsActive()) {}
+            target = (int) (target + TICKS_PER_REVOLUTION / 4.9);
+            hardware.IndexerMotor.setPower(0.16 * 13.5 / hardware.batteryVoltage);
+
+            while (indexerPosition < target && opMode.opModeIsActive()) { }
             off();
         }
     }
@@ -109,27 +101,48 @@ public class Indexer extends SystemBase {
         int greenCurrentPos = elements.indexOf(Enums.ArtifactColor.GREEN);
         int greenTargetPos;
 
-        switch (LimelightEx.lastValidRandomization) {
+        switch (lastValidRandomization) {
             case LEFT: greenTargetPos = 0;
             case CENTER: greenTargetPos = 1;
             case RIGHT: greenTargetPos = 2;
-            default: greenTargetPos = greenCurrentPos;
+            default: greenTargetPos = 0;
         }
 
         int steps = (3 + greenTargetPos - greenCurrentPos) % 3;
+        hardware.telemetry.addData("steps", steps);
 
         if (steps == 0) return;
         index(steps);
 
     }
 
+    public void microAdjust(boolean reverse) {
+        runTarget(target + (reverse ? 1 : -1) * 20,
+                  INDEXING_POWER);
+    }
+
+    public void zero() {
+        runTarget(0,
+                SHOOTING_POWER);
+
+        timer.reset();
+        while (isBusy() && opMode.opModeIsActive() && timer.seconds() < 3) {}
+    }
+
     public void shoot(int balls) {
         balls = Math.max(1, Math.min(balls, 3));
 
-        runTarget(
-                (int) (target + balls * TICKS_PER_REVOLUTION * 2 / 3 * 0.95),
-                SHOOTING_POWER
-        );
+
+        timer.reset();
+        hardware.IndexerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        this.target = (int) (target + balls * TICKS_PER_REVOLUTION * 2 / 3 );
+        this.on = true;
+
+        hardware.IndexerMotor.setPower(SHOOTING_POWER * 13.5 / hardware.batteryVoltage);
+        while (indexerPosition < target && opMode.opModeIsActive() && timer.seconds() < 2) {}
+        hardware.IndexerMotor.setPower(0);
 
         sideswipe(balls, true);
     }
@@ -210,16 +223,7 @@ public class Indexer extends SystemBase {
         this.RAPID_FIRE = flag;
 
         if (flag) SHOOTING_POWER = 1;
-        else SHOOTING_POWER = 0.5;
-    }
-
-    public void microAdjust() {
-        new Thread(() -> {
-            runTarget(target - 20, INDEXING_POWER);
-
-            while (isBusy() && opMode.opModeIsActive()) {}
-            off();
-        }).start();
+        else SHOOTING_POWER = 0.4;
     }
 
 

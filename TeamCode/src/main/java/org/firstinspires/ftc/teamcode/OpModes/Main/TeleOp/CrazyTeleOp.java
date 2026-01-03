@@ -1,19 +1,13 @@
 package org.firstinspires.ftc.teamcode.OpModes.Main.TeleOp;
 
-
-import static androidx.core.math.MathUtils.clamp;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.telemetryAddLoopTime;
-import static org.firstinspires.ftc.teamcode.Pathing.Math.ShootingZoneIntersection.isInShootingZone;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
@@ -23,6 +17,8 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.TriggerManager;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Config
 @TeleOp(name = "😈🔥", group = "main")
@@ -34,13 +30,14 @@ public class CrazyTeleOp extends ExoMode {
     private ScoringSystem system;
 
     private GamepadEx g1, g2;
-    private TriggerManager intakeTriggers, shooterTriggers, swerveTriggers;
+    private final SoloTeleOp.InputBus in = new SoloTeleOp.InputBus();
+    private TriggerManager intakeTriggers, shooterTriggers;
+
+    private Thread swerveThread, gamepadThread;
 
     public static double ANGLE_ADJUST = 0;
     public static double angle = 0;
     public static double power = 0;
-
-    public static double swerveP = AngularP, swerveD = AngularD;
 
     @Override
     protected void Init() {
@@ -59,58 +56,102 @@ public class CrazyTeleOp extends ExoMode {
 
         // create gamepad triggers
         intakeTriggers = new TriggerManager()
-                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.B),
-                            () -> {
-                            if (system.intake.on && !system.intake.reversed) {
-                                system.intake.off();
-                                system.indexer.off();
-                            } else {
-                                system.intake.on();
-                                system.indexer.on();
-                            }})
-                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.A),
-                            () -> {
-                                if (system.intake.on && system.intake.reversed) {
-                                    system.intake.off();
-                                    system.indexer.off();
-                                } else {
-                                    system.intake.reverse();
-                                    system.indexer.on();
-                                }
-                            });
+                .addTrigger(() -> in.evToggleIntake.getAndSet(false), () -> {
+                    if (system.intake.on && !system.intake.reversed) {
+                        system.intake.off();
+                        system.isIntakeEnabled = false;
+                        system.indexer.off();
+                    } else {
+                        system.intake.on();
+                        system.isIntakeEnabled = true;
+                        system.indexer.target = 0;
+                        system.indexer.on();
+                    }})   // intake
+                .addTrigger(() -> in.evReverseIntake.getAndSet(false), () -> {
+                    if (system.intake.on && system.intake.reversed) {
+                        system.intake.off();
+                        system.indexer.off();
+                    } else {
+                        system.intake.reverse();
+                        system.indexer.on();
+                    }
+                }); // reverse intake
 
         shooterTriggers = new TriggerManager()
-                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_UP), () -> {
-                    if (!system.shooter.on) { system.shooter.on(); system.indexer.microAdjust(); }
-                    else system.shooter.off();
-                })
-                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_LEFT),
-                        () -> {
-                            while (!system.shooter.ready()) { system.update(); }
-
-                            system.indexer.setRapidFire(false);
-                            system.shootSequence();
-                        })
-                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT),
-                            () -> {
-                            while (!system.shooter.ready()) { system.update(); }
-
-                            system.indexer.setRapidFire(true);
-                            system.shootSequence();
-                            })
-                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER),
-                        () -> system.indexer.index(1))
-                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER),
-                        () -> system.indexer.home())
-                .addTrigger(() -> g2.wasJustPressed(GamepadKeys.Button.X),
-                        () -> system.indexer.sideswipe(3, true));
-
-        swerveTriggers = new TriggerManager();
+                .addTrigger(() -> in.evShootSorted.getAndSet(false), () -> {
+                    system.indexer.setRapidFire(false);
+                    system.indexer.indexPattern();
+                })                       // sort
+                .addTrigger(() -> in.evShootUnsorted.getAndSet(false) && in.spinupShooter, () -> {
+                    system.shootSequence();
+                    system.indexer.setRapidFire(true);
+                }) // shoot
+                .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home());      // emergency homing
 
 
+        // set the right start position
         try { Thread.sleep(150); } catch (InterruptedException e) {}
         hardware.localizer.setPositionEstimate(startPose);
         try { Thread.sleep(150); } catch (InterruptedException e) {}
+
+
+        // initialize threads
+        swerveThread = new Thread(() -> {
+            while (opModeIsActive()) {
+                hardware.bulk.clearCache(Enums.Hubs.ALL);
+                swerve.read();
+
+                swerve.update(new Pose(
+                        in.ly,
+                        -in.lx,
+                        -in.rx * 0.018)
+                );
+
+                swerve.lockHeadingToGoal(in.lockToGoal);
+                if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
+
+                swerve.write();
+
+
+                hardware.telemetry.addData("x", POSE.x);
+                hardware.telemetry.addData("y", POSE.y);
+                hardware.telemetry.addData("head", POSE.heading);
+
+                hardware.telemetry.addData("art", system.indexer.elements.toString());
+                updateTelemetry();
+
+            }
+        }, "SwerveThread");
+        gamepadThread = new Thread(() -> {
+            while (opModeIsActive()) {
+                hardware.read(system);
+                g1.readButtons();
+                g2.readButtons();
+
+                // continuous snapshot
+                in.ly = g1.getLeftY();
+                in.lx = g1.getLeftX();
+                in.rx = g1.getRightX();
+                in.lt = g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
+                in.lockToGoal = in.lt > 0.1;
+
+                in.spinupShooter = g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1;
+
+                // edges -> events (one-shot)
+                if (g2.wasJustPressed(GamepadKeys.Button.B)) in.evToggleIntake.set(true);
+                if (g2.wasJustPressed(GamepadKeys.Button.A)) in.evReverseIntake.set(true);
+                if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) in.evShootSorted.set(true);
+                if (g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) in.evShootUnsorted.set(true);
+                if (g2.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
+
+                if (g1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1) in.evLockX.set(true);
+
+                system.shooter.update();
+                system.write();
+
+                // tiny yield to avoid maxing CPU
+                Thread.yield();
+            } }, "GamepadThread");
 
         hardware.telemetry.addLine("INIT READY 😈😈😈");
         hardware.telemetry.update();
@@ -120,61 +161,28 @@ public class CrazyTeleOp extends ExoMode {
     protected void WhenStarted() {
         hardware.telemetry.clearAll();
 
-        new Thread(() -> {
-            while (opModeIsActive()) {
-                hardware.read(system, swerve);
-                g1.readButtons();
-
-                swerve.update(new Pose(
-                        swerve.xLim.calculate(g1.getLeftY()),
-                        swerve.yLim.calculate(-g1.getLeftX()),
-                        swerve.headLim.calculate(-g1.getRightX() * 0.05))
-                );
-
-                swerveTriggers.check();
-
-                //system.shooter.targetAngle = clamp(angle - (system.shooter.TARGET - system.shooter.wheelVelocity) * ANGLE_ADJUST, 0.27, 0.97);
-                //system.shooter.targetPower = power;
-
-                //swerve.setHeadingPID(swerveP, 0, swerveD);
-
-                swerve.lockHeadingToGoal(g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1);
-                swerve.setLockedX(g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.1);
-
-                // localization telemetry
-                //hardware.telemetry.addData("x", POSE.x);
-                //hardware.telemetry.addData("y", POSE.y);
-                //hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
-                //hardware.telemetry.addData("target head", Math.toDegrees(swerve.targetHeading));
-                hardware.telemetry.addData("isInShootingZone", isInShootingZone());
-
-                // shooter telemetry
-                hardware.telemetry.addData("velocity", system.shooter.wheelVelocity);
-                hardware.telemetry.addData("velocity target", system.shooter.TARGET);
-                //hardware.telemetry.addData("distance", system.shooter.distance);
-
-                // indexer telemetry
-                //hardware.telemetry.addData("artifact list", system.indexer.elements.toString());
-
-                updateTelemetry();
-                hardware.write(system, swerve);
-            }
-        }).start();
+        gamepadThread.start();
+        swerveThread.start();
 
         system.indexer.home();
     }
 
     @Override
     protected void Loop() {
-        g2.readButtons();
-
-        if (system.isIntakeEnabled)
-            intakeTriggers.check();
+        intakeTriggers.check();
         shooterTriggers.check();
 
-        system.update();
+        if (in.spinupShooter && !system.shooter.on) {
+            system.shooter.on();
+            system.indexer.microAdjust(false);
+        } else if (!in.spinupShooter && system.shooter.on) {
+            system.shooter.off();
+            system.indexer.microAdjust(true);
+        }
 
-        try { Thread.sleep(5); } catch (InterruptedException e) {}
+        system.updateIntake();
+
+        try { Thread.sleep(3); } catch (InterruptedException e) {}
     }
 
 

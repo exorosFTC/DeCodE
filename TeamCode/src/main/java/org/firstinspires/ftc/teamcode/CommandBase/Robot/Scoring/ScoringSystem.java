@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring;
 
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.ShootingZoneIntersection.isInShootingZone;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.onbotjava.handlers.file.TemplateFile;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
@@ -21,10 +24,13 @@ public class ScoringSystem extends SystemBase {
     public Indexer indexer;
     public Shooter shooter;
 
-    public boolean isIntakeEnabled = true;
-    public double[] catchThreshold = new double[]{70, 50, 60};
+    public ElapsedTime timer;
+    public double MIN_LOOPS = 8;
 
+    public boolean isIntakeEnabled = true;
+    public double[] catchThreshold = new double[]{68, 85, 56};
     public double[] colorDistance = new double[]{-1, -1, -1};
+    public double[] loops = new double[]{0, 0, 0};
     public NormalizedRGBA colorValues;
 
 
@@ -36,16 +42,24 @@ public class ScoringSystem extends SystemBase {
         intake = new Intake(opMode);
         indexer = new Indexer(opMode);
         shooter = new Shooter(opMode);
+
+        timer = new ElapsedTime();
     }
 
 
 
-    public void update() {
-        updateIntake();
-        shooter.update();
-    }
 
     public void updateIntake() {
+        if (timer.milliseconds() < 400) {
+            if (hardware.IntakeColor1.getDistance(DistanceUnit.MM) < catchThreshold[0]) {
+                colorValues = getColorForIndex(0);
+
+                if (colorValues.green > colorValues.red && colorValues.green > colorValues.blue)
+                    indexer.elements.set(0, Enums.ArtifactColor.GREEN);
+                else indexer.elements.set(0, Enums.ArtifactColor.PURPLE);
+            }
+        }
+
         if (indexer.elements.contains(Enums.ArtifactColor.NONE) && !isIntakeEnabled) isIntakeEnabled = true;
         if (indexer.isBusy() || !indexer.on || !isIntakeEnabled) return;
 
@@ -59,7 +73,8 @@ public class ScoringSystem extends SystemBase {
         for (int i = 0; i < colorDistance.length; i++) {
             double distance = colorDistance[i];
 
-            if (distance < catchThreshold[i]) {
+            if (distance < catchThreshold[i] && loops[i] < MIN_LOOPS) { loops[i]+=1; }
+            else if (distance < catchThreshold[i] && loops[i] >= MIN_LOOPS) {
                 colorValues = getColorForIndex(i);
 
                 if (colorValues.green > colorValues.red && colorValues.green > colorValues.blue)
@@ -78,9 +93,10 @@ public class ScoringSystem extends SystemBase {
         intake.reverse();
         try { Thread.sleep(400); } catch (InterruptedException e) {}
         intake.off();
-
-        isIntakeEnabled = false;
         indexer.off();
+
+        timer.reset();
+        isIntakeEnabled = false;
     }
 
     public void shootSequence() {
@@ -91,18 +107,18 @@ public class ScoringSystem extends SystemBase {
             intake.off();
         }
 
-        if (!indexer.RAPID_FIRE) indexer.indexPattern();
+        while ((!shooter.ready() || indexer.isBusy()) && this.opMode.opModeIsActive()) {}
 
-        while (!shooter.ready() && this.opMode.opModeIsActive()) { shooter.update(); try { Thread.sleep(5); } catch (InterruptedException e) {} }
-        if (isInShootingZone()) indexer.shoot(3);
-        while (indexer.isBusy() && this.opMode.opModeIsActive()) { shooter.update(); try { Thread.sleep(5); } catch (InterruptedException e) {} }
-
+        if (!isInShootingZone() && opModeType == Enums.OpMode.AUTONOMUS) return;
+        indexer.isHome = false;
+        indexer.shoot(3);
 
         shooter.off();
         isIntakeEnabled = true;
 
         indexer.previousLastElement = Enums.ArtifactColor.NONE;
-        indexer.returnToZero();
+        indexer.zero();
+        //indexer.home();
     }
 
     private NormalizedRGBA getColorForIndex(int i) {

@@ -20,12 +20,11 @@ public class Shooter extends SystemBase {
     public static double kP = 0.009;
     public static double kI = 0;
     public static double kD = 0;
-    public static double kF = 0.00155;
+    public static double kF = 0.00157;
 
     private static final double VEL_ALPHA = 0.3;
-    public static final double COAST_POWER = 0;
     public static final double MAX_RPS = 600;
-    public static double ANGLE_ADJUST = 0;
+    public static double ANGLE_ADJUST = -0.003;
 
     public boolean enabled = true;
 
@@ -71,7 +70,7 @@ public class Shooter extends SystemBase {
         }
 
         this.TARGET = targetPower * MAX_RPS;
-        this.POWER = controller.calculate(wheelVelocity, TARGET);
+        this.POWER = controller.calculate(wheelVelocity, TARGET) * 13.5 / hardware.batteryVoltage;
 
         if (!on) return;
         targetAngle = clamp(targetAngle - (this.TARGET - wheelVelocity - threshold) * ANGLE_ADJUST, 0.37, 0.97);  // adjust angle by velocity*/
@@ -148,8 +147,12 @@ public class Shooter extends SystemBase {
     public void off() {
         super.off();
 
-        targetPower = COAST_POWER;
+        enabled = false;
+        //targetPower = COAST_POWER;
+
         hardware.ShooterHoodServo.getController().pwmDisable();
+        hardware.Shooter1.setMotorDisable();
+        hardware.Shooter2.setMotorDisable();
     }
 
     public void setEnabled(boolean enabled) {

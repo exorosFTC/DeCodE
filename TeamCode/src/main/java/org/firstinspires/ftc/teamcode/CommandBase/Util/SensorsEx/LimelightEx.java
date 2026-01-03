@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.lastValidRandomization;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -14,7 +15,6 @@ public class LimelightEx {
     public boolean enabled = false;
 
     public Enums.Pipeline pipeline = Enums.Pipeline.RANDOMIZATION;
-    public static Enums.Randomization lastValidRandomization = Enums.Randomization.LEFT;
     public LLResult
             raw = null,
             result = null;
@@ -32,7 +32,8 @@ public class LimelightEx {
         if (!enabled)  return;
 
         raw = limelight.getLatestResult();
-        result = (raw == null || !result.isValid()) ? result : raw;
+        if (raw == null) return;
+        result = raw;
     }
 
 
@@ -57,7 +58,7 @@ public class LimelightEx {
 
     public Enums.Randomization getRandomization() {
         if (pipeline != Enums.Pipeline.RANDOMIZATION) setPipeline(Enums.Pipeline.RANDOMIZATION);
-        if (result == null) return lastValidRandomization;
+        if (result == null || result.getFiducialResults().isEmpty()) return lastValidRandomization;
 
         int tagId = result.getFiducialResults().get(0).getFiducialId();
         switch (tagId) {
@@ -77,6 +78,10 @@ public class LimelightEx {
         if (result == null) return 0;
 
         return result.getTx();
+    }
+
+    public boolean tagInSight() {
+        return !result.getFiducialResults().isEmpty() && pipeline != Enums.Pipeline.RANDOMIZATION;
     }
 
 }

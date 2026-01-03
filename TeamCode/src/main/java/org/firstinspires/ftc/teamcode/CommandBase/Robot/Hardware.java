@@ -152,20 +152,17 @@ public class Hardware {
 
         IntakeMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         IntakeMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+
+        LeftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        RightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public void read(SystemBase system, SystemBase swerve) {
+    public void read(SystemBase system) {
         localizer.update();
-
-        bulk.clearCache(Enums.Hubs.ALL);
         batteryVoltage = batteryVoltageSensor.getVoltage();
 
         system.read();
-        swerve.read();
-    }
-
-    public void write(SystemBase system, SystemBase swerve) {
-        system.write();
-        swerve.write();
     }
 }

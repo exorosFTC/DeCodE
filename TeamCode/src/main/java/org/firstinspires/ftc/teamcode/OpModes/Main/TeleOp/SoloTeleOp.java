@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.OpModes.Main.TeleOp;
 
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.telemetryAddLoopTime;
 
@@ -11,6 +14,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
@@ -33,11 +37,12 @@ public class SoloTeleOp extends ExoMode {
 
     private GamepadEx g1;
     private final InputBus in = new InputBus();
-    private TriggerManager intakeTriggers, shooterTriggers, swerveTriggers;
+    private TriggerManager intakeTriggers, shooterTriggers;
 
     private Thread swerveThread, gamepadThread;
 
-    public static double swerveP = AngularP, swerveD = AngularD;
+    public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD;
+    public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
 
 
 
@@ -60,11 +65,14 @@ public class SoloTeleOp extends ExoMode {
                 .addTrigger(() -> in.evToggleIntake.getAndSet(false), () -> {
                             if (system.intake.on && !system.intake.reversed) {
                                 system.intake.off();
+                                system.isIntakeEnabled = false;
                                 system.indexer.off();
                             } else {
                                 system.intake.on();
+                                system.isIntakeEnabled = true;
+                                system.indexer.target = 0;
                                 system.indexer.on();
-                            }}) // intake
+                            }})   // intake
                 .addTrigger(() -> in.evReverseIntake.getAndSet(false), () -> {
                             if (system.intake.on && system.intake.reversed) {
                                 system.intake.off();
@@ -77,18 +85,14 @@ public class SoloTeleOp extends ExoMode {
 
         shooterTriggers = new TriggerManager()
                 .addTrigger(() -> in.evShootSorted.getAndSet(false), () -> {
-                            while (!system.shooter.ready()) { system.update(); }
-
                             system.indexer.setRapidFire(false);
+                            system.indexer.indexPattern();
+                        })                       // sort
+                .addTrigger(() -> in.evShootUnsorted.getAndSet(false) && in.spinupShooter, () -> {
                             system.shootSequence();
-                        })               // sorted shoot
-                .addTrigger(() -> in.evShootUnsorted.getAndSet(false), () -> {
-                            while (!system.shooter.ready()) { system.update(); }
-
                             system.indexer.setRapidFire(true);
-                            system.shootSequence();
-                        })                // unsorted shoot
-                .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home()); // emergency homing
+                        }) // shoot
+                .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home());      // emergency homing
 
 
         // set the right start position
@@ -100,23 +104,41 @@ public class SoloTeleOp extends ExoMode {
         // initialize threads
         swerveThread = new Thread(() -> {
             while (opModeIsActive()) {
-                hardware.read(system, swerve);
-
                 swerve.update(new Pose(
-                        swerve.xLim.calculate(in.ly),
-                        swerve.yLim.calculate(-in.lx),
-                        swerve.headLim.calculate(-in.rx * 0.05))
+                        in.ly,
+                        -in.lx,
+                        -in.rx * 0.018)
                 );
+
+                swerve.setLimelightPID(limelightP, 0, limelightD);
+                swerve.setHeadingPID(swerveP, 0, swerveD);
 
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
 
+                swerve.write();
+
+
+                hardware.telemetry.addData("x", POSE.x);
+                hardware.telemetry.addData("y", POSE.y);
+                hardware.telemetry.addData("head", POSE.heading);
+
+                //hardware.telemetry.addData("vel", Math.hypot(x, y));
+                //hardware.telemetry.addData("LF current", hardware.LeftFront.getCurrent(CurrentUnit.AMPS));
+                //hardware.telemetry.addData("LB current", hardware.LeftBack.getCurrent(CurrentUnit.AMPS));
+                //hardware.telemetry.addData("RF current", hardware.RightFront.getCurrent(CurrentUnit.AMPS));
+                //hardware.telemetry.addData("RB current", hardware.RightBack.getCurrent(CurrentUnit.AMPS));
+
+                hardware.telemetry.addData("art", system.indexer.elements.toString());
                 updateTelemetry();
-                hardware.write(system, swerve);
+
             }
         }, "SwerveThread");
         gamepadThread = new Thread(() -> {
             while (opModeIsActive()) {
+                hardware.bulk.clearCache(Enums.Hubs.ALL);
+                hardware.read(system);
+                swerve.read();
                 g1.readButtons();
 
                 // continuous snapshot
@@ -126,7 +148,7 @@ public class SoloTeleOp extends ExoMode {
                 in.lt = g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
                 in.rt = g1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
                 in.lockToGoal = in.lt > 0.1;
-                in.rbHeld = g1.isDown(GamepadKeys.Button.RIGHT_BUMPER);
+                in.spinupShooter = in.rt > 0.1;
 
                 // edges -> events (one-shot)
                 if (g1.wasJustPressed(GamepadKeys.Button.B)) in.evToggleIntake.set(true);
@@ -136,10 +158,12 @@ public class SoloTeleOp extends ExoMode {
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) in.evLockX.set(true);
 
+                system.shooter.update();
+                system.write();
+
                 // tiny yield to avoid maxing CPU
                 Thread.yield();
             } }, "GamepadThread");
-
 
         hardware.telemetry.addLine("INIT READY 😈😈😈");
         hardware.telemetry.update();
@@ -157,18 +181,20 @@ public class SoloTeleOp extends ExoMode {
 
     @Override
     protected void Loop() {
-        if (system.isIntakeEnabled)
-            intakeTriggers.check();
+        intakeTriggers.check();
         shooterTriggers.check();
 
-        if (in.rbHeld && !system.shooter.on) {
+        if (in.spinupShooter && !system.shooter.on) {
             system.shooter.on();
-            system.indexer.microAdjust();
-        } else if (!in.rbHeld && system.shooter.on) system.shooter.off();
+            system.indexer.microAdjust(false);
+        } else if (!in.spinupShooter && system.shooter.on) {
+            system.shooter.off();
+            system.indexer.microAdjust(true);
+        }
 
-        system.update();
+        system.updateIntake();
 
-        try { Thread.sleep(5); } catch (InterruptedException e) {}
+        try { Thread.sleep(3); } catch (InterruptedException e) {}
     }
 
 
@@ -194,7 +220,7 @@ public class SoloTeleOp extends ExoMode {
         // continuous
         volatile double lx, ly, rx;
         volatile double lt, rt;
-        volatile boolean rbHeld;
+        volatile boolean spinupShooter;
         volatile boolean lockToGoal;
 
         // one-shot events
