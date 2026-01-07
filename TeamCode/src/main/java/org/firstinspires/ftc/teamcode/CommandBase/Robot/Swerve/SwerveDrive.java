@@ -12,9 +12,11 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.FindShortestPath;
+import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.exp;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
@@ -22,6 +24,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SlewRateLimiter;
+import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 import java.util.List;
@@ -54,11 +57,11 @@ public class SwerveDrive extends SystemBase {
         leftFrontModule = new SwerveModule(hardware.LeftFront,
                                             hardware.LeftFront_servo,
                                             new AbsoluteAnalogEncoder(hardware.LeftFront_encoder).zero(0.08),
-                                            0.1);
+                                            0);
         leftBackModule = new SwerveModule(hardware.LeftBack,
                                             hardware.LeftBack_servo,
                                             new AbsoluteAnalogEncoder(hardware.LeftBack_encoder).zero(-2.42),
-                                            0.1);
+                                            0);
         rightBackModule = new SwerveModule(hardware.RightBack,
                                             hardware.RightBack_servo,
                                             new AbsoluteAnalogEncoder(hardware.RightBack_encoder).zero(1.77),
@@ -93,7 +96,7 @@ public class SwerveDrive extends SystemBase {
     public void update(Pose velocity) {
         if (autoOnBlue && opModeType == Enums.OpMode.TELE_OP) velocity.negate();
 
-        if (!lockHeadingToGoal) {
+        if (!lockHeadingToGoal && opModeType == Enums.OpMode.TELE_OP) {
             if (hardware.limelight.enabled) hardware.limelight.stop();
 
             //pid for skew correction
@@ -104,7 +107,7 @@ public class SwerveDrive extends SystemBase {
                     timer.reset();
                 targetHeading = POSE.heading;
             }
-        } else {
+        } else if (lockHeadingToGoal && opModeType == Enums.OpMode.TELE_OP) {
             if (!hardware.limelight.enabled) hardware.limelight.start();
             hardware.limelight.read();
 
@@ -119,7 +122,7 @@ public class SwerveDrive extends SystemBase {
         }
 
         // always convert to field centric, both in AUTO and TELE-OP
-        velocity = velocity.rotate_matrix(-POSE.heading + startPose.heading);
+        velocity = velocity.rotate_matrix(-POSE.heading + (opModeType == Enums.OpMode.TELE_OP ? startPose.heading : 0));
 
         if (Math.abs(velocity.x) < 0.01 && Math.abs(velocity.y) < 0.01 && Math.abs(velocity.heading) < 0.01) {
             if (SwerveKinematics.isLockedX()) states = SwerveKinematics.robot2wheel(velocity);

@@ -17,14 +17,14 @@ public class Shooter extends SystemBase {
     private final Hardware hardware;
     private final PIDFController controller;
 
-    public static double kP = 0.009;
+    public static double kP = 0.007;
     public static double kI = 0;
     public static double kD = 0;
-    public static double kF = 0.00157;
+    public static double kF = 0.00156;
 
     private static final double VEL_ALPHA = 0.3;
     public static final double MAX_RPS = 600;
-    public static double ANGLE_ADJUST = -0.003;
+    public static double ANGLE_ADJUST = -0.002;
 
     public boolean enabled = true;
 
@@ -41,7 +41,7 @@ public class Shooter extends SystemBase {
     public double POWER = 0;
     public double TARGET = 0;
 
-    private final double threshold = 6;
+    private final double threshold = 3;
 
 
     public Shooter(LinearOpMode opMode) {
@@ -56,14 +56,19 @@ public class Shooter extends SystemBase {
     }
 
 
-    public void update() {
+    public void update() { update(-1, -1);}
+
+    public void update(double overridePower, double overrideAngle) {
         distance = POSE.distanceTo(goalPosition);
 
         if (!enabled) return;
         if (on) {
             ShotSample shot = lookupShot(distance);
 
-            if (shot != null) {
+            if (overridePower != -1) {
+                targetPower = overridePower;
+                targetAngle = overrideAngle;
+            } else if (shot != null) {
                 targetPower = shot.power;
                 targetAngle = shot.angle;
             }

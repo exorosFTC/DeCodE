@@ -23,6 +23,18 @@ public class MathFormulas {
         return val;
     }
 
+    public static double exp(double x) {
+        return x * x * x;
+    }
+
+    public static Point midPoint(Point p1, Point p2) {
+        return new Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+    }
+
+    public static Pose midPoint(Pose p1, Pose p2, double head) {
+        return new Pose((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, head);
+    }
+
 
 
 

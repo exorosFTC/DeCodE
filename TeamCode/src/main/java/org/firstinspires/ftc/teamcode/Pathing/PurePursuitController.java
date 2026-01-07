@@ -10,99 +10,195 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PurePursuitController {
-    private final List<Point> path = new ArrayList<>();
-    private Enums.HeadingMode mode = Enums.HeadingMode.PATH_TANGENT;
+    private Pose start;
+    private Pose end = new Pose();
 
+    private final List<Pose> path = new ArrayList<>();
+    private Enums.HeadingMode mode = Enums.HeadingMode.FIXED;
+
+    // default constants. May be overridden
     public double lookahead = 10;
     private double stopRadius = 2.0;
 
     private int segment = 0;
-    private boolean finished = false;
+    private boolean isBusy = false;
+
+    // set the start pose to the current robot pose
+    public PurePursuitController() {
+        this.start = POSE;
+        addPoint(POSE);
+    }
 
 
 
     public Pose update() {
-        if (path.size() < 2) return new Pose();
+        // 0, 1, 2 points: treat as point-to-point (target is the last point)
+        if (path.size() < 3 || path.isEmpty()) {
+            Pose start = path.get(0);
+            Pose goal  = path.get(1);
 
-        Point goal = path.get(path.size() - 1);
+            if (POSE.distanceTo(goal) <= stopRadius) {
+                isBusy = false;
+                return new Pose(goal.x, goal.y, goal.heading);
+            }
+            isBusy = true;
 
-        if (POSE.distanceTo(goal) <= stopRadius) {
-            finished = true;
-            return new Pose(goal.x, goal.y, POSE.heading);
+            double heading;
+            if (mode == Enums.HeadingMode.LERP) {
+                heading = Math.atan2(goal.y - start.y, goal.x - start.x);
+            } else if (mode == Enums.HeadingMode.FACE_GOAL) {
+                heading = Math.atan2(goal.y - POSE.y, goal.x - POSE.x);
+            } else {
+                heading = 0;
+            }
+
+            return new Pose(goal.x, goal.y, heading);
         }
 
-        finished = false;
+        // 3+ points: normal pure pursuit
+        isBusy = true;
 
         double r2 = lookahead * lookahead;
-        Point lookaheadPoint = null;
+
+        Point bestLookahead = null;
+        int bestSeg = segment;
+        double bestT = -1;
 
         for (int i = segment; i < path.size() - 1; i++) {
-            Point a = path.get(i);
-            Point b = path.get(i + 1);
-            Point d = new Point(b.x - a.x, b.y - a.y);
-            Point f = new Point(a.x - POSE.x, a.y - POSE.y);
+            Pose a = path.get(i);
+            Pose b = path.get(i + 1);
 
-            double A = d.x * d.x + d.y * d.y;
-            if (A == 0) continue;
-            double B = 2 * (f.x * d.x + f.y * d.y);
-            double C = f.x * f.x + f.y * f.y - r2;
-            double disc = B * B - 4 * A * C;
+            double dx = b.x - a.x;
+            double dy = b.y - a.y;
+
+            double fx = a.x - POSE.x;
+            double fy = a.y - POSE.y;
+
+            double A = dx * dx + dy * dy;
+            if (A < 1e-9) continue;
+
+            double B = 2.0 * (fx * dx + fy * dy);
+            double C = fx * fx + fy * fy - r2;
+
+            double disc = B * B - 4.0 * A * C;
             if (disc < 0) continue;
 
             double sqrt = Math.sqrt(disc);
-            double t1 = (-B - sqrt) / (2 * A);
-            double t2 = (-B + sqrt) / (2 * A);
+            double t1 = (-B - sqrt) / (2.0 * A);
+            double t2 = (-B + sqrt) / (2.0 * A);
 
-            if (t1 >= 0 && t1 <= 1) {
-                lookaheadPoint = new Point(a.x + d.x * t1, a.y + d.y * t1);
-                segment = i;
-                break;
-            } else if (t2 >= 0 && t2 <= 1) {
-                lookaheadPoint = new Point(a.x + d.x * t2, a.y + d.y * t2);
-                segment = i;
-                break;
+            double t = -1;
+            if (t1 >= 0 && t1 <= 1) t = t1;
+            if (t2 >= 0 && t2 <= 1) t = Math.max(t, t2);
+
+            if (t < 0) continue;
+
+            Point candidate = new Point(a.x + dx * t, a.y + dy * t);
+
+            if (i > bestSeg || (i == bestSeg && t > bestT)) {
+                bestSeg = i;
+                bestT = t;
+                bestLookahead = candidate;
             }
         }
 
-        if (lookaheadPoint == null) {
-            lookaheadPoint = path.get(Math.min(segment + 1, path.size() - 1));
+        // If we have progressed past intermediate waypoints, advance segment
+        while (segment < path.size() - 2 && POSE.distanceTo(path.get(segment + 1)) <= stopRadius) {
+            segment++;
         }
 
-        double heading;
-        if (mode == Enums.HeadingMode.PATH_TANGENT) {
-            Point a = path.get(segment);
-            Point b = path.get(Math.min(segment + 1, path.size() - 1));
-            heading = Math.atan2(b.y - a.y, b.x - a.x);
-        } else if (mode == Enums.HeadingMode.FACE_GOAL) {
-            heading = Math.atan2(goal.y - POSE.y, goal.x - POSE.x);
+        // Finish only on last segment + close to final goal
+        Pose finalGoal = path.get(path.size() - 1);
+        if (segment >= path.size() - 2 && POSE.distanceTo(finalGoal) <= stopRadius) {
+            isBusy = false;
+            return new Pose(finalGoal.x, finalGoal.y, finalGoal.heading);
+        }
+
+        Point lookaheadPoint;
+        double headingT;
+
+        if (bestLookahead != null) {
+            segment = bestSeg;
+            lookaheadPoint = bestLookahead;
+            headingT = bestT;
         } else {
-            heading = POSE.heading;
+            // fallback: aim at end of current segment
+            segment = Math.min(segment, path.size() - 2);
+            Pose next = path.get(segment + 1);
+            lookaheadPoint = new Point(next.x, next.y);
+            headingT = 1.0;
         }
 
-        return new Pose(lookaheadPoint.x, lookaheadPoint.y, heading);
+        Pose aSeg = path.get(segment);
+        Pose bSeg = path.get(segment + 1);
+
+        return new Pose(
+                lookaheadPoint.x,
+                lookaheadPoint.y,
+                computeHeading(mode, aSeg, bSeg, headingT)
+        );
     }
 
 
 
-    public PurePursuitController addPoint(Point point) { path.add(point); return this; }
+    public PurePursuitController addPoint(Pose point) {
+        path.add(point);
+        end = point;
 
-    public PurePursuitController setMode(Enums.HeadingMode mode) { this.mode = mode; return this; }
-
-    public PurePursuitController setStopRadius(double r) { stopRadius = r; return this; }
-
-    public PurePursuitController setLookahead(double l) { lookahead = l; return this; }
-
-
-
-    public void reset() {
-        path.clear();
-        segment = 0;
-        finished = false;
+        return this;
     }
 
-    public boolean isFinished() { return finished; }
+    public PurePursuitController setMode(Enums.HeadingMode mode) {
+        this.mode = mode;
+        return this;
+    }
 
-    public boolean isBusy() { return !finished; }
+    public PurePursuitController setStopRadius(double r) {
+        stopRadius = r;
+        return this;
+    }
 
-    public Enums.HeadingMode getMode() { return mode; }
+    public PurePursuitController setLookahead(double l) {
+        lookahead = l;
+        return this;
+    }
+
+
+
+    public boolean isBusy() { return isBusy; }
+
+    public boolean reachedSegment(int num) { return segment == num; }
+
+
+
+    private double computeHeading(
+            Enums.HeadingMode mode,
+            Pose start,
+            Pose goal,
+            double t
+    ) {
+        switch (mode) {
+            case LERP:
+                return lerpAngle(start.heading, goal.heading, t);
+
+            case FACE_GOAL:
+                return Math.atan2(goal.y - POSE.y, goal.x - POSE.x);
+
+            case FIXED:
+            default:
+                return goal.heading;
+        }
+    }
+
+    private double lerpAngle(double a, double b, double t) {
+        t = Math.max(0.0, Math.min(1.0, t));
+        double diff = wrapAngle(b - a);
+        return wrapAngle(a + diff * t);
+    }
+
+    private double wrapAngle(double ang) {
+        while (ang <= -Math.PI) ang += 2.0 * Math.PI;
+        while (ang >  Math.PI) ang -= 2.0 * Math.PI;
+        return ang;
+    }
 }

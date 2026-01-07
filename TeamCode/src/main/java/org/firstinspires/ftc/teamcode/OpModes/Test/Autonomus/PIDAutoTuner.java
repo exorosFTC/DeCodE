@@ -1,9 +1,13 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleP;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -27,11 +31,12 @@ public class PIDAutoTuner extends ExoMode {
     private ScoringSystem system;
     private AutoDrive auto;
 
-    public static double linP = AutoLinearP, angP = TeleOpAngularP;
-    public static double linD = AutoLinearD, angD = TeleOpAngularD;
+    public static double linP = AutoLinearP, angP = AutoAngularP;
+    public static double linD = AutoLinearD, angD = AutoAngularD;
+    public static double moduleP = swerveModuleP, moduleD = swerveModuleD;
     public static double x, y, head;
 
-    public GamepadEx g2;
+    public GamepadEx g1;
 
     @Override
     protected void Init() {
@@ -44,7 +49,7 @@ public class PIDAutoTuner extends ExoMode {
                         .setAutoOnBlue(false)
                         .getLoopTime(true);
 
-        g2 = new GamepadEx(gamepad2);
+        g1 = new GamepadEx(gamepad1);
     }
 
     @Override
@@ -54,11 +59,12 @@ public class PIDAutoTuner extends ExoMode {
 
     @Override
     protected void Loop() {
-        if (g2.wasJustPressed(GamepadKeys.Button.B))
+        if (g1.wasJustPressed(GamepadKeys.Button.B))
             auto.driveTo(new Pose(x, y, Math.toRadians(head)));
 
-        g2.readButtons();
+        g1.readButtons();
         auto.linearC.setPID(linP, 0, linD);
         auto.angularC.setPID(angP, 0, angD);
+        swerve.setModulePID(swerveModuleP, 0, swerveModuleD);
     }
 }

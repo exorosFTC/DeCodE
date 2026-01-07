@@ -36,8 +36,8 @@ public interface Enums {
     }
 
     enum HeadingMode {
-        PATH_TANGENT,
         FACE_GOAL,
-        FIXED
+        FIXED,
+        LERP
     }
 }

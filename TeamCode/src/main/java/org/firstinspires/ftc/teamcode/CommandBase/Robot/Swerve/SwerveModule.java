@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeRadians;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.K_STATIC;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleP;
 
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -22,7 +22,7 @@ public class SwerveModule extends SystemBase {
     public final AbsoluteAnalogEncoder encoder;
 
     private double kS = 0.03;
-    private final PIDFController controller = new PIDFController(swerveP, 0, swerveD, 0);
+    private final PIDFController controller = new PIDFController(swerveModuleP, 0, swerveModuleD, 0);
     private boolean wheelFlipped = false;
 
     public SwerveModuleState currentState = new SwerveModuleState(0, 0);
@@ -66,7 +66,7 @@ public class SwerveModule extends SystemBase {
 
         servoPower = servoPower + (Math.abs(error) > 0.02 ? K_STATIC : 0) * Math.signum(servoPower);
         targetState.setModuleVelocity(
-              //Math.signum(targetState.getModuleVelocity()) * kS +             // static friction correction
+              Math.signum(targetState.getModuleVelocity()) * kS +             // static friction correction
                 targetState.getModuleVelocity()
               //* Math.cos(Math.abs(error))                           // cosine correction
         );

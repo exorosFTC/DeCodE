@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.Pathing;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
@@ -12,9 +12,11 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 import java.util.concurrent.TimeUnit;
@@ -26,19 +28,19 @@ public class AutoDrive {
     private final ScoringSystem system;
 
 
-    private Thread driveThread;
+    private Thread driveThread, systemThread;
     private final LinearOpMode opMode;
     private final ElapsedTime waitTimer;
 
     public final PIDController linearC, angularC;
-    private double busyThreshold = 0.19;
+    private double busyThreshold = 0.1;
 
     private double failSafeTimeMs = Double.POSITIVE_INFINITY;
     private final ElapsedTime failSafeTimer = new ElapsedTime();
 
     private Pose target = new Pose();
     private Pose driveVector = new Pose();
-    private PurePursuitController controller = null;
+    public PurePursuitController controller = null;
 
     private boolean isPaused = false;
     private boolean previousIsPaused = false;
@@ -52,43 +54,26 @@ public class AutoDrive {
         this.system = system;
         POSE = startPose;
 
-        linearC = new PIDController(AutoLinearP, 0, AutoLinearD);
-        angularC = new PIDController(TeleOpAngularP, 0, TeleOpAngularD);
-
+        hardware = Hardware.getInstance(opMode);
         setPose(POSE);
 
+        linearC = new PIDController(AutoLinearP, 0, AutoLinearD);
+        angularC = new PIDController(AutoAngularP, 0, AutoAngularD);
+
         this.opMode = opMode;
-        hardware = Hardware.getInstance(opMode);
 
         waitTimer = new ElapsedTime();
         startDriveThread();
     }
-
-    public AutoDrive(LinearOpMode opMode, SwerveDrive swerve, ScoringSystem system) {
-        this.swerve = swerve;
-        this.system = system;
-
-        linearC = new PIDController(AutoLinearP, 0, AutoLinearD);
-        angularC = new PIDController(TeleOpAngularP, 0, TeleOpAngularD);
-
-        setPose(POSE);
-
-        this.opMode = opMode;
-        hardware = Hardware.getInstance(opMode);
-
-        waitTimer = new ElapsedTime();
-        startDriveThread();
-    }
-
-
 
 
     private void startDriveThread() {
         driveThread = new Thread(() -> {
-                ElapsedTime autonomousTimer = new ElapsedTime();
+                opMode.waitForStart();
 
-                while (opMode.opModeIsActive() && autonomousTimer.seconds() < 29.5) {
-                    //hardware.read(swerve, system);
+                while (opMode.opModeIsActive()) {
+                    swerve.read();
+                    swerve.write();
 
                     if (isPaused && !previousIsPaused) {    // stop the robot when paused
                         swerve.setLockedX(true);
@@ -98,12 +83,17 @@ public class AutoDrive {
 
                     if (isPaused) continue;
 
-                    if (controller != null) target = controller.update();
+                    if (controller != null) {
+                        target = controller.update();
+                    }
                     updateDriveVector();
 
-                    hardware.telemetry.addData("x", driveVector.x);
-                    hardware.telemetry.addData("y", driveVector.y);
-                    hardware.telemetry.addData("head", driveVector.heading);
+                    hardware.telemetry.addData("x", POSE.x);
+                    hardware.telemetry.addData("y", POSE.y);
+                    hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
+                    hardware.telemetry.addData("target x", target.x);
+                    hardware.telemetry.addData("target y", target.y);
+                    hardware.telemetry.addData("target head", Math.toDegrees(target.heading));
                     hardware.telemetry.update();
 
                     if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
@@ -118,8 +108,22 @@ public class AutoDrive {
 
                 startPose = POSE;
         });
+        systemThread = new Thread(() -> {
+            opMode.waitForStart();
+
+            while (opMode.opModeIsActive()) {
+                hardware.bulk.clearCache(Enums.Hubs.ALL);
+                hardware.read(system);
+
+                system.shooter.update();
+                system.write();
+
+                Thread.yield();
+            }
+        });
 
         driveThread.start();
+        systemThread.start();
     }
 
 
@@ -161,7 +165,7 @@ public class AutoDrive {
     }
 
     public AutoDrive drivePath(PurePursuitController controller) {
-        if (controller == null || controller.isFinished()) this.controller = controller;
+        if (this.controller == null || this.controller.isBusy()) this.controller = controller;
         return this;
     }
 
@@ -249,9 +253,10 @@ public class AutoDrive {
     }
 
     public AutoDrive setPose(Pose pose) {
-        hardware.localizer.setPositionEstimate(
-                new Pose(pose.x, pose.y, pose.heading)
-        );
+        try { Thread.sleep(150); } catch (InterruptedException e) {}
+        hardware.localizer.setPositionEstimate(pose);
+        try { Thread.sleep(150); } catch (InterruptedException e) {}
+
         return this;
     }
 
@@ -277,14 +282,18 @@ public class AutoDrive {
     private void updateDriveVector() {
         double targetVelX, targetVelY, targetVelHeading;
 
-        targetVelX = linearC.calculate(POSE.x, target.x);
-        targetVelY = -linearC.calculate(POSE.y, target.y);
-        targetVelHeading = -angularC.calculate(FindShortestPath(POSE.heading, target.heading));
+        targetVelX = swerve.xLim.calculate(linearC.calculate(POSE.x, target.x));
+        targetVelY = swerve.yLim.calculate(linearC.calculate(POSE.y, target.y));
+        targetVelHeading = angularC.calculate(FindShortestPath(POSE.heading, target.heading));
+
+        //if (new Point(targetVelX, targetVelY).closeToZero(busyThreshold * 2)) angularC.setP(0.4);
+        //else angularC.setP(0.1);
 
         driveVector = new Pose(
                 Math.abs(targetVelX) > busyThreshold ? targetVelX : 0,
                 Math.abs(targetVelY) > busyThreshold ? targetVelY : 0,
-                Math.abs(targetVelHeading) > busyThreshold ? targetVelHeading : 0).multiplyBy(13.0 / hardware.batteryVoltage);
+                Math.abs(targetVelHeading) > busyThreshold ? targetVelHeading : 0
+                ).multiplyBy(13.5 / hardware.batteryVoltage);
     }
 
 

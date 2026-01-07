@@ -27,6 +27,8 @@ public class ScoringSystem extends SystemBase {
     public ElapsedTime timer;
     public double MIN_LOOPS = 8;
 
+    public boolean shootSorted = false;
+
     public boolean isIntakeEnabled = true;
     public double[] catchThreshold = new double[]{68, 85, 56};
     public double[] colorDistance = new double[]{-1, -1, -1};
@@ -101,24 +103,38 @@ public class ScoringSystem extends SystemBase {
 
     public void shootSequence() {
         if (!shooter.on) return;
+        if (intake.on) { isIntakeEnabled = false; intake.off(); }
 
-        if (intake.on) {
-            isIntakeEnabled = false;
-            intake.off();
-        }
-
-        while ((!shooter.ready() || indexer.isBusy()) && this.opMode.opModeIsActive()) {}
+        timer.reset();
+        while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 3) {}
 
         if (!isInShootingZone() && opModeType == Enums.OpMode.AUTONOMUS) return;
-        indexer.isHome = false;
+        indexer.isHome = true;
         indexer.shoot(3);
 
         shooter.off();
         isIntakeEnabled = true;
-
         indexer.previousLastElement = Enums.ArtifactColor.NONE;
-        indexer.zero();
-        //indexer.home();
+    }
+
+
+
+    private void shootSequenceSorted() {
+        for (int i = 0; i < 3; i++) {
+            timer.reset();
+            while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 2) {}
+            if (!isInShootingZone() && opModeType == Enums.OpMode.AUTONOMUS) return;
+
+            indexer.shoot(1);
+            try { Thread.sleep(200); } catch (InterruptedException e) {}
+        }
+
+        indexer.isHome = true;
+        indexer.shoot(3);
+
+        shooter.off();
+        isIntakeEnabled = true;
+        indexer.previousLastElement = Enums.ArtifactColor.NONE;
     }
 
     private NormalizedRGBA getColorForIndex(int i) {

@@ -70,4 +70,10 @@ public class Point {
         if (n < 1e-12) return new Point(1,0);
         return new Point(x/n, y/n);
     }
+
+    public boolean closeToZero(double threshold) {
+        return Math.abs(x) <= threshold
+                &&
+                Math.abs(y) <= threshold;
+    }
 }

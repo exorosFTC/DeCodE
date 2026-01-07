@@ -55,11 +55,13 @@ public class CRServoTest extends LinearOpMode {
 
             // Switch servo
             if (g1.wasJustPressed(GamepadKeys.Button.B)) {
+                crServos[servoIndex].setPower(0);
                 servoIndex = (servoIndex + 1) % crServos.length;
                 power = 0.0; // safety stop on switch
             }
 
             // Apply power
+            power = g1.getLeftY();
             crServos[servoIndex].setPower(power);
 
             // Telemetry
