@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp;
 
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.lastValidRandomization;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -22,8 +24,9 @@ public class LimelightTest extends LinearOpMode {
 
         while (opModeIsActive()) {
             limelight.read();
+            limelight.getRandomization();
 
-            dashboardTelemetry.addData("random:", limelight.getRandomization());
+            dashboardTelemetry.addData("random:", lastValidRandomization);
             dashboardTelemetry.update();
         }
     }

@@ -107,7 +107,8 @@ public class SwerveDrive extends SystemBase {
                     timer.reset();
                 targetHeading = POSE.heading;
             }
-        } else if (lockHeadingToGoal && opModeType == Enums.OpMode.TELE_OP) {
+        }
+        else if (lockHeadingToGoal && opModeType == Enums.OpMode.TELE_OP) {
             if (!hardware.limelight.enabled) hardware.limelight.start();
             hardware.limelight.read();
 
@@ -122,7 +123,8 @@ public class SwerveDrive extends SystemBase {
         }
 
         // always convert to field centric, both in AUTO and TELE-OP
-        velocity = velocity.rotate_matrix(-POSE.heading + (opModeType == Enums.OpMode.TELE_OP ? startPose.heading : 0));
+        velocity = velocity.rotate_matrix(-POSE.heading +
+                (opModeType == Enums.OpMode.TELE_OP ? Math.toRadians(270) : 0));
 
         if (Math.abs(velocity.x) < 0.01 && Math.abs(velocity.y) < 0.01 && Math.abs(velocity.heading) < 0.01) {
             if (SwerveKinematics.isLockedX()) states = SwerveKinematics.robot2wheel(velocity);
@@ -149,6 +151,11 @@ public class SwerveDrive extends SystemBase {
         hardware.LeftBack.setMotorDisable();
         hardware.RightFront.setMotorDisable();
         hardware.RightBack.setMotorDisable();
+
+        hardware.LeftFront_servo.setPower(0);
+        hardware.LeftBack_servo.setPower(0);
+        hardware.RightFront_servo.setPower(0);
+        hardware.RightBack_servo.setPower(0);
     }
 
     public void setLockedX(boolean lockedX) { SwerveKinematics.setLockedX(lockedX); }

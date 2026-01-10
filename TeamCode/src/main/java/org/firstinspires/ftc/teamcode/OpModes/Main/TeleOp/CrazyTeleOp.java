@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.OpModes.Main.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.telemetryAddLoopTime;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -104,12 +105,13 @@ public class CrazyTeleOp extends ExoMode {
                 swerve.update(new Pose(
                         in.ly,
                         -in.lx,
-                        -in.rx * 0.018)
+                        -in.rx)
                 );
 
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
                 if (in.evStartLift.getAndSet(false)) lift.on();
+                if (in.evResetFieldCentric.getAndSet(false)) hardware.localizer.setPositionEstimate(new Pose(POSE.x, POSE.y, 0));
 
                 swerve.write();
                 lift.write();
@@ -122,8 +124,6 @@ public class CrazyTeleOp extends ExoMode {
                 hardware.telemetry.addData("art", system.indexer.elements.toString());
                 hardware.telemetry.addData("shooter vel", system.shooter.wheelVelocity);
                 hardware.telemetry.addData("shooter target", system.shooter.TARGET);
-                hardware.telemetry.addData("indexer pos", system.indexer.indexerPosition);
-                hardware.telemetry.addData("indexer target", system.indexer.target);
                 updateTelemetry();
 
                 Thread.yield();
@@ -158,7 +158,8 @@ public class CrazyTeleOp extends ExoMode {
                 if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) in.evShootSorted.set(true);
                 if (g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) in.evShootUnsorted.set(true);
                 if (g2.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
-                if (g1.wasJustReleased(GamepadKeys.Button.X)) in.evStartLift.set(true);
+                if (g1.isDown(GamepadKeys.Button.X) && g1.isDown(GamepadKeys.Button.DPAD_RIGHT)) in.evStartLift.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) in.evResetFieldCentric.set(true);
 
                 if (g1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1) in.evLockX.set(true);
 

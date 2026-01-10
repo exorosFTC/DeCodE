@@ -116,7 +116,7 @@ public class SoloTeleOp extends ExoMode {
                 swerve.update(new Pose(
                         in.ly,
                         -in.lx,
-                        -in.rx * 0.018)
+                        -in.rx)
                 );
 
                 swerve.setLimelightPID(limelightP, 0, limelightD);
@@ -133,7 +133,7 @@ public class SoloTeleOp extends ExoMode {
 
                 hardware.telemetry.addData("x", POSE.x);
                 hardware.telemetry.addData("y", POSE.y);
-                hardware.telemetry.addData("head", POSE.heading);
+                hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
                 hardware.telemetry.addData("distance", system.shooter.distance);
                 hardware.telemetry.addData("indexer pos", system.indexer.indexerPosition);
                 hardware.telemetry.addData("indexer target", system.indexer.target);
@@ -256,6 +256,7 @@ public class SoloTeleOp extends ExoMode {
         final AtomicBoolean evShootUnsorted  = new AtomicBoolean(false);
         final AtomicBoolean evHomeIndexer    = new AtomicBoolean(false);
         final AtomicBoolean evLockX          = new AtomicBoolean(false);
-        final AtomicBoolean evStartLift      = new AtomicBoolean(false);
+        final AtomicBoolean evStartLift     = new AtomicBoolean(false);
+        final AtomicBoolean evResetFieldCentric = new AtomicBoolean(false);
     }
 }

@@ -2,10 +2,8 @@ package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleP;
 
@@ -31,8 +29,8 @@ public class PIDAutoTuner extends ExoMode {
     private ScoringSystem system;
     private AutoDrive auto;
 
-    public static double linP = AutoLinearP, angP = AutoAngularP;
-    public static double linD = AutoLinearD, angD = AutoAngularD;
+    public static double linP = AutoLinearPx, angP = AutoAngularP;
+    public static double linD = AutoLinearDx, angD = AutoAngularD;
     public static double moduleP = swerveModuleP, moduleD = swerveModuleD;
     public static double x, y, head;
 
@@ -63,7 +61,8 @@ public class PIDAutoTuner extends ExoMode {
             auto.driveTo(new Pose(x, y, Math.toRadians(head)));
 
         g1.readButtons();
-        auto.linearC.setPID(linP, 0, linD);
+        auto.linearCx.setPID(linP, 0, linD);
+        auto.linearCy.setPID(linP, 0, linD);
         auto.angularC.setPID(angP, 0, angD);
         swerve.setModulePID(swerveModuleP, 0, swerveModuleD);
     }

@@ -64,7 +64,7 @@ public class SwerveModule extends SystemBase {
         servoPower = Range.clip(controller.calculate(0, error), -1, 1);
         if (Double.isNaN(servoPower)) servoPower = 0;
 
-        servoPower = servoPower + (Math.abs(error) > 0.02 ? K_STATIC : 0) * Math.signum(servoPower);
+        servoPower = servoPower + (Math.abs(error) > 0.01 ? K_STATIC : 0) * Math.signum(servoPower);
         targetState.setModuleVelocity(
               Math.signum(targetState.getModuleVelocity()) * kS +             // static friction correction
                 targetState.getModuleVelocity()

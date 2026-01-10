@@ -8,6 +8,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 
 public class LimelightEx {
     private final Limelight3A limelight;
@@ -67,6 +68,7 @@ public class LimelightEx {
             case 23: { lastValidRandomization = Enums.Randomization.RIGHT; } break;
             default: {} break;
         }
+
         return lastValidRandomization;
     }
 

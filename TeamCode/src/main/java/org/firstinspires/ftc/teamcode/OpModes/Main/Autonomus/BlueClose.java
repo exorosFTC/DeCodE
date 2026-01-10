@@ -7,7 +7,7 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionRed;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueClose;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseRedClose;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -23,8 +23,8 @@ import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
 
 @Config
-@Autonomous(name = "RedClose", group = "main", preselectTeleOp = "😈🔥")
-public class RedClose extends ExoMode {
+@Autonomous(name = "BlueClose", group = "main", preselectTeleOp = "😈🔥")
+public class BlueClose extends ExoMode {
     private Hardware hardware;
     private SwerveDrive swerve;
     private ScoringSystem system;
@@ -43,8 +43,8 @@ public class RedClose extends ExoMode {
         swerve = new SwerveDrive(this);
         system = new ScoringSystem(this);
 
-        auto = new AutoDrive(this, swerve, system, startPoseRedClose);
-        goalPosition = goalPositionRed;
+        auto = new AutoDrive(this, swerve, system, startPoseBlueClose);
+        goalPosition = goalPositionBlue;
 
         hardware.limelight.start();
         hardware.limelight.setPipeline(Enums.Pipeline.RANDOMIZATION);
@@ -53,7 +53,7 @@ public class RedClose extends ExoMode {
 
         new SystemData()
                 .add(Enums.OpMode.AUTONOMUS)
-                .setAutoOnBlue(false)
+                .setAutoOnBlue(true)
                 .getLoopTime(true);
 
 
@@ -69,59 +69,59 @@ public class RedClose extends ExoMode {
 
     @Override
     protected void WhenStarted() {
-        auto.driveTo(new Pose(75, -60, Math.toRadians(45)))
-             // cycle 1 + read randomization
-             .moveSystem(() -> system.indexer.home())
+        auto.driveTo(new Pose(75, 60, Math.toRadians(315)))
+                // cycle 1 + read randomization
+                .moveSystem(() -> system.indexer.home())
                 .waitDrive(() -> hardware.limelight.getRandomization(), 4)
-             .moveSystem(() -> {
-                  hardware.limelight.stop();
-                  //system.indexer.indexPattern();
-                  system.shooter.on();
-             })
-             .driveTo(new Pose(75, -60, Math.toRadians(315)))
+                .moveSystem(() -> {
+                    hardware.limelight.stop();
+                    //system.indexer.indexPattern();
+                    system.shooter.on();
+                })
+                .driveTo(new Pose(75, 60, Math.toRadians(45)))
                 .waitDrive(1)
-             .moveSystem(() -> system.shootSequence())
+                .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.indexer.isBusy())
 
-             // cycle 2
-             .driveTo(new Pose(35, -60, Math.toRadians(270)))
-             .moveSystem(() -> system.indexer.home())
+                // cycle 2
+                .driveTo(new Pose(35, 60, Math.toRadians(90)))
+                .moveSystem(() -> system.indexer.home())
                 .waitDrive(2)
-             .moveSystem(() -> {
-                system.intake.on();
-                system.isIntakeEnabled = true;
-                system.indexer.on();
-             })
-             .driveTo(new Pose(35, -127, Math.toRadians(270)), 1200)
-                .waitDrive(1)
-                .waitMs(300)
-             .driveTo(new Pose(75, -60, Math.toRadians(315)))
-             .moveSystem(() -> {
-                 system.intake.reverse();
-                 try{ Thread.sleep(400); } catch (InterruptedException e) {}
-                 system.intake.off();
-                 system.isIntakeEnabled = false;
-                 system.shooter.on();
-
-             })
-                .waitDrive(1)
-             .moveSystem(() -> system.shootSequence())
-                .waitAction(() -> !system.indexer.isBusy())
-
-                // cycle 3
-             .driveTo(new Pose(-25, -60, Math.toRadians(270)))
-             .moveSystem(() -> system.indexer.home())
-                .waitDrive(2)
-             .moveSystem(() -> {
+                .moveSystem(() -> {
                     system.intake.on();
                     system.isIntakeEnabled = true;
                     system.indexer.on();
                 })
-             .driveTo(new Pose(-27, -149, Math.toRadians(270)), 1200)
+                .driveTo(new Pose(35, 127, Math.toRadians(90)), 1200)
                 .waitDrive(1)
                 .waitMs(300)
-             .driveTo(new Pose(-27, -60, Math.toRadians(270)))
-             .moveSystem(() -> {
+                .driveTo(new Pose(75, 60, Math.toRadians(45)))
+                .moveSystem(() -> {
+                    system.intake.reverse();
+                    try{ Thread.sleep(400); } catch (InterruptedException e) {}
+                    system.intake.off();
+                    system.isIntakeEnabled = false;
+                    system.shooter.on();
+
+                })
+                .waitDrive(1)
+                .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.indexer.isBusy())
+
+                // cycle 3
+                .driveTo(new Pose(-25, 60, Math.toRadians(90)))
+                .moveSystem(() -> system.indexer.home())
+                .waitDrive(2)
+                .moveSystem(() -> {
+                    system.intake.on();
+                    system.isIntakeEnabled = true;
+                    system.indexer.on();
+                })
+                .driveTo(new Pose(-27, 149, Math.toRadians(90)), 1200)
+                .waitDrive(1)
+                .waitMs(300)
+                .driveTo(new Pose(-27, 60, Math.toRadians(90)))
+                .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
@@ -129,27 +129,27 @@ public class RedClose extends ExoMode {
                     system.shooter.on();
                 })
                 .waitDrive(1.5)
-             .driveTo(new Pose(77, -60, Math.toRadians(315)))
+                .driveTo(new Pose(77, 60, Math.toRadians(45)))
                 .waitAction(() -> !system.indexer.isIndexing)
                 .waitDrive(1)
-             .moveSystem(() -> system.shootSequence())
+                .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.indexer.isBusy())
-             .moveSystem(() -> system.indexer.home())
+                .moveSystem(() -> system.indexer.home())
 
 
                 // cycle 4
-             .driveTo(new Pose(-75, -60, Math.toRadians(270)))
-             .moveSystem(() -> system.indexer.home())
+                .driveTo(new Pose(-75, 60, Math.toRadians(90)))
+                .moveSystem(() -> system.indexer.home())
                 .waitDrive(2)
                 .moveSystem(() -> {
                     system.intake.on();
                     system.isIntakeEnabled = true;
                     system.indexer.on();
                 })
-                .driveTo(new Pose(-75, -149, Math.toRadians(270)), 1200)
+                .driveTo(new Pose(-75, 149, Math.toRadians(90)), 1200)
                 .waitDrive(1)
                 .waitMs(300)
-                .driveTo(new Pose(77, -60, Math.toRadians(315)))
+                .driveTo(new Pose(77, 60, Math.toRadians(45)))
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
@@ -164,7 +164,7 @@ public class RedClose extends ExoMode {
                 .waitAction(() -> !system.indexer.isBusy())
 
                 // park
-                .driveTo(new Pose(-20, -80, Math.toRadians(270)))
+                .driveTo(new Pose(-20, 80, Math.toRadians(90)))
                 .waitDrive()
                 .end();
 

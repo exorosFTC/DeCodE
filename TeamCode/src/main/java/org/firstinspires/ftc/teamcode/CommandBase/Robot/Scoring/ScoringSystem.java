@@ -90,6 +90,7 @@ public class ScoringSystem extends SystemBase {
 
 
         if (indexer.elements.contains(Enums.ArtifactColor.NONE)) return;
+        if (opModeType == Enums.OpMode.AUTONOMUS) return;
 
         // when all 3 slots are full, reverse intake & move on
         intake.reverse();
@@ -108,7 +109,7 @@ public class ScoringSystem extends SystemBase {
         timer.reset();
         while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 3) {}
 
-        if (!isInShootingZone() && opModeType == Enums.OpMode.AUTONOMUS) return;
+        //if (!isInShootingZone() && opModeType == Enums.OpMode.AUTONOMUS) return;
         indexer.isHome = true;
         indexer.shoot(3);
 
@@ -120,15 +121,13 @@ public class ScoringSystem extends SystemBase {
 
 
     private void shootSequenceSorted() {
-        for (int i = 0; i < 3; i++) {
-            timer.reset();
-            while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 2) {}
-            if (!isInShootingZone() && opModeType == Enums.OpMode.AUTONOMUS) return;
+        if (!shooter.on) return;
+        if (intake.on) { isIntakeEnabled = false; intake.off(); }
 
-            indexer.shoot(1);
-            try { Thread.sleep(200); } catch (InterruptedException e) {}
-        }
+        timer.reset();
+        while (!shooter.ready() && indexer.isBusy() && opMode.opModeIsActive() && timer.seconds() < 5) {}
 
+        //if (!isInShootingZone() && opModeType == Enums.OpMode.AUTONOMUS) return;
         indexer.isHome = true;
         indexer.shoot(3);
 

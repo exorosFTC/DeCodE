@@ -27,6 +27,7 @@ public class Indexer extends SystemBase {
     private static final int intakeOffset = 0;
     private int indexOffset = 0;
     public boolean isHome = true;
+    public boolean isIndexing = false;
 
     public int target = intakeOffset;
     public int indexerPosition = 0;
@@ -68,6 +69,7 @@ public class Indexer extends SystemBase {
 
 
     public void index(int balls) {
+        isIndexing = true;
         balls = Math.max(1, Math.min(balls, 2)); //indexing 3 spots is useless, limit to 2
 
         // special check for indexing balls
@@ -95,6 +97,8 @@ public class Indexer extends SystemBase {
             while (indexerPosition < target && opMode.opModeIsActive()) { }
             off();
         }
+
+        isIndexing = false;
     }
 
     public void indexPattern() {
@@ -262,7 +266,9 @@ public class Indexer extends SystemBase {
 
 
 
-    public boolean isBusy() { return Math.abs(target - indexerPosition) > 5;}
+    public boolean isBusy() { return  isBusy(5);}
+
+    public boolean isBusy(int threshold) { return Math.abs(target - indexerPosition) > 5; }
 
     public void preload() {
         elements.set(0, Enums.ArtifactColor.GREEN);
