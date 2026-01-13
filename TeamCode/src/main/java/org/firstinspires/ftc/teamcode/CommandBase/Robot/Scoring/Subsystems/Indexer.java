@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.lastValidRandomization;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.onbotjava.handlers.file.TemplateFile;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
@@ -20,7 +23,7 @@ public class Indexer extends SystemBase {
 
     public static final double TICKS_PER_REVOLUTION = 336;
     public static double HOMING_POWER = 0.2; //in the indexing direction
-    public static double INDEXING_POWER = 0.2;
+    public static double INDEXING_POWER = 0.35;
     public static double SHOOTING_POWER = 1;
 
     public static final int microAdjustValue = 15;
@@ -92,7 +95,7 @@ public class Indexer extends SystemBase {
             // come back so the transfer arm is down
 
             target = (int) (target + TICKS_PER_REVOLUTION / 4.9);
-            hardware.IndexerMotor.setPower(INDEXING_POWER * 13.5 / hardware.batteryVoltage);
+            hardware.IndexerMotor.setPower(0.25 * 12.0 / hardware.batteryVoltage);
 
             while (indexerPosition < target && opMode.opModeIsActive()) { }
             off();
@@ -149,7 +152,7 @@ public class Indexer extends SystemBase {
 
         this.on = true;
         runTarget(
-                (int) (target + indexOffset + balls * TICKS_PER_REVOLUTION / 3 * ((balls == 3) ? 2 : 1) + ((balls == 3) ? microAdjustValue : 0)), // micro adjust threshold
+                (int) (target + indexOffset + balls * TICKS_PER_REVOLUTION / 3 * (opModeType == Enums.OpMode.TELE_OP ? 2 : 1) + ((balls == 3) ? microAdjustValue : 0)), // micro adjust threshold
                 SHOOTING_POWER
         );
 
@@ -160,6 +163,7 @@ public class Indexer extends SystemBase {
             target = indexerPosition;
             microAdjust(false);
         }
+
         sideswipe(balls, true);
         if (balls == 3) indexOffset = 0;
     }

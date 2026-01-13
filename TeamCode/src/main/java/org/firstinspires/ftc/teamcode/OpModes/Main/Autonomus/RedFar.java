@@ -5,9 +5,6 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionRed;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseRedClose;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseRedFar;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -19,8 +16,8 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
-import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 @Config
 @Autonomous(name = "RedFar", group = "main", preselectTeleOp = "😈🔥")
@@ -39,22 +36,21 @@ public class RedFar extends ExoMode {
 
     @Override
     protected void Init() {
+        new SystemData()
+                .add(Enums.OpMode.AUTONOMUS)
+                .setAutoOnBlue(false)
+                .getLoopTime(true);
+
         hardware = Hardware.getInstance(this);
         swerve = new SwerveDrive(this);
         system = new ScoringSystem(this);
 
         auto = new AutoDrive(this, swerve, system, startPoseRedFar);
-        goalPosition = goalPositionRed;
 
         hardware.limelight.start();
         hardware.limelight.setPipeline(Enums.Pipeline.RANDOMIZATION);
 
         system.indexer.preload();
-
-        new SystemData()
-                .add(Enums.OpMode.AUTONOMUS)
-                .setAutoOnBlue(false)
-                .getLoopTime(true);
 
 
         while (opModeInInit()) {

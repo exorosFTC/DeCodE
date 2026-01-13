@@ -1,10 +1,10 @@
-package org.firstinspires.ftc.teamcode.Pathing;
+package org.firstinspires.ftc.teamcode.CustomPathing;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 import java.util.ArrayList;
 import java.util.List;

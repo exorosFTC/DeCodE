@@ -1,8 +1,10 @@
-package org.firstinspires.ftc.teamcode.Pathing.Math;
+package org.firstinspires.ftc.teamcode.CustomPathing.Math;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.DRIVE_W;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.tileLengthCM;
+
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
 
 public class ShootingZoneIntersection {
     //close zone points

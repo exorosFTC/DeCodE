@@ -5,9 +5,6 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionRed;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseRedClose;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -19,8 +16,8 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
-import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 @Config
 @Autonomous(name = "RedClose", group = "main", preselectTeleOp = "😈🔥")
@@ -39,23 +36,21 @@ public class RedClose extends ExoMode {
 
     @Override
     protected void Init() {
-        hardware = Hardware.getInstance(this);
-        swerve = new SwerveDrive(this);
-        system = new ScoringSystem(this);
-
-        auto = new AutoDrive(this, swerve, system, startPoseRedClose);
-        goalPosition = goalPositionRed;
-
-        hardware.limelight.start();
-        hardware.limelight.setPipeline(Enums.Pipeline.RANDOMIZATION);
-
-        system.indexer.preload();
-
         new SystemData()
                 .add(Enums.OpMode.AUTONOMUS)
                 .setAutoOnBlue(false)
                 .getLoopTime(true);
 
+        hardware = Hardware.getInstance(this);
+        swerve = new SwerveDrive(this);
+        system = new ScoringSystem(this);
+
+        auto = new AutoDrive(this, swerve, system, startPoseRedClose);
+
+        hardware.limelight.start();
+        hardware.limelight.setPipeline(Enums.Pipeline.RANDOMIZATION);
+
+        system.indexer.preload();
 
         while (opModeInInit()) {
             auto.linearCx.setPID(linearPx, 0, linearDx);
@@ -173,4 +168,28 @@ public class RedClose extends ExoMode {
 
     @Override
     protected void Loop() {}
+
+
+    private void preload() {
+        auto.driveTo(new Pose(75, -60, Math.toRadians(45)))
+                // cycle 1 + read randomization
+                .moveSystem(() -> system.indexer.home())
+                .waitDrive(() -> hardware.limelight.getRandomization(), 4)
+                .moveSystem(() -> {
+                    hardware.limelight.stop();
+                    system.shooter.on();
+                })
+                .driveTo(new Pose(75, -60, Math.toRadians(315)))
+                .waitDrive(1)
+                .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.indexer.isBusy());
+    }
+
+    private void cycle1() {}
+
+    private void cycle2() {}
+
+    private void cycle3() {}
+
+    private void park() {}
 }

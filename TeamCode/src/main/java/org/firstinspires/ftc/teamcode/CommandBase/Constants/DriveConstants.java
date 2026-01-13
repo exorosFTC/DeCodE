@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Constants;
 
-import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 public class DriveConstants {
     public static final Pose startPoseRedFar = new Pose(-186, -48, Math.toRadians(0));
@@ -22,24 +22,24 @@ public class DriveConstants {
 
 
     // teleop PID
-    public static final double TeleOpAngularP = 0.55,
+    public static double TeleOpAngularP = 0,
                                 TeleOpAngularD = 0;
     public static final double TeleOpLimelightP = 0,
                                 TeleOpLimelightD = 0;
+    public static double TeleOpVelocityMultiplier = 0.45;
 
     // auto PID
-    public static final double AutoLinearPx = 0.019,
+    public static final double AutoLinearPx = 0,
                                 AutoLinearDx = 0,
-                                AutoLinearPy = 0.019,
+                                AutoLinearPy = 0,
                                 AutoLinearDy = 0;
-    public static final double AutoAngularP = 0.55,
-                                AutoAngularD = 0.0;
+    public static final double AutoAngularP = 0,
+                                AutoAngularD = 0;
+    public static double AutoVelocityMultiplier = 0.45;
 
     // swerve module PID
-    public static final double swerveModuleP = 0.21,  // 0.21
-                                swerveModuleD = 0.16; // 0.16
-    public static double K_STATIC = 0.045;
-
+    public static final double swerveModuleP = 0.2,
+                                swerveModuleD = 0.15;
 
 
     public static double tileLengthCM = 60.96;

@@ -75,7 +75,7 @@ public class Shooter extends SystemBase {
         }
 
         this.TARGET = targetPower * MAX_RPS;
-        this.POWER = controller.calculate(wheelVelocity, TARGET) * 13.5 / hardware.batteryVoltage;
+        this.POWER = controller.calculate(wheelVelocity, TARGET) * 12.0 / hardware.batteryVoltage;
 
         if (!on) return;
         targetAngle = clamp(targetAngle - (this.TARGET - wheelVelocity - threshold) * ANGLE_ADJUST, 0.37, 0.97);  // adjust angle by velocity*/
@@ -155,7 +155,6 @@ public class Shooter extends SystemBase {
         enabled = false;
         //targetPower = COAST_POWER;
 
-        hardware.ShooterHoodServo.getController().pwmDisable();
         hardware.Shooter1.setMotorDisable();
         hardware.Shooter2.setMotorDisable();
     }
@@ -166,7 +165,6 @@ public class Shooter extends SystemBase {
 
         hardware.Shooter1.setMotorDisable();
         hardware.Shooter2.setMotorDisable();
-        hardware.ShooterHoodServo.getController().pwmDisable();
     }
 }
 

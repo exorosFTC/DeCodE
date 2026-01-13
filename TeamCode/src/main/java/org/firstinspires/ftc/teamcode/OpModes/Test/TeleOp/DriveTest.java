@@ -10,11 +10,10 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 @Config
 @TeleOp(group = "test", name = "DRIVE")
@@ -47,17 +46,17 @@ public class DriveTest extends LinearOpMode {
             swerve.update(new Pose(
                     g1.getLeftY(),
                     -g1.getLeftX(),
-                    -g1.getRightX() * 0.1
+                    -g1.getRightX()
             ));
 
             hardware.telemetry.addData("x", POSE.x);
             hardware.telemetry.addData("y", POSE.y);
             hardware.telemetry.addData("heading", POSE.heading);
 
-            hardware.telemetry.addData("LF draw:", hardware.LeftFront.getCurrent(CurrentUnit.AMPS));
-            hardware.telemetry.addData("LB draw:", hardware.LeftBack.getCurrent(CurrentUnit.AMPS));
-            hardware.telemetry.addData("RF draw:", hardware.RightFront.getCurrent(CurrentUnit.AMPS));
-            hardware.telemetry.addData("RB draw:", hardware.RightBack.getCurrent(CurrentUnit.AMPS));
+            //hardware.telemetry.addData("LF draw:", hardware.LeftFront.getCurrent(CurrentUnit.AMPS));
+            //hardware.telemetry.addData("LB draw:", hardware.LeftBack.getCurrent(CurrentUnit.AMPS));
+            //hardware.telemetry.addData("RF draw:", hardware.RightFront.getCurrent(CurrentUnit.AMPS));
+            //hardware.telemetry.addData("RB draw:", hardware.RightBack.getCurrent(CurrentUnit.AMPS));
 
 
             hardware.telemetry.update();

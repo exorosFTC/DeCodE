@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Pathing;
+package org.firstinspires.ftc.teamcode.CustomPathing;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
@@ -6,21 +6,26 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDy;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionRed;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
-import static org.firstinspires.ftc.teamcode.Pathing.Math.MathFormulas.FindShortestPath;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
+import static org.firstinspires.ftc.teamcode.CustomPathing.Math.MathFormulas.normalizeRadians;
+import static org.firstinspires.ftc.teamcode.CustomPathing.Math.MathFormulas.normalizeRadiansPositive;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
@@ -30,12 +35,12 @@ public class AutoDrive {
     private final SwerveDrive swerve;
     private final ScoringSystem system;
 
-
-    private Thread driveThread, systemThread;
+    private Thread swerveThread, systemThread;
     private final LinearOpMode opMode;
-    private final ElapsedTime waitTimer;
 
+    private final ElapsedTime waitTimer;
     public final PIDController linearCx, linearCy, angularC;
+
     private double busyThresholdLinear = 0.08,
                     busyThresholdAngular = Math.toRadians(7);
     private double thresholdMultiplier = 1;
@@ -56,10 +61,9 @@ public class AutoDrive {
     public AutoDrive(LinearOpMode opMode, SwerveDrive swerve, ScoringSystem system, Pose startPose) {
         this.swerve = swerve;
         this.system = system;
-        POSE = startPose;
 
         hardware = Hardware.getInstance(opMode);
-        setPose(POSE);
+        setPose(startPose);
 
         linearCx = new PIDController(AutoLinearPx, 0, AutoLinearDx);
         linearCy = new PIDController(AutoLinearPy, 0, AutoLinearDy);
@@ -68,12 +72,11 @@ public class AutoDrive {
         this.opMode = opMode;
 
         waitTimer = new ElapsedTime();
-        startDriveThread();
+        startThreads();
     }
 
-
-    private void startDriveThread() {
-        driveThread = new Thread(() -> {
+    private void startThreads() {
+        swerveThread = new Thread(() -> {
                 opMode.waitForStart();
 
                 while (opMode.opModeIsActive()) {
@@ -91,13 +94,13 @@ public class AutoDrive {
                     if (isPaused) continue;
                     updateDriveVector();
 
-                    //hardware.telemetry.addData("x", POSE.x);
-                    //hardware.telemetry.addData("y", POSE.y);
-                    //hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
+                    hardware.telemetry.addData("x", POSE.x);
+                    hardware.telemetry.addData("y", POSE.y);
+                    hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
                     //hardware.telemetry.addData("target x", target.x);
                     //hardware.telemetry.addData("target y", target.y);
                     //hardware.telemetry.addData("target head", Math.toDegrees(target.heading));
-                    hardware.telemetry.addData("randomization", SystemConstants.lastValidRandomization);
+                    //hardware.telemetry.addData("randomization", SystemConstants.lastValidRandomization);
                     hardware.telemetry.update();
 
                     if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
@@ -113,6 +116,9 @@ public class AutoDrive {
                 startPose = POSE;
         });
         systemThread = new Thread(() -> {
+            if (autoOnBlue) goalPosition = goalPositionBlue;
+            else goalPosition = goalPositionRed;
+
             opMode.waitForStart();
 
             while (opMode.opModeIsActive()) {
@@ -126,10 +132,14 @@ public class AutoDrive {
             }
         });
 
-        driveThread.start();
+        swerveThread.start();
         systemThread.start();
     }
 
+    public void endThreads() {
+        swerveThread.interrupt();
+        systemThread.interrupt();
+    }
 
 
 
@@ -148,28 +158,22 @@ public class AutoDrive {
 
 
 
-
     public AutoDrive driveTo(Pose pose) {
         this.failSafeTimeMs = Double.POSITIVE_INFINITY;
         this.usingFailSafe = false;
-        this.target = new Pose(pose.x, pose.y, normalizeAngleRad(pose.heading));
+        this.target = new Pose(pose.x, pose.y, normalizeRadiansPositive(pose.heading));
         return this;
     }
 
     public AutoDrive driveTo(Pose pose, double ms) {
         this.failSafeTimeMs = ms;
         this.usingFailSafe = true;
-        this.target = new Pose(pose.x, pose.y, normalizeAngleRad(pose.heading));
+        this.target = new Pose(pose.x, pose.y, normalizeRadiansPositive(pose.heading));
 
         failSafeTimer.reset();
 
         return this;
     }
-
-
-
-
-
 
 
 
@@ -246,8 +250,6 @@ public class AutoDrive {
 
 
 
-
-
     public AutoDrive moveSystem(Runnable action) {
         if (action != null) action.run();
         return this;
@@ -273,46 +275,43 @@ public class AutoDrive {
 
 
 
-
-
     public AutoDrive disableDrive() {
         swerve.disable();
         return this;
     }
 
     public void end() {
-        driveThread.interrupt();
-        systemThread.interrupt();
-        swerve.disable();
+        endThreads();
 
+        swerve.disable();
         opMode.stop();
     }
 
 
 
-
     private void updateDriveVector() {
-        double targetVelX, targetVelY, targetVelHeading;
+        double xDiff = target.x - POSE.x;
+        double yDiff = target.y - POSE.y;
+        double headDiff = normalizeRadians(target.heading - POSE.heading);
 
-        targetVelX = swerve.xLim.calculate(linearCx.calculate(POSE.x, target.x));
-        targetVelY = swerve.yLim.calculate(linearCy.calculate(POSE.y, target.y));
-        targetVelHeading = angularC.calculate(FindShortestPath(POSE.heading, target.heading));
+        // transform it to field centric
+        Point linear = new Point(xDiff, yDiff).rotate_matrix(-POSE.heading);
 
-        if (new Point(targetVelX, targetVelY).closeToZero(busyThresholdLinear * 1.5)) angularC.setP(0.7);
-        else angularC.setP(AutoAngularP);
+        double power = linear.hypot();
+        //angularC.setP(AutoAngularP + power * AutoVelocityMultiplier);
+
+        double xPower = linearCx.calculate(-linear.x, 0);
+        double yPower = linearCy.calculate(-linear.y, 0);
+        double headPower = angularC.calculate(-headDiff, 0);
 
         driveVector = new Pose(
-                Math.abs(targetVelX) > busyThresholdLinear ? targetVelX : 0,
-                Math.abs(targetVelY) > busyThresholdLinear ? targetVelY : 0,
-                targetVelHeading
-                ).multiplyBy(13.0 / hardware.batteryVoltage);
+                Math.abs(xPower) > busyThresholdLinear ? xPower : 0,
+                Math.abs(yPower) > busyThresholdLinear ? yPower : 0,
+                headPower
+                ).norm().multiplyBy(12.0 / hardware.batteryVoltage);
     }
 
 
-    private double normalizeAngleRad(double angle) {
-        if (angle < 0) return angle + 2 * Math.PI;
-        return angle;
-    }
 
     public boolean isBusy() { return !(
             new Point(Math.abs(target.x - POSE.x), Math.abs(target.y - POSE.y)).closeToZero(6 * thresholdMultiplier)

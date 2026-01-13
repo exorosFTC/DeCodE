@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Pathing.Math;
+package org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
@@ -63,6 +63,15 @@ public class Pose extends Point {
         return new Pose(new_x, new_y, heading);
     }
 
+    public Pose norm() {
+        return norm(1);
+    }
+
+    public Pose norm(double max) {
+        double largest = Math.max(max, (Math.abs(x) + Math.abs(y) + Math.abs(heading)));
+        return this.multiplyBy(1 / largest);
+    }
+
     public void negate() {
         x = -x;
         y = -y;
@@ -70,9 +79,9 @@ public class Pose extends Point {
 
     public boolean closeToZero(double threshold) {
         return Math.abs(x) <= threshold
-                        &&
+                &&
                 Math.abs(y) <= threshold
-                        &&
+                &&
                 Math.abs(heading) <= threshold;
     }
 

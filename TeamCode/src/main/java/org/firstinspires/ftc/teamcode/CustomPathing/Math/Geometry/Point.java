@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Pathing.Math;
+package org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry;
 
 public class Point {
     public double x;

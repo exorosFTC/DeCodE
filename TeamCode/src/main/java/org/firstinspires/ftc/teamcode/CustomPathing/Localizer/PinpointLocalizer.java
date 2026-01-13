@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Pathing.Localizer;
+package org.firstinspires.ftc.teamcode.CustomPathing.Localizer;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.ODO_UPDATE_RATE_AUTO;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.ODO_UPDATE_RATE_TELEOP;
@@ -9,16 +9,15 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.GoBildaPinpointDriver;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 
 public class PinpointLocalizer {
-    private GoBildaPinpointDriver pinpoint;
-    private ElapsedTime timer;
+    private final GoBildaPinpointDriver pinpoint;
+    private final ElapsedTime timer;
 
 
     public PinpointLocalizer(HardwareMap hardwareMap) {
@@ -48,18 +47,6 @@ public class PinpointLocalizer {
                 pinpoint.getPosY(DistanceUnit.CM),
                 (rawHeading < 0) ? rawHeading + 2 * Math.PI : rawHeading
         );
-    }
-
-    public Pose getRobotPosition() {
-        return DriveConstants.POSE;
-    }
-
-    public double getAngle() {
-        return DriveConstants.POSE.heading;
-    }
-
-    public double getAngularVelocity() {
-        return pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS);
     }
 
     public void setPositionEstimate(Pose pose) {

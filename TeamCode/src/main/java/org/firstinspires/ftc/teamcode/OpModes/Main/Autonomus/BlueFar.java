@@ -5,11 +5,7 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueClose;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueFar;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseRedClose;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -20,8 +16,8 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
-import org.firstinspires.ftc.teamcode.Pathing.AutoDrive;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 @Config
 @Autonomous(name = "BlueFar", group = "main", preselectTeleOp = "😈🔥")
@@ -40,23 +36,21 @@ public class BlueFar extends ExoMode {
 
     @Override
     protected void Init() {
-        hardware = Hardware.getInstance(this);
-        swerve = new SwerveDrive(this);
-        system = new ScoringSystem(this);
-
-        auto = new AutoDrive(this, swerve, system, startPoseBlueFar);
-        goalPosition = goalPositionBlue;
-
-        hardware.limelight.start();
-        hardware.limelight.setPipeline(Enums.Pipeline.RANDOMIZATION);
-
-        system.indexer.preload();
-
         new SystemData()
                 .add(Enums.OpMode.AUTONOMUS)
                 .setAutoOnBlue(true)
                 .getLoopTime(true);
 
+        hardware = Hardware.getInstance(this);
+        swerve = new SwerveDrive(this);
+        system = new ScoringSystem(this);
+
+        auto = new AutoDrive(this, swerve, system, startPoseBlueFar);
+
+        hardware.limelight.start();
+        hardware.limelight.setPipeline(Enums.Pipeline.RANDOMIZATION);
+
+        system.indexer.preload();
 
         while (opModeInInit()) {
             auto.linearCx.setPID(linearPx, 0, linearDx);

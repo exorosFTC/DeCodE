@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot;
 
 
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.telemetryAddLoopTime;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -15,14 +17,15 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
-import org.firstinspires.ftc.teamcode.Pathing.Localizer.PinpointLocalizer;
+import org.firstinspires.ftc.teamcode.CustomPathing.Localizer.PinpointLocalizer;
 
 public class Hardware {
     private static Hardware instance;
     public final HardwareMap hardwareMap;
+
+    private double startLoopTime;
 
     public final VoltageSensor batteryVoltageSensor;
     public final MultipleTelemetry telemetry;
@@ -76,18 +79,12 @@ public class Hardware {
 
 
 
-
-
-
     public static Hardware getInstance(LinearOpMode opMode) {
         if (instance == null) {
             instance = new Hardware(opMode);
         }
         return instance;
     }
-
-
-
 
     public Hardware(LinearOpMode opMode) {
         this.telemetry = new MultipleTelemetry(opMode.telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -159,10 +156,27 @@ public class Hardware {
         RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
+
+
     public void read(SystemBase system) {
         localizer.update();
         batteryVoltage = batteryVoltageSensor.getVoltage();
 
         system.read();
+    }
+
+    public void updateTelemetry() {
+        if (telemetryAddLoopTime) {
+            double endLoopTime = System.nanoTime();
+
+            telemetry.addData(
+                    "Loop Time:",
+                    String.format("%.4f Hz", 1_000_000_000.0 / (endLoopTime - startLoopTime))
+            );
+
+            startLoopTime = endLoopTime;
+        }
+
+        telemetry.update();
     }
 }

@@ -1,13 +1,12 @@
 package org.firstinspires.ftc.teamcode.OpModes.Main.TeleOp;
 
-
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.telemetryAddLoopTime;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -22,17 +21,14 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.InputBus;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.TriggerManager;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
-
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 @Config
 @TeleOp(name = "🍪", group = "main")
 public class SoloTeleOp extends ExoMode {
-    private double startLoopTime;
-
     private Hardware hardware;
     private SwerveDrive swerve;
     private ScoringSystem system;
@@ -44,10 +40,11 @@ public class SoloTeleOp extends ExoMode {
 
     private Thread swerveThread, gamepadThread;
 
+    public static double velocityMultiplier = TeleOpVelocityMultiplier;
     public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD;
     public static double moduleP = DriveConstants.swerveModuleP, moduleD = DriveConstants.swerveModuleD;
-    public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
 
+    public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
     public static double angleAdjust = 0;
     public static double angle = 0.95;
     public static double power = 0;
@@ -123,31 +120,43 @@ public class SoloTeleOp extends ExoMode {
                 swerve.setHeadingPID(swerveP, 0, swerveD);
                 swerve.setModulePID(moduleP, 0, moduleD);
 
+                TeleOpVelocityMultiplier = velocityMultiplier;
+                TeleOpAngularP = swerveP;
+
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
-                if (in.evStartLift.getAndSet(false)) lift.on();
+                if (in.evResetHeading.getAndSet(false)) hardware.localizer.setPositionEstimate(new Pose(POSE.x, POSE.y, 0));
+                if (in.evStartLift.getAndSet(false)) {
+                    swerve.disable();
+                    system.indexer.off();
+                    system.intake.off();
+                    system.shooter.off();
+
+                    lift.on();
+                }
 
                 swerve.write();
                 lift.write();
 
 
-                hardware.telemetry.addData("x", POSE.x);
-                hardware.telemetry.addData("y", POSE.y);
-                hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
-                hardware.telemetry.addData("distance", system.shooter.distance);
-                hardware.telemetry.addData("indexer pos", system.indexer.indexerPosition);
-                hardware.telemetry.addData("indexer target", system.indexer.target);
+                //hardware.telemetry.addData("x", POSE.x);
+                //hardware.telemetry.addData("y", POSE.y);
+                //hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
+                //hardware.telemetry.addData("distance", system.shooter.distance);
+                //hardware.telemetry.addData("indexer pos", system.indexer.indexerPosition);
+                //hardware.telemetry.addData("indexer target", system.indexer.target);
+                //hardware.telemetry.addData("swerve rotation pow", swerve.leftBackModule.servoPower);
+                //hardware.telemetry.addData("current state", swerve.leftBackModule.getModuleRotation());
+                //hardware.telemetry.addData("target state", swerve.leftBackModule.getTargetRotation());
 
-                hardware.telemetry.addData("right x", in.rx);
-
-                //hardware.telemetry.addData("vel", Math.hypot(x, y));
+                hardware.telemetry.addData("vel", in.ly);
                 //hardware.telemetry.addData("LF current", hardware.LeftFront.getCurrent(CurrentUnit.AMPS));
                 //hardware.telemetry.addData("LB current", hardware.LeftBack.getCurrent(CurrentUnit.AMPS));
                 //hardware.telemetry.addData("RF current", hardware.RightFront.getCurrent(CurrentUnit.AMPS));
                 //hardware.telemetry.addData("RB current", hardware.RightBack.getCurrent(CurrentUnit.AMPS));
 
-                hardware.telemetry.addData("art", system.indexer.elements.toString());
-                updateTelemetry();
+                //hardware.telemetry.addData("art", system.indexer.elements.toString());
+                hardware.updateTelemetry();
 
                 Thread.yield();
 
@@ -178,7 +187,8 @@ public class SoloTeleOp extends ExoMode {
                 if (g1.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) in.evShootUnsorted.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) in.evLockX.set(true);
-                if (g1.wasJustReleased(GamepadKeys.Button.X)) in.evStartLift.set(true);
+                if (g1.isDown(GamepadKeys.Button.X) && g1.isDown(GamepadKeys.Button.DPAD_RIGHT)) in.evStartLift.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) in.evResetHeading.set(true);
 
                 Shooter.ANGLE_ADJUST = angleAdjust;
                 system.shooter.setPIDF(shooterP, 0, 0, shooterF);
@@ -200,6 +210,7 @@ public class SoloTeleOp extends ExoMode {
         gamepadThread.start();
         swerveThread.start();
 
+        lift.init();
         system.indexer.home();
     }
 
@@ -219,44 +230,5 @@ public class SoloTeleOp extends ExoMode {
         system.updateIntake();
 
         try { Thread.sleep(3); } catch (InterruptedException e) {}
-    }
-
-
-
-    private void updateTelemetry() {
-        if (telemetryAddLoopTime) {
-            double endLoopTime = System.nanoTime();
-
-            hardware.telemetry.addData(
-                    "Loop Time:",
-                    String.format("%.4f Hz", 1_000_000_000.0 / (endLoopTime - startLoopTime))
-            );
-
-            startLoopTime = endLoopTime;
-        }
-
-        hardware.telemetry.update();
-    }
-
-
-
-    static class InputBus {
-        // continuous
-        volatile double lx, ly, rx;
-        volatile double lt, rt;
-        volatile boolean spinupShooter;
-        volatile boolean lockToGoal;
-
-        volatile double ly2;
-
-        // one-shot events
-        final AtomicBoolean evToggleIntake   = new AtomicBoolean(false);
-        final AtomicBoolean evReverseIntake  = new AtomicBoolean(false);
-        final AtomicBoolean evShootSorted    = new AtomicBoolean(false);
-        final AtomicBoolean evShootUnsorted  = new AtomicBoolean(false);
-        final AtomicBoolean evHomeIndexer    = new AtomicBoolean(false);
-        final AtomicBoolean evLockX          = new AtomicBoolean(false);
-        final AtomicBoolean evStartLift     = new AtomicBoolean(false);
-        final AtomicBoolean evResetFieldCentric = new AtomicBoolean(false);
     }
 }

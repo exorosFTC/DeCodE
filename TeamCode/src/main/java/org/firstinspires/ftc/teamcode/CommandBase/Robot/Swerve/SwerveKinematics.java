@@ -4,9 +4,7 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.DRIVE_L;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.R;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Point;
-import org.firstinspires.ftc.teamcode.Pathing.Math.Pose;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 import java.util.Arrays;
 import java.util.List;

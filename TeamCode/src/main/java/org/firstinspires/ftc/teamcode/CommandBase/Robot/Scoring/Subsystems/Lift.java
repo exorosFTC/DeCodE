@@ -10,12 +10,15 @@ public class Lift extends SystemBase {
     private final LinearOpMode opMode;
 
     public boolean breakLeft, breakRight;
-    public static double retainerOff = 0.26;
+    public static double retainerOff = 0.39;
+    public static double retainerOn = 0.7;
 
     public Lift(LinearOpMode opMode) {
         this.hardware = Hardware.getInstance(opMode);
         this.opMode = opMode;
     }
+
+    public void init() { hardware.LiftRetainerServo.setPosition(retainerOn); }
 
 
     @Override
