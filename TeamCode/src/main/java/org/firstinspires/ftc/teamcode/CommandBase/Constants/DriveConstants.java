@@ -17,25 +17,26 @@ public class DriveConstants {
 
     public static double ODO_UPDATE_RATE_AUTO = 100,
                         ODO_UPDATE_RATE_TELEOP = 10;
-    public static double STRAFING_SLEW_RATE_LIMIT = 3,
+    public static double STRAFING_SLEW_RATE_LIMIT = 2.5,
                         TURNING_SLEW_RATE_LIMIT = 5.67;
 
 
     // teleop PID
     public static double TeleOpAngularP = 0,
                                 TeleOpAngularD = 0;
-    public static final double TeleOpLimelightP = 0,
+    public static double TeleOpLimelightP = 0,
                                 TeleOpLimelightD = 0;
     public static double TeleOpVelocityMultiplier = 0.45;
 
     // auto PID
-    public static final double AutoLinearPx = 0,
-                                AutoLinearDx = 0,
-                                AutoLinearPy = 0,
-                                AutoLinearDy = 0;
-    public static final double AutoAngularP = 0,
-                                AutoAngularD = 0;
-    public static double AutoVelocityMultiplier = 0.45;
+    public static double AutoLinearPx = 0.02,
+                                AutoLinearDx = 0.0000001,
+                                AutoLinearPy = 0.02,
+                                AutoLinearDy = 0.0000001;
+    public static double AutoAngularP = 0.9,
+                                AutoAngularD = 0.27;
+    public static double AutoAngularVelocityMultiplier = 0.45,
+                        AutoLinearVelocityMultiplier = 0;
 
     // swerve module PID
     public static final double swerveModuleP = 0.2,

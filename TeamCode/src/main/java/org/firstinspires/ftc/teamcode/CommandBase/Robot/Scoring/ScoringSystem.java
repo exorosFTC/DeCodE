@@ -109,6 +109,13 @@ public class ScoringSystem extends SystemBase {
 
         //if (!isInShootingZone() && opModeType == Enums.OpMode.AUTONOMUS) return;
         indexer.isHome = true;
+
+        if (shooter.distance > 312) Indexer.SHOOTING_POWER = 0.3;
+        else if (shooter.distance > 290) Indexer.SHOOTING_POWER = 0.5;
+        else if (shooter.distance > 250) Indexer.SHOOTING_POWER = 0.7;
+        else if (shooter.distance > 200) Indexer.SHOOTING_POWER = 0.8;
+        else Indexer.SHOOTING_POWER = 1;
+
         indexer.shoot(3);
 
         shooter.off();

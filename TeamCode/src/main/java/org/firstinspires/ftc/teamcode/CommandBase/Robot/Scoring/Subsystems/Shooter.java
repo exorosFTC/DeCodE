@@ -20,11 +20,11 @@ public class Shooter extends SystemBase {
     public static double kP = 0.007;
     public static double kI = 0;
     public static double kD = 0;
-    public static double kF = 0.00156;
+    public static double kF = 0.00158;
 
     private static final double VEL_ALPHA = 0.3;
     public static final double MAX_RPS = 600;
-    public static double ANGLE_ADJUST = -0.002;
+    public static double ANGLE_ADJUST = -0.0015;
 
     public boolean enabled = true;
 
@@ -41,7 +41,7 @@ public class Shooter extends SystemBase {
     public double POWER = 0;
     public double TARGET = 0;
 
-    private final double threshold = 3;
+    private final double threshold = 6;
 
 
     public Shooter(LinearOpMode opMode) {

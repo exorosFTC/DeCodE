@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve;
 
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
@@ -22,6 +24,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SlewRateLimiter;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 import java.util.List;
@@ -101,6 +104,17 @@ public class SwerveDrive extends SystemBase {
     public void update(Pose velocity) {
         double power = velocity.hypot();
 
+        if (opModeType == Enums.OpMode.TELE_OP) {
+            if (velocity.closeToZero(0.1)) {
+                TeleOpAngularP = 0.9;
+                TeleOpAngularD = 0.27;
+            }
+            else {
+                TeleOpAngularP = 0;
+                TeleOpAngularD = 0;
+            }
+        }
+
         if (!lockHeadingToGoal && opModeType == Enums.OpMode.TELE_OP) {
             if (hardware.limelight.enabled) hardware.limelight.stop();
 
@@ -139,17 +153,9 @@ public class SwerveDrive extends SystemBase {
         } else { SwerveKinematics.setLockedX(false); states = SwerveKinematics.robot2wheel(velocity); }
 
         for (int i = 0; i < 4; i++) {
-            if (i == 0 || i == 2) states.get(i).setModuleVelocity(-states.get(i).getModuleVelocity());
+            if (i == 0 || i == 2) states.get(i).negateModuleVelocity();
             modules[i].setTargetState(states.get(i));
-            modules[i].update(hardware);
-        }
-    }
-
-    public void update(List<SwerveModuleState> states) {
-        for (int i = 0; i < 4; i++) {
-            if (i == 0 || i == 2) states.get(i).setModuleVelocity(-states.get(i).getModuleVelocity());
-            modules[i].setTargetState(states.get(i));
-            modules[i].update(hardware);
+            modules[i].update();
         }
     }
 

@@ -6,7 +6,8 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDy;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoVelocityMultiplier;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularVelocityMultiplier;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
@@ -40,9 +41,10 @@ public class AutoDrive {
 
     private final ElapsedTime waitTimer;
     public final PIDController linearCx, linearCy, angularC;
+    public double maxError = 0;
 
-    private double busyThresholdLinear = 0.08,
-                    busyThresholdAngular = Math.toRadians(7);
+    private double busyThresholdLinear = 0.14,
+                    busyThresholdAngular = Math.toRadians(5);
     private double thresholdMultiplier = 1;
 
     private double failSafeTimeMs = Double.POSITIVE_INFINITY;
@@ -94,9 +96,9 @@ public class AutoDrive {
                     if (isPaused) continue;
                     updateDriveVector();
 
-                    hardware.telemetry.addData("x", POSE.x);
-                    hardware.telemetry.addData("y", POSE.y);
-                    hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
+                    //hardware.telemetry.addData("x", POSE.x);
+                    //hardware.telemetry.addData("y", POSE.y);
+                    //hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
                     //hardware.telemetry.addData("target x", target.x);
                     //hardware.telemetry.addData("target y", target.y);
                     //hardware.telemetry.addData("target head", Math.toDegrees(target.heading));
@@ -161,6 +163,7 @@ public class AutoDrive {
     public AutoDrive driveTo(Pose pose) {
         this.failSafeTimeMs = Double.POSITIVE_INFINITY;
         this.usingFailSafe = false;
+        this.maxError = pose.subtract(POSE).hypot();
         this.target = new Pose(pose.x, pose.y, normalizeRadiansPositive(pose.heading));
         return this;
     }
@@ -168,6 +171,7 @@ public class AutoDrive {
     public AutoDrive driveTo(Pose pose, double ms) {
         this.failSafeTimeMs = ms;
         this.usingFailSafe = true;
+        this.maxError = pose.subtract(POSE).hypot();
         this.target = new Pose(pose.x, pose.y, normalizeRadiansPositive(pose.heading));
 
         failSafeTimer.reset();
@@ -290,6 +294,7 @@ public class AutoDrive {
 
 
     private void updateDriveVector() {
+        // calculate the error
         double xDiff = target.x - POSE.x;
         double yDiff = target.y - POSE.y;
         double headDiff = normalizeRadians(target.heading - POSE.heading);
@@ -297,13 +302,24 @@ public class AutoDrive {
         // transform it to field centric
         Point linear = new Point(xDiff, yDiff).rotate_matrix(-POSE.heading);
 
-        double power = linear.hypot();
-        //angularC.setP(AutoAngularP + power * AutoVelocityMultiplier);
+        // plug into the linear pid
+        double xPower = swerve.xLim.calculate(linearCx.calculate(-linear.x, 0));
+        double yPower = swerve.yLim.calculate(linearCy.calculate(-linear.y, 0));
 
-        double xPower = linearCx.calculate(-linear.x, 0);
-        double yPower = linearCy.calculate(-linear.y, 0);
+        // debug telemetry
+        hardware.telemetry.addData("pose error condition", new Point(Math.abs(target.x - POSE.x), Math.abs(target.y - POSE.y)).closeToZero(10));
+        hardware.telemetry.addData("power threshold condition", driveVector.point().closeToZero(busyThresholdLinear * thresholdMultiplier));
+        hardware.telemetry.addData("heading error condition", Math.abs(target.heading - POSE.heading) < busyThresholdAngular);
+
+        // update heading pid by wheel powers
+        //AutoAngularP = 0.9;
+        //AutoAngularD = 0.27;
+
+        // plug into the angular pid
+        angularC.setPID(AutoAngularP + new Point(xPower, yPower).hypot() * AutoAngularVelocityMultiplier, 0, AutoAngularD);
         double headPower = angularC.calculate(-headDiff, 0);
 
+        // construct the drive vector, normalized & with velocity compensation
         driveVector = new Pose(
                 Math.abs(xPower) > busyThresholdLinear ? xPower : 0,
                 Math.abs(yPower) > busyThresholdLinear ? yPower : 0,
@@ -314,7 +330,7 @@ public class AutoDrive {
 
 
     public boolean isBusy() { return !(
-            new Point(Math.abs(target.x - POSE.x), Math.abs(target.y - POSE.y)).closeToZero(6 * thresholdMultiplier)
+            new Point(Math.abs(target.x - POSE.x), Math.abs(target.y - POSE.y)).closeToZero(10)
                     &&
             driveVector.point().closeToZero(busyThresholdLinear * thresholdMultiplier)
                     &&

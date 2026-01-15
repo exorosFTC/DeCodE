@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleP;
 
@@ -32,6 +34,8 @@ public class PIDAutoTuner extends ExoMode {
     public static double linP = AutoLinearPx, angP = AutoAngularP;
     public static double linD = AutoLinearDx, angD = AutoAngularD;
     public static double moduleP = swerveModuleP, moduleD = swerveModuleD;
+    public static double angularMultiplier = AutoAngularVelocityMultiplier;
+    public static double linearMultiplier = AutoAngularVelocityMultiplier;
     public static double x, y, head;
 
     public GamepadEx g1;
@@ -63,7 +67,11 @@ public class PIDAutoTuner extends ExoMode {
         g1.readButtons();
         auto.linearCx.setPID(linP, 0, linD);
         auto.linearCy.setPID(linP, 0, linD);
-        auto.angularC.setPID(angP, 0, angD);
+        //auto.angularC.setPID(angP, 0, angD);
+
+        AutoAngularVelocityMultiplier = angularMultiplier;
+        AutoLinearVelocityMultiplier = linearMultiplier;
+
         swerve.setModulePID(swerveModuleP, 0, swerveModuleD);
     }
 }

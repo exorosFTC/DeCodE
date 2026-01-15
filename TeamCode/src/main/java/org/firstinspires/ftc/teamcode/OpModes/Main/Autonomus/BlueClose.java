@@ -5,7 +5,7 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoVelocityMultiplier;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueClose;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -34,7 +34,7 @@ public class BlueClose extends ExoMode {
 
     public static double linearThreshold = 0.08;
     public static double angularThreshold = 7;
-    public static double velocityMultiplier = AutoVelocityMultiplier;
+    public static double velocityMultiplier = AutoAngularVelocityMultiplier;
 
     @Override
     protected void Init() {
@@ -61,7 +61,7 @@ public class BlueClose extends ExoMode {
 
             auto.setBusyThresholdLinear(linearThreshold);
             auto.setBusyThresholdAngular(Math.toRadians(angularThreshold));
-            AutoVelocityMultiplier = velocityMultiplier;
+            AutoAngularVelocityMultiplier = velocityMultiplier;
         }
     }
 

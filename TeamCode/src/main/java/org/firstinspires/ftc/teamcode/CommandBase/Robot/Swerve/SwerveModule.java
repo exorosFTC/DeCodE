@@ -21,8 +21,8 @@ public class SwerveModule extends SystemBase {
     public final CRServo servo;
     public final AbsoluteAnalogEncoder encoder;
 
-    private double kS_wheel;
-    private double kS_angle, kS_threshold;
+    private final double kS_wheel;
+    private final double kS_angle, kS_threshold;
 
     private final PIDFController controller = new PIDFController(swerveModuleP, 0, swerveModuleD, 0);
     private boolean wheelFlipped = false;
@@ -54,7 +54,7 @@ public class SwerveModule extends SystemBase {
 
 
 
-    public void update(Hardware hardware) {
+    public void update() {
         double target = getTargetRotation(), current = getModuleRotation();
 
         double error = normalizeRadians(target - current);
@@ -64,17 +64,11 @@ public class SwerveModule extends SystemBase {
         } else { wheelFlipped = false; }
 
         error = normalizeRadians(target - current);
-        hardware.telemetry.addData("error", error);
 
         servoPower = Range.clip(controller.calculate(0, error), -1, 1);
         if (Double.isNaN(servoPower)) servoPower = 0;
 
         servoPower = servoPower + (Math.abs(error) > kS_threshold ? kS_angle : 0) * Math.signum(servoPower);
-        //targetState.setModuleVelocity(
-              //Math.signum(targetState.getModuleVelocity()) * kS_wheel +             // static friction correction
-              //Math.max(Math.min(targetState.getModuleVelocity(), 0.88), -0.88)
-              //* Math.cos(Math.abs(error))                                         // cosine correction
-        //);
     }
 
     public double getTargetRotation() {
@@ -95,7 +89,7 @@ public class SwerveModule extends SystemBase {
     public void write() {
         servo.setPower(servoPower);
         if (Math.abs(targetState.getModuleVelocity()) > 0.02)
-            motor.setPower(wheelFlipped ? -targetState.getModuleVelocity() : targetState.getModuleVelocity());
+            motor.setPower((wheelFlipped ? -1 : 1) * targetState.getModuleVelocity());
         else motor.setPower(0);
     }
 }

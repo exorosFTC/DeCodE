@@ -49,4 +49,8 @@ public class SwerveModuleState {
     public double getModuleAngularVelocity() { return moduleAngularVelocity; }
 
     public double getModuleAngularAcceleration() { return moduleAngularAcceleration; }
+
+
+
+    public void negateModuleVelocity() { this.moduleVelocity = -this.moduleVelocity; }
 }

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.OpModes.Main.Autonomus;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
@@ -31,8 +32,10 @@ public class RedClose extends ExoMode {
     public static double linearPx = AutoLinearPx, linearDx = AutoLinearDx;
     public static double linearPy = AutoLinearPy, linearDy = AutoLinearDx;
 
-    public static double linearThreshold = 0.08;
-    public static double angularThreshold = 7;
+    public static double linearThreshold = 0.14;
+    public static double angularThreshold = 5;
+
+    public static double angularMultiplier = AutoAngularVelocityMultiplier;
 
     @Override
     protected void Init() {
@@ -56,6 +59,10 @@ public class RedClose extends ExoMode {
             auto.linearCx.setPID(linearPx, 0, linearDx);
             auto.linearCy.setPID(linearPy, 0, linearDy);
             auto.angularC.setPID(angularP, 0, angularD);
+
+            AutoAngularP = angularP;
+            AutoAngularD = angularD;
+            AutoAngularVelocityMultiplier = angularMultiplier;
 
             auto.setBusyThresholdLinear(linearThreshold);
             auto.setBusyThresholdAngular(Math.toRadians(angularThreshold));
@@ -185,9 +192,62 @@ public class RedClose extends ExoMode {
                 .waitAction(() -> !system.indexer.isBusy());
     }
 
-    private void cycle1() {}
+    private void cycle1() {
+        auto.driveTo(new Pose(35, -60, Math.toRadians(270)))
+            .moveSystem(() -> system.indexer.home())
+                .waitDrive(2)
+            .moveSystem(() -> {
+                 system.intake.on();
+                 system.isIntakeEnabled = true;
+                 system.indexer.on();
+            })
+            .driveTo(new Pose(35, -127, Math.toRadians(270)), 1200)
+                .waitDrive(1)
+                .waitMs(300)
+            .driveTo(new Pose(75, -60, Math.toRadians(315)))
+            .moveSystem(() -> {
+                 system.intake.reverse();
 
-    private void cycle2() {}
+                 try{ Thread.sleep(400); } catch (InterruptedException e) {}
+
+                 system.intake.off();
+                 system.isIntakeEnabled = false;
+                 system.shooter.on();
+            })
+                .waitDrive(1)
+            .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.indexer.isBusy());
+    }
+
+    private void cycle2() {
+        auto.driveTo(new Pose(-25, -60, Math.toRadians(270)))
+            .moveSystem(() -> system.indexer.home())
+                .waitDrive(2)
+            .moveSystem(() -> {
+                system.intake.on();
+                system.isIntakeEnabled = true;
+                system.indexer.on();
+            })
+            .driveTo(new Pose(-27, -149, Math.toRadians(270)), 1200)
+                .waitDrive(1)
+                .waitMs(300)
+            .driveTo(new Pose(-27, -60, Math.toRadians(270)))
+            .moveSystem(() -> {
+                system.intake.reverse();
+
+                try{ Thread.sleep(400); } catch (InterruptedException e) {}
+
+                system.intake.off();
+                system.isIntakeEnabled = false;
+                system.shooter.on();
+            })
+            .waitDrive(1.5)
+            .driveTo(new Pose(77, -60, Math.toRadians(315)))
+                .waitDrive(1)
+            .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.indexer.isBusy())
+                .moveSystem(() -> system.indexer.home());
+    }
 
     private void cycle3() {}
 

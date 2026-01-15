@@ -113,7 +113,7 @@ public class SoloTeleOp extends ExoMode {
                 swerve.update(new Pose(
                         in.ly,
                         -in.lx,
-                        -in.rx)
+                        -in.rx * 0.85)
                 );
 
                 swerve.setLimelightPID(limelightP, 0, limelightD);
