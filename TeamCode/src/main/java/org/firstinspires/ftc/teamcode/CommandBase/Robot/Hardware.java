@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot;
 
-
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.telemetryAddLoopTime;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.lynx.LynxModule;
@@ -52,7 +49,7 @@ public class Hardware {
             RightFront_servo,
             RightBack_servo,
 
-    LeftFront_lift,
+            LeftFront_lift,
             LeftBack_lift,
             RightFront_lift,
             RightBack_lift;
@@ -141,11 +138,11 @@ public class Hardware {
 
         Shooter1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         Shooter1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        Shooter1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        Shooter1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         Shooter2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         Shooter2.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        Shooter2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        Shooter2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         IntakeMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         IntakeMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
@@ -166,17 +163,15 @@ public class Hardware {
     }
 
     public void updateTelemetry() {
-        if (telemetryAddLoopTime) {
-            double endLoopTime = System.nanoTime();
 
-            telemetry.addData(
-                    "Loop Time:",
-                    String.format("%.4f Hz", 1_000_000_000.0 / (endLoopTime - startLoopTime))
-            );
+        double endLoopTime = System.nanoTime();
 
-            startLoopTime = endLoopTime;
-        }
+        telemetry.addData(
+                "Loop Time:",
+                String.format("%.4f Hz", 1_000_000_000.0 / (endLoopTime - startLoopTime))
+        );
 
+        startLoopTime = endLoopTime;
         telemetry.update();
     }
 }

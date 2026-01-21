@@ -9,13 +9,14 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Lift;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.TriggerManager;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.InputBus;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
@@ -54,40 +55,22 @@ public class CrazyTeleOp extends ExoMode {
         lift = new Lift(this);
 
         new SystemData()
-                .add(Enums.OpMode.TELE_OP)
-                .getLoopTime(true);
+                .add(SystemConstants.OpMode.TELE_OP);
 
         // create gamepad triggers
         intakeTriggers = new TriggerManager()
                 .addTrigger(() -> in.evToggleIntake.getAndSet(false), () -> {
-                    if (system.intake.on && !system.intake.reversed) {
-                        system.intake.off();
-                        system.isIntakeEnabled = false;
-                        system.indexer.off();
-                    } else {
-                        system.intake.on();
-                        system.isIntakeEnabled = true;
-                        system.indexer.on();
-                    }})   // intake
+                    if (system.intake.on && !system.intake.reversed) system.intake.off();
+                    else system.intake.on();
+                })   // intake
                 .addTrigger(() -> in.evReverseIntake.getAndSet(false), () -> {
-                    if (system.intake.on && system.intake.reversed) {
-                        system.intake.off();
-                        system.indexer.off();
-                    } else {
-                        system.intake.reverse();
-                        system.indexer.on();
-                    }
+                    if (system.intake.on && system.intake.reversed) system.intake.off();
+                    else system.intake.reverse();
                 }); // reverse intake
 
         shooterTriggers = new TriggerManager()
-                .addTrigger(() -> in.evShootSorted.getAndSet(false), () -> {
-                    system.shootSorted = true;
-                    system.indexer.indexPattern();
-                })                       // sort
-                .addTrigger(() -> in.evShootUnsorted.getAndSet(false) && in.spinupShooter, () -> {
-                    system.shootSequence();
-                    system.shootSorted = false;
-                }) // shoot
+                .addTrigger(() -> in.evSort.getAndSet(false), () -> system.indexer.indexPattern())                       // sort
+                .addTrigger(() -> in.evShoot.getAndSet(false) && in.spinupShooter, () -> system.shootSequence()) // shoot
                 .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home());      // emergency homing
 
 
@@ -129,11 +112,8 @@ public class CrazyTeleOp extends ExoMode {
                 hardware.telemetry.addData("x", POSE.x);
                 hardware.telemetry.addData("y", POSE.y);
                 hardware.telemetry.addData("head", POSE.heading);
+                hardware.telemetry.addData("distance", system.shooter.distance);
 
-                //hardware.telemetry.addData("art", system.indexer.elements.toString());
-                hardware.telemetry.addData("READY TO SHOOT", system.shooter.ready());
-                hardware.telemetry.addData("shooter vel", system.shooter.wheelVelocity);
-                hardware.telemetry.addData("shooter target", system.shooter.TARGET);
                 hardware.updateTelemetry();
 
                 Thread.yield();
@@ -141,7 +121,7 @@ public class CrazyTeleOp extends ExoMode {
         }, "SwerveThread");
         gamepadThread = new Thread(() -> {
             while (opModeIsActive()) {
-                hardware.bulk.clearCache(Enums.Hubs.ALL);
+                hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
                 hardware.read(system);
                 swerve.read();
                 lift.read();
@@ -165,8 +145,8 @@ public class CrazyTeleOp extends ExoMode {
                 // edges -> events (one-shot)
                 if (g2.wasJustPressed(GamepadKeys.Button.B)) in.evToggleIntake.set(true);
                 if (g2.wasJustPressed(GamepadKeys.Button.A)) in.evReverseIntake.set(true);
-                if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) in.evShootSorted.set(true);
-                if (g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) in.evShootUnsorted.set(true);
+                if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) in.evSort.set(true);
+                if (g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) in.evShoot.set(true);
                 if (g2.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
                 if (g1.isDown(GamepadKeys.Button.X) && g1.isDown(GamepadKeys.Button.DPAD_RIGHT)) in.evStartLift.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) in.evResetHeading.set(true);

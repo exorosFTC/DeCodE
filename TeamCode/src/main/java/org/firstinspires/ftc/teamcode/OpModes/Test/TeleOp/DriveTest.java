@@ -10,9 +10,10 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 @Config
@@ -32,7 +33,7 @@ public class DriveTest extends LinearOpMode {
         swerve = new SwerveDrive(this);
         hardware = new Hardware(this);
 
-        opModeType = Enums.OpMode.TELE_OP;
+        opModeType = SystemConstants.OpMode.TELE_OP;
 
         g1 = new GamepadEx(gamepad1);
 
@@ -62,7 +63,7 @@ public class DriveTest extends LinearOpMode {
             hardware.telemetry.update();
             swerve.write();
 
-            hardware.bulk.clearCache(Enums.Hubs.ALL);
+            hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
         }
     }
 }

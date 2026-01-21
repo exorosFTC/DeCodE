@@ -31,6 +31,7 @@ public class SwerveModule extends SystemBase {
     public SwerveModuleState targetState = new SwerveModuleState(0, 0);
 
     public double servoPower;
+    public double error;
 
 
     public SwerveModule(DcMotorEx motor, CRServo servo, AbsoluteAnalogEncoder encoder,
@@ -57,7 +58,7 @@ public class SwerveModule extends SystemBase {
     public void update() {
         double target = getTargetRotation(), current = getModuleRotation();
 
-        double error = normalizeRadians(target - current);
+        error = normalizeRadians(target - current);
         if (Math.abs(error) > Math.PI / 2) {
             target = normalizeRadians(target - Math.PI);
             wheelFlipped = true;

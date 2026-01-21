@@ -26,21 +26,18 @@ public class Shooter extends SystemBase {
     public static final double MAX_RPS = 600;
     public static double ANGLE_ADJUST = -0.0015;
 
-    public boolean enabled = true;
-
-
 
 
     public double distance;
+
     public double rawVelocity = 0;
-    public double wheelVelocity = 0;
+    public double correctedVelocity = 0;
+    public double targetVelocity = 0;
 
+    public double currentPower = 0;
     public double targetPower = 0;
-    public double targetAngle = 0.97;
 
-    public double POWER = 0;
-    public double TARGET = 0;
-
+    public double targetAngle = 0.94;
     private final double threshold = 6;
 
 
@@ -52,7 +49,7 @@ public class Shooter extends SystemBase {
     public boolean ready() { return ready(threshold); }
 
     public boolean ready(double threshold) {
-        return Math.abs(this.TARGET - wheelVelocity) < threshold;
+        return Math.abs(this.targetVelocity - correctedVelocity) < threshold;
     }
 
 
@@ -61,7 +58,9 @@ public class Shooter extends SystemBase {
     public void update(double overridePower, double overrideAngle) {
         distance = POSE.distanceTo(goalPosition);
 
-        if (!enabled) return;
+        if (!on) return;
+
+        //if (!enabled) return;
         if (on) {
             ShotSample shot = lookupShot(distance);
 
@@ -74,11 +73,11 @@ public class Shooter extends SystemBase {
             }
         }
 
-        this.TARGET = targetPower * MAX_RPS;
-        this.POWER = controller.calculate(wheelVelocity, TARGET) * 12.0 / hardware.batteryVoltage;
+        this.targetVelocity = targetPower * MAX_RPS;
+        this.currentPower = controller.calculate(correctedVelocity, targetVelocity) * 12.0 / hardware.batteryVoltage;
 
         if (!on) return;
-        targetAngle = clamp(targetAngle - (this.TARGET - wheelVelocity - threshold) * ANGLE_ADJUST, 0.37, 0.97);  // adjust angle by velocity*/
+        targetAngle = clamp(targetAngle - (this.targetVelocity - correctedVelocity - threshold) * ANGLE_ADJUST, 0.34, 0.94);  // adjust angle by velocity*/
     }
 
     private ShotSample lookupShot(double d) {
@@ -128,40 +127,29 @@ public class Shooter extends SystemBase {
     @Override
     public void read() {
         rawVelocity = -hardware.Shooter2.getVelocity(AngleUnit.DEGREES);
-        wheelVelocity += VEL_ALPHA * (rawVelocity - wheelVelocity);
+        correctedVelocity += VEL_ALPHA * (rawVelocity - correctedVelocity);
     }
 
     @Override
     public void write() {
-        if (!enabled) return;
-
-        hardware.Shooter1.setPower(this.POWER);
-        hardware.Shooter2.setPower(-this.POWER);
-
         if (!on) return;
+        hardware.Shooter1.setPower(this.currentPower);
+        hardware.Shooter2.setPower(-this.currentPower);
+
         hardware.ShooterHoodServo.setPosition(targetAngle);
     }
 
     @Override
     public void on() {
-        enabled = true;
         super.on();
     }
 
     @Override
     public void off() {
         super.off();
-
-        enabled = false;
-        //targetPower = COAST_POWER;
-
-        hardware.Shooter1.setMotorDisable();
-        hardware.Shooter2.setMotorDisable();
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-        if (enabled) return;
+        targetPower = 0;
+        targetVelocity = 0;
+        currentPower = 0;
 
         hardware.Shooter1.setMotorDisable();
         hardware.Shooter2.setMotorDisable();

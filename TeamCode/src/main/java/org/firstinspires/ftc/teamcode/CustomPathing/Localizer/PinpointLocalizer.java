@@ -1,16 +1,11 @@
 package org.firstinspires.ftc.teamcode.CustomPathing.Localizer;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.ODO_UPDATE_RATE_AUTO;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.ODO_UPDATE_RATE_TELEOP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
-
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants;
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
@@ -36,8 +31,6 @@ public class PinpointLocalizer {
 
 
     public void update() {
-        if (timer.milliseconds() < (1000 / (opModeType == Enums.OpMode.AUTONOMUS ? ODO_UPDATE_RATE_AUTO : ODO_UPDATE_RATE_TELEOP))) return;
-
         timer.reset();
         pinpoint.update();
         double rawHeading = pinpoint.getHeading(AngleUnit.RADIANS);

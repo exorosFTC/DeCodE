@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 
@@ -10,7 +9,6 @@ public class Intake extends SystemBase {
     private final Hardware hardware;
     private final LinearOpMode opMode;
 
-    public double intakeVoltage = 0;
     public boolean reversed = false;
 
     public Intake(LinearOpMode opMode) {
@@ -20,11 +18,7 @@ public class Intake extends SystemBase {
 
 
     @Override
-    public void read() {
-        if (!on) return;
-
-        intakeVoltage = hardware.IntakeMotor.getCurrent(CurrentUnit.AMPS);
-    }
+    public void read() {}
 
     @Override
     public void write() {}

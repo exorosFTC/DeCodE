@@ -8,6 +8,12 @@ import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import java.util.List;
 
 public class HubBulkRead {
+    public enum Hubs{
+        CONTROL_HUB,
+        EXPANSION_HUB,
+        ALL
+    }
+
     public static LynxModule CONTROL_HUB, EXPANSION_HUB;
     private List<LynxModule> allHubs;
 
@@ -56,7 +62,7 @@ public class HubBulkRead {
         }
     }
 
-    public void clearCache(Enums.Hubs type) {
+    public void clearCache(Hubs type) {
         if (currentCachingMode == LynxModule.BulkCachingMode.MANUAL) {
             switch (type) {
                 case ALL: {

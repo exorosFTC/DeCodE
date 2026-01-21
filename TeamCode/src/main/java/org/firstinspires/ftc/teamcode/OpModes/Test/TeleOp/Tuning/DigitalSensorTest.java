@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
 
 @TeleOp(group = "test")
 public class DigitalSensorTest extends LinearOpMode {
@@ -44,7 +44,7 @@ public class DigitalSensorTest extends LinearOpMode {
 
             boolean state = sensors[index].getState();
 
-            hardware.bulk.clearCache(Enums.Hubs.ALL);
+            hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
             hardware.telemetry.addData("Sensor", index);
             hardware.telemetry.addData("State", state ? "HIGH" : "LOW");
             hardware.telemetry.addData("Triggered", !state);

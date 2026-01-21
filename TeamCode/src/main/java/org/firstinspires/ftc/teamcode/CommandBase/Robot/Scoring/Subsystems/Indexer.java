@@ -4,12 +4,10 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstan
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.onbotjava.handlers.file.TemplateFile;
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 
@@ -17,6 +15,12 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Indexer extends SystemBase {
+    public enum Artifact {
+        PURPLE,
+        GREEN,
+        NONE,
+    }
+
     private final Hardware hardware;
     private final LinearOpMode opMode;
     private final ElapsedTime timer;
@@ -36,11 +40,11 @@ public class Indexer extends SystemBase {
     public int indexerPosition = 0;
     public boolean indexerLimit = true;
 
-    public List<Enums.ArtifactColor> elements = Arrays.asList(
-            Enums.ArtifactColor.NONE,
-            Enums.ArtifactColor.NONE,
-            Enums.ArtifactColor.NONE);
-    public Enums.ArtifactColor previousLastElement = Enums.ArtifactColor.NONE;
+    public List<Artifact> elements = Arrays.asList(
+            Artifact.NONE,
+            Artifact.NONE,
+            Artifact.NONE);
+    public Artifact previousLastElement = Artifact.NONE;
 
 
 
@@ -76,7 +80,7 @@ public class Indexer extends SystemBase {
         balls = Math.max(1, Math.min(balls, 2)); //indexing 3 spots is useless, limit to 2
 
         // special check for indexing balls
-        if (elements.get(3 - balls) != Enums.ArtifactColor.NONE) target = (int) (target - TICKS_PER_REVOLUTION / 4.6);
+        if (elements.get(3 - balls) != Artifact.NONE) target = (int) (target - TICKS_PER_REVOLUTION / 4.6);
 
         // index and update the artefact list
         runTarget((int) (target - balls * TICKS_PER_REVOLUTION / 3), INDEXING_POWER);
@@ -84,7 +88,7 @@ public class Indexer extends SystemBase {
         sideswipe(balls, false);
 
         // if there is an artefact in the front
-        if (elements.get(0) != Enums.ArtifactColor.NONE) {
+        if (elements.get(0) != Artifact.NONE) {
             // wait for reaching the overshot position
             hardware.IndexerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -105,7 +109,7 @@ public class Indexer extends SystemBase {
     }
 
     public void indexPattern() {
-        int greenCurrentPos = elements.indexOf(Enums.ArtifactColor.GREEN);
+        int greenCurrentPos = elements.indexOf(Artifact.GREEN);
         int greenTargetPos;
 
         switch (lastValidRandomization) {
@@ -116,12 +120,13 @@ public class Indexer extends SystemBase {
         }
 
         int steps = (3 + greenTargetPos - greenCurrentPos) % 3;
-        hardware.telemetry.addData("steps", steps);
 
         if (steps == 0) return;
         index(steps);
 
     }
+
+
 
     public void microAdjust(boolean reverse) {
         runTarget(target + (reverse ? 1 : -1) * microAdjustValue,
@@ -136,33 +141,34 @@ public class Indexer extends SystemBase {
     }
 
 
-    public void zero() {
-        runTarget(0,
-                SHOOTING_POWER);
 
-        timer.reset();
-        while (isBusy() && opMode.opModeIsActive() && timer.seconds() < 3) {}
-    }
 
     public void shoot(int balls) {
         balls = Math.max(1, Math.min(balls, 3));
 
+
+        // set raw power for a faster transfer
         hardware.IndexerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         this.on = true;
-        runTarget(
-                (int) (target + indexOffset + balls * TICKS_PER_REVOLUTION / 3 * (opModeType == Enums.OpMode.TELE_OP ? 2 : 1) + ((balls == 3) ? microAdjustValue : 0)), // micro adjust threshold
-                SHOOTING_POWER
-        );
+        this.target = (int) (target + indexOffset + balls * TICKS_PER_REVOLUTION / 3 * (opModeType == SystemConstants.OpMode.TELE_OP ? 2 : 1) + ((balls == 3) ? microAdjustValue : 0));
 
         timer.reset();
-        while (isBusy() && opMode.opModeIsActive() && timer.seconds() < 2) {}
+        hardware.IndexerMotor.setPower(SHOOTING_POWER);
+        while (indexerPosition < this.target && timer.seconds() < 2) {}
 
         if (timer.seconds() > 2) {
             target = indexerPosition;
             microAdjust(false);
         }
+
+
+        // use PID for holding the intake position, after overshooting
+        runTarget(
+                (int) (target + indexOffset + balls * TICKS_PER_REVOLUTION / 3 * (opModeType == SystemConstants.OpMode.TELE_OP ? 2 : 1) + ((balls == 3) ? microAdjustValue : 0)), // micro adjust threshold
+                SHOOTING_POWER
+        );
 
         sideswipe(balls, true);
         if (balls == 3) indexOffset = 0;
@@ -177,26 +183,22 @@ public class Indexer extends SystemBase {
                 case 1: {
                     elements.set(0, elements.get(1));
                     elements.set(1, elements.get(2));
-                    elements.set(2, Enums.ArtifactColor.NONE);
-
-                    previousLastElement = elements.get(0);
+                    elements.set(2, Artifact.NONE);
                 } break;
                 case 2: {
                     elements.set(0, elements.get(2));
-                    elements.set(1, Enums.ArtifactColor.NONE);
-                    elements.set(2, Enums.ArtifactColor.NONE);
-
-                    previousLastElement = elements.get(0);
+                    elements.set(1, Artifact.NONE);
+                    elements.set(2, Artifact.NONE);
                 } break;
                 case 3: {
-                    elements.set(0, Enums.ArtifactColor.NONE);
-                    elements.set(1, Enums.ArtifactColor.NONE);
-                    elements.set(2, Enums.ArtifactColor.NONE);
-
-                    previousLastElement = Enums.ArtifactColor.NONE;
+                    elements.set(0, Artifact.NONE);
+                    elements.set(1, Artifact.NONE);
+                    elements.set(2, Artifact.NONE);
                 } break;
                 default: {}
             }
+            previousLastElement = elements.get(0);
+
             return;
         }
 
@@ -204,7 +206,7 @@ public class Indexer extends SystemBase {
 
         switch (balls) {
             case 1: {
-                Enums.ArtifactColor copy = elements.get(2);
+                Artifact copy = elements.get(2);
 
                 elements.set(2, elements.get(1));
                 elements.set(1, elements.get(0));
@@ -213,7 +215,7 @@ public class Indexer extends SystemBase {
                 previousLastElement = elements.get(0);
             } break;
             case 2: {
-                Enums.ArtifactColor copy = elements.get(0);
+                Artifact copy = elements.get(0);
 
                 elements.set(0, elements.get(1));
                 elements.set(1, elements.get(2));
@@ -272,11 +274,11 @@ public class Indexer extends SystemBase {
 
     public boolean isBusy() { return  isBusy(5);}
 
-    public boolean isBusy(int threshold) { return Math.abs(target - indexerPosition) > 5; }
+    public boolean isBusy(int threshold) { return Math.abs(target - indexerPosition) > threshold; }
 
     public void preload() {
-        elements.set(0, Enums.ArtifactColor.GREEN);
-        elements.set(1, Enums.ArtifactColor.PURPLE);
-        elements.set(2, Enums.ArtifactColor.PURPLE);
+        elements.set(0, Artifact.GREEN);
+        elements.set(1, Artifact.PURPLE);
+        elements.set(2, Artifact.PURPLE);
     }
 }

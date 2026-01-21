@@ -5,16 +5,18 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueFar;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
@@ -31,15 +33,14 @@ public class BlueFar extends ExoMode {
     public static double linearPx = AutoLinearPx, linearDx = AutoLinearDx;
     public static double linearPy = AutoLinearPy, linearDy = AutoLinearDx;
 
-    public static double linearThreshold = 0.08;
-    public static double angularThreshold = 7;
+    public static double linearThreshold = 0.1;
+    public static double angularThreshold = 9;
 
     @Override
     protected void Init() {
         new SystemData()
-                .add(Enums.OpMode.AUTONOMUS)
-                .setAutoOnBlue(true)
-                .getLoopTime(true);
+                .add(SystemConstants.OpMode.AUTONOMUS)
+                .setAutoOnBlue(true);
 
         hardware = Hardware.getInstance(this);
         swerve = new SwerveDrive(this);
@@ -48,7 +49,7 @@ public class BlueFar extends ExoMode {
         auto = new AutoDrive(this, swerve, system, startPoseBlueFar);
 
         hardware.limelight.start();
-        hardware.limelight.setPipeline(Enums.Pipeline.RANDOMIZATION);
+        hardware.limelight.setPipeline(LimelightEx.Pipeline.RANDOMIZATION);
 
         system.indexer.preload();
 
@@ -64,7 +65,7 @@ public class BlueFar extends ExoMode {
 
     @Override
     protected void WhenStarted() {
-        auto.driveTo(new Pose(-126, 48, Math.toRadians(0)))
+        auto.driveTo(new Pose(-170, 100, Math.toRadians(0)))
                 .waitDrive(() -> hardware.limelight.getRandomization())
                 .moveSystem(() -> hardware.limelight.stop())
                 .end();

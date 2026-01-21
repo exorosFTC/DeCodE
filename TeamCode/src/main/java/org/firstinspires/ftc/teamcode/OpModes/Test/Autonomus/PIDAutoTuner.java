@@ -14,7 +14,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
@@ -47,9 +47,8 @@ public class PIDAutoTuner extends ExoMode {
         system = new ScoringSystem(this);
 
         new SystemData()
-                        .add(Enums.OpMode.AUTONOMUS)
-                        .setAutoOnBlue(false)
-                        .getLoopTime(true);
+                        .add(SystemConstants.OpMode.AUTONOMUS)
+                        .setAutoOnBlue(false);
 
         g1 = new GamepadEx(gamepad1);
     }

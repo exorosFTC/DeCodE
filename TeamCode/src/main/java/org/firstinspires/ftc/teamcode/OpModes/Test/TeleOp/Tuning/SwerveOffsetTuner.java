@@ -4,9 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.AbsoluteAnalogEncoder;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
 
 @TeleOp(group = "tune")
 public class SwerveOffsetTuner extends LinearOpMode {
@@ -35,7 +35,7 @@ public class SwerveOffsetTuner extends LinearOpMode {
             hardware.telemetry.addData("RB, module 4:", RB.getCurrentPosition(AngleUnit.RADIANS));
             hardware.telemetry.update();
 
-            hardware.bulk.clearCache(Enums.Hubs.ALL);
+            hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
         }
     }
 }

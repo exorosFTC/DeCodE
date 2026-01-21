@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Intake;
@@ -25,9 +25,6 @@ public class ScoringSystem extends SystemBase {
     public ElapsedTime timer;
     public double MIN_LOOPS = 8;
 
-    public boolean shootSorted = false;
-
-    public boolean isIntakeEnabled = true;
     public double[] catchThreshold = new double[]{68, 85, 56};
     public double[] colorDistance = new double[]{-1, -1, -1};
     public double[] loops = new double[]{0, 0, 0};
@@ -50,18 +47,7 @@ public class ScoringSystem extends SystemBase {
 
 
     public void updateIntake() {
-        if (timer.milliseconds() < 400) {
-            if (hardware.IntakeColor1.getDistance(DistanceUnit.MM) < catchThreshold[0]) {
-                colorValues = getColorForIndex(0);
-
-                if (colorValues.green > colorValues.red && colorValues.green > colorValues.blue)
-                    indexer.elements.set(0, Enums.ArtifactColor.GREEN);
-                else indexer.elements.set(0, Enums.ArtifactColor.PURPLE);
-            }
-        }
-
-        if (indexer.elements.contains(Enums.ArtifactColor.NONE) && !isIntakeEnabled) isIntakeEnabled = true;
-        if (indexer.isBusy() || !indexer.on || !isIntakeEnabled) return;
+        if (indexer.isBusy() || !indexer.on || !intake.on) return;
 
         colorDistance = new double[]{
                 hardware.IntakeColor1.getDistance(DistanceUnit.MM),
@@ -78,36 +64,43 @@ public class ScoringSystem extends SystemBase {
                 colorValues = getColorForIndex(i);
 
                 if (colorValues.green > colorValues.red && colorValues.green > colorValues.blue)
-                    indexer.elements.set(i, Enums.ArtifactColor.GREEN);
-                else indexer.elements.set(i, Enums.ArtifactColor.PURPLE);
+                    indexer.elements.set(i, Indexer.Artifact.GREEN);
+                else indexer.elements.set(i, Indexer.Artifact.PURPLE);
 
-            } else if (indexer.elements.get(i) != Enums.ArtifactColor.NONE) {
-                indexer.elements.set(i, Enums.ArtifactColor.NONE);
+            } else if (indexer.elements.get(i) != Indexer.Artifact.NONE) {
+                indexer.elements.set(i, Indexer.Artifact.NONE);
             }
         }
 
 
-        if (indexer.elements.contains(Enums.ArtifactColor.NONE)) return;
-        if (opModeType == Enums.OpMode.AUTONOMUS) return;
+        if (indexer.elements.contains(Indexer.Artifact.NONE)) return;
+        if (opModeType == SystemConstants.OpMode.AUTONOMUS) return;
 
         // when all 3 slots are full, reverse intake & move on
         intake.reverse();
-        try { Thread.sleep(400); } catch (InterruptedException e) {}
+        timer.reset();
+
+        while (opMode.opModeIsActive() && timer.milliseconds() < 400) {
+            if (hardware.IntakeColor1.getDistance(DistanceUnit.MM) < catchThreshold[0]) {
+                colorValues = getColorForIndex(0);
+
+                if (colorValues.green > colorValues.red && colorValues.green > colorValues.blue)
+                    indexer.elements.set(0, Indexer.Artifact.GREEN);
+                else indexer.elements.set(0, Indexer.Artifact.PURPLE);
+            }
+        }
+
         intake.off();
         indexer.off();
-
-        timer.reset();
-        isIntakeEnabled = false;
     }
 
     public void shootSequence() {
         if (!shooter.on) return;
-        if (intake.on) { isIntakeEnabled = false; intake.off(); }
+        if (intake.on) intake.off();
 
         timer.reset();
         while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 3) {}
 
-        //if (!isInShootingZone() && opModeType == Enums.OpMode.AUTONOMUS) return;
         indexer.isHome = true;
 
         if (shooter.distance > 312) Indexer.SHOOTING_POWER = 0.3;
@@ -119,27 +112,11 @@ public class ScoringSystem extends SystemBase {
         indexer.shoot(3);
 
         shooter.off();
-        isIntakeEnabled = true;
-        indexer.previousLastElement = Enums.ArtifactColor.NONE;
+        indexer.previousLastElement = Indexer.Artifact.NONE;
     }
 
 
 
-    private void shootSequenceSorted() {
-        if (!shooter.on) return;
-        if (intake.on) { isIntakeEnabled = false; intake.off(); }
-
-        timer.reset();
-        while (!shooter.ready() && indexer.isBusy() && opMode.opModeIsActive() && timer.seconds() < 5) {}
-
-        //if (!isInShootingZone() && opModeType == Enums.OpMode.AUTONOMUS) return;
-        indexer.isHome = true;
-        indexer.shoot(3);
-
-        shooter.off();
-        isIntakeEnabled = true;
-        indexer.previousLastElement = Enums.ArtifactColor.NONE;
-    }
 
     private NormalizedRGBA getColorForIndex(int i) {
         switch (i) {
@@ -152,14 +129,8 @@ public class ScoringSystem extends SystemBase {
 
 
     @Override
-    public void read() {
-        indexer.read();
-        shooter.read();
-    }
+    public void read() { indexer.read(); shooter.read(); }
 
     @Override
-    public void write() {
-        indexer.write();
-        shooter.write();
-    }
+    public void write() { shooter.write(); }
 }

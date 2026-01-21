@@ -64,7 +64,7 @@ public class Lift extends SystemBase {
         super.on();
         hardware.LiftRetainerServo.setPosition(retainerOff);
 
-        try { Thread.sleep(800); } catch (InterruptedException e) {}
+        try { Thread.sleep(400); } catch (InterruptedException e) {}
     }
 
     public boolean isBusy() {

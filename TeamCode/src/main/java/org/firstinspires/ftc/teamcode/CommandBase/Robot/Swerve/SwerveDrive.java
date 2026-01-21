@@ -12,6 +12,7 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 import static org.firstinspires.ftc.teamcode.CustomPathing.Math.MathFormulas.FindShortestPath;
 
@@ -19,12 +20,11 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SlewRateLimiter;
-import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 import java.util.List;
@@ -54,25 +54,25 @@ public class SwerveDrive extends SystemBase {
                                             hardware.RightFront_servo,
                                             new AbsoluteAnalogEncoder(hardware.RightFront_encoder).zero(1.132),
                                             0.088,
-                                            0.055,
+                                            0.045,
                                             0.05);
         leftFrontModule = new SwerveModule(hardware.LeftFront,
                                             hardware.LeftFront_servo,
                                             new AbsoluteAnalogEncoder(hardware.LeftFront_encoder).zero(0.079),
                                             0.068,
-                                            0.05,
+                                            0.04,
                                             0.05);
         leftBackModule = new SwerveModule(hardware.LeftBack,
                                             hardware.LeftBack_servo,
                                             new AbsoluteAnalogEncoder(hardware.LeftBack_encoder).zero(0.755),
                                             0.11,
-                                            0.055,
+                                            0.045,
                                             0.04);
         rightBackModule = new SwerveModule(hardware.RightBack,
                                             hardware.RightBack_servo,
                                             new AbsoluteAnalogEncoder(hardware.RightBack_encoder).zero(1.780),
                                             0.12,
-                                            0.05,
+                                            0.04,
                                             0.05);
 
         modules = new SwerveModule[]{rightFrontModule, leftFrontModule, leftBackModule, rightBackModule};
@@ -102,25 +102,15 @@ public class SwerveDrive extends SystemBase {
 
 
     public void update(Pose velocity) {
+        /*if (autoOnBlue) velocity.negate();
         double power = velocity.hypot();
 
-        if (opModeType == Enums.OpMode.TELE_OP) {
-            if (velocity.closeToZero(0.1)) {
-                TeleOpAngularP = 0.9;
-                TeleOpAngularD = 0.27;
-            }
-            else {
-                TeleOpAngularP = 0;
-                TeleOpAngularD = 0;
-            }
-        }
-
-        if (!lockHeadingToGoal && opModeType == Enums.OpMode.TELE_OP) {
+        if (!lockHeadingToGoal && opModeType == SystemConstants.OpMode.TELE_OP) {
             if (hardware.limelight.enabled) hardware.limelight.stop();
 
             //pid for skew correction
             if (Math.abs(velocity.heading) < 0.01 && timer.milliseconds() > 600) {
-                angularC.setP(TeleOpAngularP + power * TeleOpVelocityMultiplier);
+                angularC.setP(0);
                 velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
             } else {
                 if (Math.abs(velocity.heading) > 0.01)
@@ -128,7 +118,7 @@ public class SwerveDrive extends SystemBase {
                 targetHeading = POSE.heading;
             }
         }
-        else if (lockHeadingToGoal && opModeType == Enums.OpMode.TELE_OP) {
+        else if (lockHeadingToGoal && opModeType == SystemConstants.OpMode.TELE_OP) {
             if (!hardware.limelight.enabled) hardware.limelight.start();
             hardware.limelight.read();
 
@@ -139,12 +129,13 @@ public class SwerveDrive extends SystemBase {
                 hardware.telemetry.addLine("Alignment: ODOMETRY");
                 targetHeading = Math.atan2(goalPosition.y - POSE.y, goalPosition.x - POSE.x);
                 angularC.setP(TeleOpAngularP + power * TeleOpVelocityMultiplier);
+                angularC.setPID(0.9, 0, 0);
                 velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
             }
         }
 
 
-        if (opModeType == Enums.OpMode.TELE_OP) velocity = velocity.rotate_matrix(-POSE.heading + Math.toRadians(270));
+        velocity = velocity.rotate_matrix(-POSE.heading + ((opModeType == SystemConstants.OpMode.TELE_OP) ? Math.toRadians(270) : 0));*/
 
 
         if (Math.abs(velocity.x) < 0.01 && Math.abs(velocity.y) < 0.01 && Math.abs(velocity.heading) < 0.01) {
@@ -152,6 +143,20 @@ public class SwerveDrive extends SystemBase {
             else { for (int i = 0; i < 4; i++) { states.get(i).setModuleVelocity(0); }}
         } else { SwerveKinematics.setLockedX(false); states = SwerveKinematics.robot2wheel(velocity); }
 
+        /*boolean reached = true;
+        for (int i = 0; i < 4; i++) {
+            if (modules[i].error > Math.PI / 8) reached = false;
+        }*/
+
+        for (int i = 0; i < 4; i++) {
+            if (i == 0 || i == 2) states.get(i).negateModuleVelocity();
+
+            modules[i].setTargetState(states.get(i));
+            modules[i].update();
+        }
+    }
+
+    public void update(List<SwerveModuleState> states) {
         for (int i = 0; i < 4; i++) {
             if (i == 0 || i == 2) states.get(i).negateModuleVelocity();
             modules[i].setTargetState(states.get(i));

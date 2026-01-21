@@ -6,6 +6,8 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpVelocityMultiplier;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -14,7 +16,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants;
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Lift;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
@@ -22,6 +24,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.InputBus;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.TriggerManager;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
@@ -41,7 +44,7 @@ public class SoloTeleOp extends ExoMode {
     private Thread swerveThread, gamepadThread;
 
     public static double velocityMultiplier = TeleOpVelocityMultiplier;
-    public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD;
+    public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD, swervePmultiplier = TeleOpVelocityMultiplier;
     public static double moduleP = DriveConstants.swerveModuleP, moduleD = DriveConstants.swerveModuleD;
 
     public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
@@ -63,41 +66,24 @@ public class SoloTeleOp extends ExoMode {
         lift = new Lift(this);
 
         new SystemData()
-                .add(Enums.OpMode.TELE_OP)
-                .getLoopTime(true);
+                .add(SystemConstants.OpMode.TELE_OP)
+                .setAutoOnBlue(false);
 
 
         // create gamepad triggers
         intakeTriggers = new TriggerManager()
                 .addTrigger(() -> in.evToggleIntake.getAndSet(false), () -> {
-                            if (system.intake.on && !system.intake.reversed) {
-                                system.intake.off();
-                                system.isIntakeEnabled = false;
-                                system.indexer.off();
-                            } else {
-                                system.intake.on();
-                                system.isIntakeEnabled = true;
-                                system.indexer.on();
-                            }})   // intake
+                            if (system.intake.on && !system.intake.reversed) system.intake.off();
+                            else system.intake.on();
+                            })   // intake
                 .addTrigger(() -> in.evReverseIntake.getAndSet(false), () -> {
-                            if (system.intake.on && system.intake.reversed) {
-                                system.intake.off();
-                                system.indexer.off();
-                            } else {
-                                system.intake.reverse();
-                                system.indexer.on();
-                            }
+                            if (system.intake.on && system.intake.reversed) system.intake.off();
+                            else system.intake.reverse();
                         }); // reverse intake
 
         shooterTriggers = new TriggerManager()
-                .addTrigger(() -> in.evShootSorted.getAndSet(false), () -> {
-                            system.shootSorted = true;
-                            system.indexer.indexPattern();
-                        })                       // sort
-                .addTrigger(() -> in.evShootUnsorted.getAndSet(false) && in.spinupShooter, () -> {
-                            system.shootSequence();
-                            system.shootSorted = false;
-                        }) // shoot
+                .addTrigger(() -> in.evSort.getAndSet(false), () -> system.indexer.indexPattern())                       // sort
+                .addTrigger(() -> in.evShoot.getAndSet(false) && in.spinupShooter, () -> system.shootSequence()) // shoot
                 .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home());      // emergency homing
 
 
@@ -122,6 +108,7 @@ public class SoloTeleOp extends ExoMode {
 
                 TeleOpVelocityMultiplier = velocityMultiplier;
                 TeleOpAngularP = swerveP;
+                swerve.setHeadingPID(swerveP, 0, swerveD);
 
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
@@ -156,6 +143,8 @@ public class SoloTeleOp extends ExoMode {
                 //hardware.telemetry.addData("RB current", hardware.RightBack.getCurrent(CurrentUnit.AMPS));
 
                 //hardware.telemetry.addData("art", system.indexer.elements.toString());
+                hardware.telemetry.addData("shooter velocity", system.shooter.correctedVelocity);
+                hardware.telemetry.addData("shooter target", system.shooter.targetVelocity);
                 hardware.updateTelemetry();
 
                 Thread.yield();
@@ -164,7 +153,7 @@ public class SoloTeleOp extends ExoMode {
         }, "SwerveThread");
         gamepadThread = new Thread(() -> {
             while (opModeIsActive()) {
-                hardware.bulk.clearCache(Enums.Hubs.ALL);
+                hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
                 hardware.read(system);
                 swerve.read();
                 lift.read();
@@ -183,8 +172,8 @@ public class SoloTeleOp extends ExoMode {
                 // edges -> events (one-shot)
                 if (g1.wasJustPressed(GamepadKeys.Button.B)) in.evToggleIntake.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.A)) in.evReverseIntake.set(true);
-                if (g1.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) in.evShootSorted.set(true);
-                if (g1.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) in.evShootUnsorted.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) in.evSort.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) in.evShoot.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) in.evLockX.set(true);
                 if (g1.isDown(GamepadKeys.Button.X) && g1.isDown(GamepadKeys.Button.DPAD_RIGHT)) in.evStartLift.set(true);

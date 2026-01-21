@@ -10,11 +10,12 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
@@ -37,9 +38,8 @@ public class RedFar extends ExoMode {
     @Override
     protected void Init() {
         new SystemData()
-                .add(Enums.OpMode.AUTONOMUS)
-                .setAutoOnBlue(false)
-                .getLoopTime(true);
+                .add(SystemConstants.OpMode.AUTONOMUS)
+                .setAutoOnBlue(false);
 
         hardware = Hardware.getInstance(this);
         swerve = new SwerveDrive(this);
@@ -48,7 +48,7 @@ public class RedFar extends ExoMode {
         auto = new AutoDrive(this, swerve, system, startPoseRedFar);
 
         hardware.limelight.start();
-        hardware.limelight.setPipeline(Enums.Pipeline.RANDOMIZATION);
+        hardware.limelight.setPipeline(LimelightEx.Pipeline.RANDOMIZATION);
 
         system.indexer.preload();
 
@@ -65,7 +65,7 @@ public class RedFar extends ExoMode {
 
     @Override
     protected void WhenStarted() {
-        auto.driveTo(new Pose(-126, -48, Math.toRadians(0)))
+        auto.driveTo(new Pose(-170, -100, Math.toRadians(0)))
                 .waitDrive(() -> hardware.limelight.getRandomization())
                 .moveSystem(() -> hardware.limelight.stop())
                 .end();

@@ -7,15 +7,26 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
-import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
-
 public class LimelightEx {
+    public enum Pipeline{
+        RANDOMIZATION,
+        BLUE_GOAL,
+        RED_GOAL
+    }
+
+    public enum Randomization{
+        LEFT,
+        CENTER,
+        RIGHT
+    }
+
+
+
     private final Limelight3A limelight;
 
     public boolean enabled = false;
 
-    public Enums.Pipeline pipeline = Enums.Pipeline.RANDOMIZATION;
+    public LimelightEx.Pipeline pipeline = LimelightEx.Pipeline.RANDOMIZATION;
     public LLResult
             raw = null,
             result = null;
@@ -39,7 +50,7 @@ public class LimelightEx {
 
 
 
-    public void setPipeline(Enums.Pipeline pipeline) {
+    public void setPipeline(LimelightEx.Pipeline pipeline) {
         this.pipeline = pipeline;
 
         switch (pipeline) {
@@ -57,33 +68,33 @@ public class LimelightEx {
 
 
 
-    public Enums.Randomization getRandomization() {
-        if (pipeline != Enums.Pipeline.RANDOMIZATION) setPipeline(Enums.Pipeline.RANDOMIZATION);
+    public LimelightEx.Randomization getRandomization() {
+        if (pipeline != LimelightEx.Pipeline.RANDOMIZATION) setPipeline(LimelightEx.Pipeline.RANDOMIZATION);
         if (result == null || result.getFiducialResults().isEmpty()) return lastValidRandomization;
 
         int tagId = result.getFiducialResults().get(0).getFiducialId();
         switch (tagId) {
-            case 21: { lastValidRandomization = Enums.Randomization.LEFT; } break;
-            case 22: { lastValidRandomization = Enums.Randomization.CENTER; } break;
-            case 23: { lastValidRandomization = Enums.Randomization.RIGHT; } break;
+            case 21: { lastValidRandomization = LimelightEx.Randomization.LEFT; } break;
+            case 22: { lastValidRandomization = LimelightEx.Randomization.CENTER; } break;
+            case 23: { lastValidRandomization = LimelightEx.Randomization.RIGHT; } break;
             default: {} break;
         }
 
         return lastValidRandomization;
     }
 
-    public Enums.Pipeline getPipeline() { return pipeline; }
+    public LimelightEx.Pipeline getPipeline() { return pipeline; }
 
     public double getCenterOffset() {
-        if (autoOnBlue && pipeline != Enums.Pipeline.BLUE_GOAL) setPipeline(Enums.Pipeline.BLUE_GOAL);
-        else if (!autoOnBlue && pipeline != Enums.Pipeline.RED_GOAL) setPipeline(Enums.Pipeline.RED_GOAL);
+        if (autoOnBlue && pipeline != LimelightEx.Pipeline.BLUE_GOAL) setPipeline(LimelightEx.Pipeline.BLUE_GOAL);
+        else if (!autoOnBlue && pipeline != LimelightEx.Pipeline.RED_GOAL) setPipeline(LimelightEx.Pipeline.RED_GOAL);
         if (result == null) return 0;
 
         return result.getTx();
     }
 
     public boolean tagInSight() {
-        return !result.getFiducialResults().isEmpty() && pipeline != Enums.Pipeline.RANDOMIZATION;
+        return !result.getFiducialResults().isEmpty() && pipeline != LimelightEx.Pipeline.RANDOMIZATION;
     }
 
 }
