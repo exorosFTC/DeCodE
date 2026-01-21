@@ -49,8 +49,8 @@ public class SoloTeleOp extends ExoMode {
 
     public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
     public static double angleAdjust = 0;
-    public static double angle = 0.95;
-    public static double power = 0;
+    //public static double angle = 0.95;
+    //public static double power = 0;
 
     public static double shooterP = Shooter.kP, shooterF = Shooter.kF;
 
@@ -96,19 +96,21 @@ public class SoloTeleOp extends ExoMode {
         // initialize threads
         swerveThread = new Thread(() -> {
             while (opModeIsActive()) {
+                if (!swerve.on) { lift.read(); lift.write(); continue; }
+
+                swerve.read();
                 swerve.update(new Pose(
                         in.ly,
                         -in.lx,
                         -in.rx * 0.85)
                 );
+                swerve.write();
 
-                swerve.setLimelightPID(limelightP, 0, limelightD);
                 swerve.setHeadingPID(swerveP, 0, swerveD);
                 swerve.setModulePID(moduleP, 0, moduleD);
 
-                TeleOpVelocityMultiplier = velocityMultiplier;
-                TeleOpAngularP = swerveP;
-                swerve.setHeadingPID(swerveP, 0, swerveD);
+                //TeleOpVelocityMultiplier = velocityMultiplier;
+                //TeleOpAngularP = swerveP;
 
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
@@ -122,32 +124,13 @@ public class SoloTeleOp extends ExoMode {
                     lift.on();
                 }
 
-                swerve.write();
-                lift.write();
+                hardware.telemetry.addData("x", POSE.x);
+                hardware.telemetry.addData("y", POSE.y);
+                hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
 
-
-                //hardware.telemetry.addData("x", POSE.x);
-                //hardware.telemetry.addData("y", POSE.y);
-                //hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
-                //hardware.telemetry.addData("distance", system.shooter.distance);
-                //hardware.telemetry.addData("indexer pos", system.indexer.indexerPosition);
-                //hardware.telemetry.addData("indexer target", system.indexer.target);
-                //hardware.telemetry.addData("swerve rotation pow", swerve.leftBackModule.servoPower);
-                //hardware.telemetry.addData("current state", swerve.leftBackModule.getModuleRotation());
-                //hardware.telemetry.addData("target state", swerve.leftBackModule.getTargetRotation());
-
-                hardware.telemetry.addData("vel", in.ly);
-                //hardware.telemetry.addData("LF current", hardware.LeftFront.getCurrent(CurrentUnit.AMPS));
-                //hardware.telemetry.addData("LB current", hardware.LeftBack.getCurrent(CurrentUnit.AMPS));
-                //hardware.telemetry.addData("RF current", hardware.RightFront.getCurrent(CurrentUnit.AMPS));
-                //hardware.telemetry.addData("RB current", hardware.RightBack.getCurrent(CurrentUnit.AMPS));
-
-                //hardware.telemetry.addData("art", system.indexer.elements.toString());
                 hardware.telemetry.addData("shooter velocity", system.shooter.correctedVelocity);
                 hardware.telemetry.addData("shooter target", system.shooter.targetVelocity);
                 hardware.updateTelemetry();
-
-                Thread.yield();
 
             }
         }, "SwerveThread");
@@ -155,8 +138,6 @@ public class SoloTeleOp extends ExoMode {
             while (opModeIsActive()) {
                 hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
                 hardware.read(system);
-                swerve.read();
-                lift.read();
 
                 g1.readButtons();
 
@@ -179,13 +160,10 @@ public class SoloTeleOp extends ExoMode {
                 if (g1.isDown(GamepadKeys.Button.X) && g1.isDown(GamepadKeys.Button.DPAD_RIGHT)) in.evStartLift.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) in.evResetHeading.set(true);
 
-                Shooter.ANGLE_ADJUST = angleAdjust;
+                //Shooter.ANGLE_ADJUST = angleAdjust;
                 system.shooter.setPIDF(shooterP, 0, 0, shooterF);
                 system.shooter.update();
                 system.write();
-
-                // tiny yield to avoid maxing CPU
-                Thread.yield();
             } }, "GamepadThread");
 
         hardware.telemetry.addLine("INIT READY 😈😈😈");
@@ -217,7 +195,6 @@ public class SoloTeleOp extends ExoMode {
         }
 
         system.updateIntake();
-
-        try { Thread.sleep(3); } catch (InterruptedException e) {}
+        Thread.yield();
     }
 }

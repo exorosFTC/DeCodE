@@ -70,7 +70,6 @@ public class Indexer extends SystemBase {
 
         sideswipe(3, true);
         resetEncoder();
-        off();
     }
 
 
@@ -93,16 +92,17 @@ public class Indexer extends SystemBase {
             hardware.IndexerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-            while (indexerPosition > target && opMode.opModeIsActive()) { hardware.IndexerMotor.setPower(-INDEXING_POWER * 13.5 / hardware.batteryVoltage); }
-            off();
+            hardware.IndexerMotor.setPower(-INDEXING_POWER);
+            while (indexerPosition > target && opMode.opModeIsActive()) {}
 
             // come back so the transfer arm is down
+            target = (int) (target + TICKS_PER_REVOLUTION / 4.6);
 
-            target = (int) (target + TICKS_PER_REVOLUTION / 4.9);
-            hardware.IndexerMotor.setPower(0.25 * 12.0 / hardware.batteryVoltage);
+            hardware.IndexerMotor.setPower(0.25);
+            while (indexerPosition < target && opMode.opModeIsActive()) {}
 
-            while (indexerPosition < target && opMode.opModeIsActive()) { }
-            off();
+            runTarget(target,
+                    INDEXING_POWER);
         }
 
         isIndexing = false;

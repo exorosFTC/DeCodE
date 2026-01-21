@@ -74,7 +74,7 @@ public class Shooter extends SystemBase {
         }
 
         this.targetVelocity = targetPower * MAX_RPS;
-        this.currentPower = controller.calculate(correctedVelocity, targetVelocity) * 12.0 / hardware.batteryVoltage;
+        this.currentPower = controller.calculate(correctedVelocity, targetVelocity);
 
         if (!on) return;
         targetAngle = clamp(targetAngle - (this.targetVelocity - correctedVelocity - threshold) * ANGLE_ADJUST, 0.34, 0.94);  // adjust angle by velocity*/

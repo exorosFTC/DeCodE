@@ -91,7 +91,6 @@ public class ScoringSystem extends SystemBase {
         }
 
         intake.off();
-        indexer.off();
     }
 
     public void shootSequence() {

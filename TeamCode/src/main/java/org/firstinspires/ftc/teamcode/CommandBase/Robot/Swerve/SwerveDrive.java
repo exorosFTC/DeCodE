@@ -102,6 +102,7 @@ public class SwerveDrive extends SystemBase {
 
 
     public void update(Pose velocity) {
+        if (!on) return;
         /*if (autoOnBlue) velocity.negate();
         double power = velocity.hypot();
 
@@ -167,6 +168,8 @@ public class SwerveDrive extends SystemBase {
 
 
     public void disable() {
+        this.on = false;
+
         hardware.LeftFront.setMotorDisable();
         hardware.LeftBack.setMotorDisable();
         hardware.RightFront.setMotorDisable();

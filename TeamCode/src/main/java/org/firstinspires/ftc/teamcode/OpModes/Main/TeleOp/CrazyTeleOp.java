@@ -32,16 +32,10 @@ public class CrazyTeleOp extends ExoMode {
     private Lift lift;
 
     private GamepadEx g1, g2;
-    private final InputBus in = new InputBus();
+    private InputBus in;
+
     private TriggerManager intakeTriggers, shooterTriggers;
-
     private Thread swerveThread, gamepadThread;
-
-    public static double shooterP = Shooter.kP, shooterF = Shooter.kF;
-
-    public static double ANGLE_ADJUST = 0;
-    public static double angle = 0;
-    public static double power = 0;
 
     @Override
     protected void Init() {
@@ -49,6 +43,7 @@ public class CrazyTeleOp extends ExoMode {
         hardware = Hardware.getInstance(this);
         g1 = new GamepadEx(gamepad1);
         g2 = new GamepadEx(gamepad2);
+        in = new InputBus();
 
         swerve = new SwerveDrive(this);
         system = new ScoringSystem(this);
@@ -69,9 +64,9 @@ public class CrazyTeleOp extends ExoMode {
                 }); // reverse intake
 
         shooterTriggers = new TriggerManager()
-                .addTrigger(() -> in.evSort.getAndSet(false), () -> system.indexer.indexPattern())                       // sort
-                .addTrigger(() -> in.evShoot.getAndSet(false) && in.spinupShooter, () -> system.shootSequence()) // shoot
-                .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home());      // emergency homing
+                .addTrigger(() -> in.evSort.getAndSet(false), () -> system.indexer.indexPattern())                // sort
+                .addTrigger(() -> in.evShoot.getAndSet(false) && in.spinupShooter, () -> system.shootSequence())  // shoot
+                .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home());                // emergency homing
 
 
         // set the right start position
@@ -83,11 +78,15 @@ public class CrazyTeleOp extends ExoMode {
         // initialize threads
         swerveThread = new Thread(() -> {
             while (opModeIsActive()) {
+                if (!swerve.on) { lift.write(); continue; }
+
+                swerve.read();
                 swerve.update(new Pose(
                         in.ly,
                         -in.lx,
                         -in.rx * 0.85)
                 );
+                swerve.write();
 
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
@@ -104,32 +103,16 @@ public class CrazyTeleOp extends ExoMode {
 
                     lift.on();
                 }
-
-                swerve.write();
-                lift.write();
-
-
-                hardware.telemetry.addData("x", POSE.x);
-                hardware.telemetry.addData("y", POSE.y);
-                hardware.telemetry.addData("head", POSE.heading);
-                hardware.telemetry.addData("distance", system.shooter.distance);
-
-                hardware.updateTelemetry();
-
-                Thread.yield();
             }
         }, "SwerveThread");
         gamepadThread = new Thread(() -> {
             while (opModeIsActive()) {
                 hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
                 hardware.read(system);
-                swerve.read();
                 lift.read();
 
                 g1.readButtons();
                 g2.readButtons();
-
-                //system.shooter.setPIDF(shooterP, 0, 0, shooterF);
 
                 // continuous snapshot
                 in.ly2 = g2.getLeftY();
@@ -138,7 +121,6 @@ public class CrazyTeleOp extends ExoMode {
                 in.rx = g1.getRightX();
                 in.lt = g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
                 in.lockToGoal = in.lt > 0.1;
-
 
                 in.spinupShooter = g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1;
 
@@ -157,9 +139,6 @@ public class CrazyTeleOp extends ExoMode {
                 system.indexer.manual(in.ly2, 0.2);
                 system.shooter.update();
                 system.write();
-
-                // tiny yield to avoid maxing CPU
-                Thread.yield();
             } }, "GamepadThread");
 
         hardware.telemetry.addLine("INIT READY 😈😈😈");
@@ -191,7 +170,6 @@ public class CrazyTeleOp extends ExoMode {
         }
 
         system.updateIntake();
-
-        try { Thread.sleep(3); } catch (InterruptedException e) {}
+        Thread.yield();
     }
 }
