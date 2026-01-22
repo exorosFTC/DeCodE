@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Lift;
-import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
@@ -32,7 +31,7 @@ public class CrazyTeleOp extends ExoMode {
     private Lift lift;
 
     private GamepadEx g1, g2;
-    private InputBus in;
+    private final InputBus in = new InputBus();
 
     private TriggerManager intakeTriggers, shooterTriggers;
     private Thread swerveThread, gamepadThread;
@@ -43,7 +42,6 @@ public class CrazyTeleOp extends ExoMode {
         hardware = Hardware.getInstance(this);
         g1 = new GamepadEx(gamepad1);
         g2 = new GamepadEx(gamepad2);
-        in = new InputBus();
 
         swerve = new SwerveDrive(this);
         system = new ScoringSystem(this);
@@ -78,7 +76,7 @@ public class CrazyTeleOp extends ExoMode {
         // initialize threads
         swerveThread = new Thread(() -> {
             while (opModeIsActive()) {
-                if (!swerve.on) { lift.write(); continue; }
+                if (!swerve.on) { lift.read(); lift.write(); continue; }
 
                 swerve.read();
                 swerve.update(new Pose(
@@ -103,13 +101,14 @@ public class CrazyTeleOp extends ExoMode {
 
                     lift.on();
                 }
+
+                hardware.updateTelemetry();
             }
         }, "SwerveThread");
         gamepadThread = new Thread(() -> {
             while (opModeIsActive()) {
                 hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
                 hardware.read(system);
-                lift.read();
 
                 g1.readButtons();
                 g2.readButtons();
@@ -120,9 +119,9 @@ public class CrazyTeleOp extends ExoMode {
                 in.lx = g1.getLeftX();
                 in.rx = g1.getRightX();
                 in.lt = g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
+                in.rt = g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
                 in.lockToGoal = in.lt > 0.1;
-
-                in.spinupShooter = g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1;
+                in.spinupShooter = in.rt > 0.1;
 
                 // edges -> events (one-shot)
                 if (g2.wasJustPressed(GamepadKeys.Button.B)) in.evToggleIntake.set(true);
@@ -139,6 +138,8 @@ public class CrazyTeleOp extends ExoMode {
                 system.indexer.manual(in.ly2, 0.2);
                 system.shooter.update();
                 system.write();
+
+                Thread.yield();
             } }, "GamepadThread");
 
         hardware.telemetry.addLine("INIT READY 😈😈😈");

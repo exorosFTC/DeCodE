@@ -21,8 +21,7 @@ public class SwerveModule extends SystemBase {
     public final CRServo servo;
     public final AbsoluteAnalogEncoder encoder;
 
-    private final double kS_wheel;
-    private final double kS_angle, kS_threshold;
+    private double kS_angle, kS_threshold;
 
     private final PIDFController controller = new PIDFController(swerveModuleP, 0, swerveModuleD, 0);
     private boolean wheelFlipped = false;
@@ -35,12 +34,11 @@ public class SwerveModule extends SystemBase {
 
 
     public SwerveModule(DcMotorEx motor, CRServo servo, AbsoluteAnalogEncoder encoder,
-                        double kS_wheel, double kS_angle, double kS_threshold) {
+                        double kS_angle, double kS_threshold) {
         this.motor = motor;
         this.servo = servo;
         this.encoder = encoder;
 
-        this.kS_wheel = kS_wheel;
         this.kS_angle = kS_angle;
         this.kS_threshold = kS_threshold;
     }
@@ -52,6 +50,8 @@ public class SwerveModule extends SystemBase {
     public void setPID(double p, double i, double d) { controller.setPIDF(p, i, d, 0); }
 
     public void setTargetState(SwerveModuleState state) { targetState = state; }
+
+    public void setAngleKS(double kS) { this.kS_angle = kS; }
 
 
 

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.TeleOp.Tuning;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -8,6 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 
+@Config
 @TeleOp(group = "test")
 public class ServoTest extends LinearOpMode {
 
@@ -17,7 +19,7 @@ public class ServoTest extends LinearOpMode {
     private Servo[] servos;
     private int servoIndex = 0;
 
-    private double position = 0;
+    public static double position = 0;
     private static final double STEP = 0.01;
 
     @Override

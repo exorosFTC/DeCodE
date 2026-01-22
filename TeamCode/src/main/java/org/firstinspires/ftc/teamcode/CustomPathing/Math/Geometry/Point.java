@@ -45,6 +45,8 @@ public class Point {
 
     public double hypot() { return Math.hypot(x, y); }
 
+    public double hypot(Point other) { return Math.hypot(x - other.x, y - other.y); }
+
     public static Point toPolar(double r, double a){ return new Point(Math.cos(a)*r, Math.sin(a)*r); }
 
 

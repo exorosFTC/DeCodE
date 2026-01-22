@@ -32,6 +32,7 @@ import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 @Config
 @TeleOp(name = "🍪", group = "main")
 public class SoloTeleOp extends ExoMode {
+
     private Hardware hardware;
     private SwerveDrive swerve;
     private ScoringSystem system;
@@ -39,13 +40,14 @@ public class SoloTeleOp extends ExoMode {
 
     private GamepadEx g1;
     private final InputBus in = new InputBus();
-    private TriggerManager intakeTriggers, shooterTriggers;
 
+    private TriggerManager intakeTriggers, shooterTriggers;
     private Thread swerveThread, gamepadThread;
 
     public static double velocityMultiplier = TeleOpVelocityMultiplier;
     public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD, swervePmultiplier = TeleOpVelocityMultiplier;
-    public static double moduleP = DriveConstants.swerveModuleP, moduleD = DriveConstants.swerveModuleD;
+    public static double moduleP = DriveConstants.swerveModuleP, moduleD = DriveConstants.swerveModuleD, moduleS = 0;
+    public static double linX = 7, linY = 7, angHead = 100;
 
     public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
     public static double angleAdjust = 0;
@@ -53,6 +55,7 @@ public class SoloTeleOp extends ExoMode {
     //public static double power = 0;
 
     public static double shooterP = Shooter.kP, shooterF = Shooter.kF;
+    public static double velocityAdjust = 0;
 
 
     @Override
@@ -108,9 +111,14 @@ public class SoloTeleOp extends ExoMode {
 
                 swerve.setHeadingPID(swerveP, 0, swerveD);
                 swerve.setModulePID(moduleP, 0, moduleD);
+                swerve.setModuleKs(moduleS);
 
-                //TeleOpVelocityMultiplier = velocityMultiplier;
-                //TeleOpAngularP = swerveP;
+                swerve.xLim.setRate(linX);
+                swerve.yLim.setRate(linY);
+                swerve.headLim.setRate(angHead);
+
+                TeleOpVelocityMultiplier = swervePmultiplier;
+                TeleOpAngularP = swerveP;
 
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
@@ -131,7 +139,6 @@ public class SoloTeleOp extends ExoMode {
                 hardware.telemetry.addData("shooter velocity", system.shooter.correctedVelocity);
                 hardware.telemetry.addData("shooter target", system.shooter.targetVelocity);
                 hardware.updateTelemetry();
-
             }
         }, "SwerveThread");
         gamepadThread = new Thread(() -> {
@@ -150,6 +157,8 @@ public class SoloTeleOp extends ExoMode {
                 in.lockToGoal = in.lt > 0.1;
                 in.spinupShooter = in.rt > 0.1;
 
+                Shooter.VELOCITY_ADJUST = velocityAdjust;
+
                 // edges -> events (one-shot)
                 if (g1.wasJustPressed(GamepadKeys.Button.B)) in.evToggleIntake.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.A)) in.evReverseIntake.set(true);
@@ -164,10 +173,13 @@ public class SoloTeleOp extends ExoMode {
                 system.shooter.setPIDF(shooterP, 0, 0, shooterF);
                 system.shooter.update();
                 system.write();
+
+                Thread.yield();
             } }, "GamepadThread");
 
         hardware.telemetry.addLine("INIT READY 😈😈😈");
         hardware.telemetry.update();
+
     }
 
     @Override

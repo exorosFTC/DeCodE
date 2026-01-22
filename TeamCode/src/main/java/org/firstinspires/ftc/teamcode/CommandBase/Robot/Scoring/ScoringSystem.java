@@ -74,7 +74,7 @@ public class ScoringSystem extends SystemBase {
 
 
         if (indexer.elements.contains(Indexer.Artifact.NONE)) return;
-        if (opModeType == SystemConstants.OpMode.AUTONOMUS) return;
+        if (opModeType == SystemConstants.OpMode.AUTONOMOUS) return;
 
         // when all 3 slots are full, reverse intake & move on
         intake.reverse();
@@ -102,10 +102,7 @@ public class ScoringSystem extends SystemBase {
 
         indexer.isHome = true;
 
-        if (shooter.distance > 312) Indexer.SHOOTING_POWER = 0.3;
-        else if (shooter.distance > 290) Indexer.SHOOTING_POWER = 0.5;
-        else if (shooter.distance > 250) Indexer.SHOOTING_POWER = 0.7;
-        else if (shooter.distance > 200) Indexer.SHOOTING_POWER = 0.8;
+        if (shooter.distance > 312) Indexer.SHOOTING_POWER = 0.7d;
         else Indexer.SHOOTING_POWER = 1;
 
         indexer.shoot(3);

@@ -43,7 +43,7 @@ public class RedCloseArra extends ExoMode {
     @Override
     protected void Init() {
         new SystemData()
-                .add(SystemConstants.OpMode.AUTONOMUS)
+                .add(SystemConstants.OpMode.AUTONOMOUS)
                 .setAutoOnBlue(false);
 
         hardware = Hardware.getInstance(this);

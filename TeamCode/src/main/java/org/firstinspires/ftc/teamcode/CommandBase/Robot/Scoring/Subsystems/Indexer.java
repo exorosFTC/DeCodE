@@ -158,15 +158,10 @@ public class Indexer extends SystemBase {
         hardware.IndexerMotor.setPower(SHOOTING_POWER);
         while (indexerPosition < this.target && timer.seconds() < 2) {}
 
-        if (timer.seconds() > 2) {
-            target = indexerPosition;
-            microAdjust(false);
-        }
-
 
         // use PID for holding the intake position, after overshooting
         runTarget(
-                (int) (target + indexOffset + balls * TICKS_PER_REVOLUTION / 3 * (opModeType == SystemConstants.OpMode.TELE_OP ? 2 : 1) + ((balls == 3) ? microAdjustValue : 0)), // micro adjust threshold
+                target,
                 SHOOTING_POWER
         );
 

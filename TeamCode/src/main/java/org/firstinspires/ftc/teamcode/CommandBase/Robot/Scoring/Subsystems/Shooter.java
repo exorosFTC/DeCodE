@@ -17,14 +17,15 @@ public class Shooter extends SystemBase {
     private final Hardware hardware;
     private final PIDFController controller;
 
-    public static double kP = 0.007;
+    public static double kP = 0.05;
     public static double kI = 0;
     public static double kD = 0;
-    public static double kF = 0.00158;
+    public static double kF = 0.002;
 
     private static final double VEL_ALPHA = 0.3;
     public static final double MAX_RPS = 600;
-    public static double ANGLE_ADJUST = -0.0015;
+    public static double ANGLE_ADJUST = -0.002;
+    public static double VELOCITY_ADJUST = 0;
 
 
 
@@ -57,26 +58,22 @@ public class Shooter extends SystemBase {
 
     public void update(double overridePower, double overrideAngle) {
         distance = POSE.distanceTo(goalPosition);
-
         if (!on) return;
 
-        //if (!enabled) return;
-        if (on) {
-            ShotSample shot = lookupShot(distance);
 
-            if (overridePower != -1) {
-                targetPower = overridePower;
-                targetAngle = overrideAngle;
-            } else if (shot != null) {
-                targetPower = shot.power;
-                targetAngle = shot.angle;
-            }
+        ShotSample shot = lookupShot(distance);
+
+        if (overridePower != -1) {
+            targetPower = overridePower;
+            targetAngle = overrideAngle;
+        } else if (shot != null) {
+            targetPower = shot.power;
+            targetAngle = shot.angle;
         }
 
         this.targetVelocity = targetPower * MAX_RPS;
-        this.currentPower = controller.calculate(correctedVelocity, targetVelocity);
+        this.currentPower = controller.calculate(correctedVelocity, targetVelocity) + VELOCITY_ADJUST * Math.abs(targetVelocity - correctedVelocity);
 
-        if (!on) return;
         targetAngle = clamp(targetAngle - (this.targetVelocity - correctedVelocity - threshold) * ANGLE_ADJUST, 0.34, 0.94);  // adjust angle by velocity*/
     }
 
@@ -140,19 +137,17 @@ public class Shooter extends SystemBase {
     }
 
     @Override
-    public void on() {
-        super.on();
-    }
-
-    @Override
     public void off() {
         super.off();
         targetPower = 0;
         targetVelocity = 0;
         currentPower = 0;
+        targetAngle = 0.94;
 
-        hardware.Shooter1.setMotorDisable();
-        hardware.Shooter2.setMotorDisable();
+        hardware.Shooter1.setPower(0);
+        hardware.Shooter2.setPower(0);
+        hardware.ShooterHoodServo.setPosition(0.94);
+
     }
 }
 

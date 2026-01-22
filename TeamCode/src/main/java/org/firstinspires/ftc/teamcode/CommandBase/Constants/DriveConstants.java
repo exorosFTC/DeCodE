@@ -15,16 +15,18 @@ public class DriveConstants {
     public static double DRIVE_W = 33, DRIVE_L = 33;
     public static double R = Math.hypot(DRIVE_W, DRIVE_L);
 
-    public static double STRAFING_SLEW_RATE_LIMIT = 3,
-                        TURNING_SLEW_RATE_LIMIT = 5.67;
+    public static double TELE_OP_STRAFING_SLEW_RATE_LIMIT = 7,
+                        TELE_OP_TURNING_SLEW_RATE_LIMIT = Double.POSITIVE_INFINITY;
+    public static double AUTO_STRAFING_SLEW_RATE_LIMIT = 3,
+                        AUTO_TURNING_SLEW_RATE_LIMIT = 5.67;
 
 
     // teleop PID
-    public static double TeleOpAngularP = 0.2,
+    public static double TeleOpAngularP = 0,
                                 TeleOpAngularD = 0;
     public static double TeleOpLimelightP = 0,
                                 TeleOpLimelightD = 0;
-    public static double TeleOpVelocityMultiplier = 0;
+    public static double TeleOpVelocityMultiplier = 0.3;
 
     // auto PID
     public static double AutoLinearPx = 0.012,
@@ -33,12 +35,12 @@ public class DriveConstants {
                             AutoLinearDy = 0;
     public static double AutoAngularP = 0,
                             AutoAngularD = 0;
-    public static double AutoAngularVelocityMultiplier = 0.55,
+    public static double AutoAngularVelocityMultiplier = 0.3,
                             AutoLinearVelocityMultiplier = 0;
 
     // swerve module PID
-    public static final double swerveModuleP = 0.2,
-                                swerveModuleD = 0;//0.15;
+    public static final double swerveModuleP = 0.3,
+                                swerveModuleD = 0.03;
 
 
     public static double tileLengthCM = 60.96;

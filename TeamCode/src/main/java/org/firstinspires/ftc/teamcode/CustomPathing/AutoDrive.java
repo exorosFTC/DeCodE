@@ -15,12 +15,10 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
-import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 
@@ -32,15 +30,14 @@ public class AutoDrive {
     private final SwerveDrive swerve;
     private final ScoringSystem system;
 
-
-    private Thread driveThread, systemThread;
     private final LinearOpMode opMode;
     private final ElapsedTime waitTimer;
 
+    private Thread driveThread, systemThread;
     public final PIDController linearCx, linearCy, angularC;
-    private double busyThresholdLinear = 0.1,
-            busyThresholdAngular = Math.toRadians(6);
-    private double thresholdMultiplier = 1;
+
+    private double busyThresholdLinear = 0.96,
+                   busyThresholdAngular = Math.toRadians(6);
 
     private double failSafeTimeMs = Double.POSITIVE_INFINITY;
     private final ElapsedTime failSafeTimer = new ElapsedTime();
@@ -48,9 +45,10 @@ public class AutoDrive {
     private Pose target = new Pose();
     private Pose driveVector = new Pose();
 
-    private boolean isPaused = false;
-    private boolean previousIsPaused = false;
     private boolean usingFailSafe = false;
+    private double maxDistance = 0;
+    private double currentDistance = 0;
+
 
 
 
@@ -73,7 +71,6 @@ public class AutoDrive {
         startDriveThread();
     }
 
-
     private void startDriveThread() {
         driveThread = new Thread(() -> {
             opMode.waitForStart();
@@ -82,35 +79,20 @@ public class AutoDrive {
                 swerve.read();
                 swerve.write();
 
-                if (isPaused && !previousIsPaused) {    // stop the robot when paused
-                    swerve.setLockedX(true);
-                    swerve.update(new Pose());
-
-                    previousIsPaused = true;
-                    continue;
-                }
-
-                if (isPaused) continue;
-                updateDriveVector();
-
-                //hardware.telemetry.addData("x", POSE.x);
-                //hardware.telemetry.addData("y", POSE.y);
-                //hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
-                //hardware.telemetry.addData("target x", target.x);
-                //hardware.telemetry.addData("target y", target.y);
-                //hardware.telemetry.addData("target head", Math.toDegrees(target.heading));
-                hardware.telemetry.addData("randomization", SystemConstants.lastValidRandomization);
+                hardware.telemetry.addData("x", POSE.x);
+                hardware.telemetry.addData("y", POSE.y);
+                hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
+                hardware.telemetry.addData("target x", target.x);
+                hardware.telemetry.addData("target y", target.y);
+                hardware.telemetry.addData("target head", Math.toDegrees(target.heading));
                 hardware.telemetry.update();
 
                 if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
                     driveTo(POSE);
 
+                updateDriveVector();
                 swerve.update(driveVector);
             }
-
-            // prevent inertia movement from the drivetrain
-            swerve.setLockedX(true);
-            swerve.update(new Pose());
 
             startPose = POSE;
         });
@@ -135,33 +117,18 @@ public class AutoDrive {
 
 
 
-    public AutoDrive pause() {
-        isPaused = true;
-        return this;
-    }
-
-    public AutoDrive resume() {
-        isPaused = false;
-        previousIsPaused = false;
-        swerve.setLockedX(false);
-
-        return this;
-    }
-
-
-
-
     public AutoDrive driveTo(Pose pose) {
-        this.failSafeTimeMs = Double.POSITIVE_INFINITY;
-        this.usingFailSafe = false;
-        this.target = new Pose(pose.x, pose.y, normalizeAngleRad(pose.heading));
+        driveTo(pose, Double.POSITIVE_INFINITY);
         return this;
     }
 
     public AutoDrive driveTo(Pose pose, double ms) {
         this.failSafeTimeMs = ms;
-        this.usingFailSafe = true;
+        this.usingFailSafe = ms != Double.POSITIVE_INFINITY;
+
         this.target = new Pose(pose.x, pose.y, normalizeAngleRad(pose.heading));
+        maxDistance = target.hypot(POSE);
+        currentDistance = maxDistance;
 
         failSafeTimer.reset();
 
@@ -175,19 +142,19 @@ public class AutoDrive {
 
 
 
-    public AutoDrive waitDrive() { return waitDrive(opMode::idle, 1); }
+    public AutoDrive waitDrive() { return waitDrive(opMode::idle, 0.96); }
 
-    public AutoDrive waitDrive(double thresholdMultiplier) { return waitDrive(opMode::idle, thresholdMultiplier); }
+    public AutoDrive waitDrive(double threshold) { return waitDrive(opMode::idle, threshold); }
 
-    public AutoDrive waitDrive(Runnable inLoop) { return waitDrive(inLoop, 1); }
+    public AutoDrive waitDrive(Runnable inLoop) { return waitDrive(inLoop, 0.96); }
 
-    public AutoDrive waitDrive(Runnable inLoop, double thresholdMultiplier) {
-        this.thresholdMultiplier = thresholdMultiplier;
+    public AutoDrive waitDrive(Runnable inLoop, double threshold) {
+        this.busyThresholdLinear = threshold;
 
         updateDriveVector();
         try { Thread.sleep(10); } catch (InterruptedException e) {}
-        while (isBusy() && opMode.opModeIsActive()) { inLoop.run(); }
 
+        while (isBusy() && opMode.opModeIsActive()) { inLoop.run(); }
         return this;
     }
 
@@ -295,23 +262,13 @@ public class AutoDrive {
 
     private void updateDriveVector() {
         double targetVelX, targetVelY, targetVelHeading;
+        currentDistance = target.hypot(POSE);
 
-        targetVelX = swerve.xLim.calculate(linearCx.calculate(POSE.x, target.x));
-        targetVelY = swerve.yLim.calculate(linearCy.calculate(POSE.y, target.y));
+        targetVelX = linearCx.calculate(POSE.x, target.x);
+        targetVelY = linearCy.calculate(POSE.y, target.y);
         targetVelHeading = angularC.calculate(FindShortestPath(POSE.heading, target.heading));
 
-        if (new Point(targetVelX, targetVelY).closeToZero(busyThresholdLinear * 1.5)) angularC.setP(0.5);
-        else angularC.setP(AutoAngularP + Math.abs(swerve.states.get(0).getModuleVelocity()) * AutoAngularVelocityMultiplier);
-
-        hardware.telemetry.addData("condition 1 pose", new Point(Math.abs(target.x - POSE.x), Math.abs(target.y - POSE.y)).closeToZero(14 * thresholdMultiplier * busyThresholdLinear));
-        hardware.telemetry.addData("condition 2 drive vector", driveVector.point().closeToZero(busyThresholdLinear * thresholdMultiplier));
-        hardware.telemetry.addData("condition 3 heading", Math.abs(target.heading - POSE.heading) < busyThresholdAngular);
-
-        driveVector = new Pose(
-                Math.abs(targetVelX) > busyThresholdLinear ? targetVelX : 0,
-                Math.abs(targetVelY) > busyThresholdLinear ? targetVelY : 0,
-                targetVelHeading
-        ).multiplyBy(13.0 / hardware.batteryVoltage);
+        driveVector = new Pose(targetVelX, targetVelY, targetVelHeading).multiplyBy(13.0 / hardware.batteryVoltage);
     }
 
 
@@ -320,12 +277,10 @@ public class AutoDrive {
         return angle;
     }
 
-    public boolean isBusy() { return !(
-            new Point(Math.abs(target.x - POSE.x), Math.abs(target.y - POSE.y)).closeToZero(6 * thresholdMultiplier)
-                    &&
-                    driveVector.point().closeToZero(busyThresholdLinear * thresholdMultiplier)
-                    &&
-                    Math.abs(target.heading - POSE.heading) < busyThresholdAngular);
+    public boolean isBusy() {
+        return currentDistance > maxDistance * (1 - busyThresholdLinear)
+                                            &&
+               Math.abs(target.heading - POSE.heading) > busyThresholdAngular;
     }
 
 

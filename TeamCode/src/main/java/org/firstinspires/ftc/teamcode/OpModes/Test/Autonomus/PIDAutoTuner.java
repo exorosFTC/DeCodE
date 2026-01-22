@@ -47,7 +47,7 @@ public class PIDAutoTuner extends ExoMode {
         system = new ScoringSystem(this);
 
         new SystemData()
-                        .add(SystemConstants.OpMode.AUTONOMUS)
+                        .add(SystemConstants.OpMode.AUTONOMOUS)
                         .setAutoOnBlue(false);
 
         g1 = new GamepadEx(gamepad1);

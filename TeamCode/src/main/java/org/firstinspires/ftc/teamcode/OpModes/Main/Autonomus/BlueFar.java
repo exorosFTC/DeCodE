@@ -5,7 +5,6 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueFar;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -29,17 +28,10 @@ public class BlueFar extends ExoMode {
     private ScoringSystem system;
     private AutoDrive auto;
 
-    public static double angularP = AutoAngularP, angularD = AutoAngularD;
-    public static double linearPx = AutoLinearPx, linearDx = AutoLinearDx;
-    public static double linearPy = AutoLinearPy, linearDy = AutoLinearDx;
-
-    public static double linearThreshold = 0.1;
-    public static double angularThreshold = 9;
-
     @Override
     protected void Init() {
         new SystemData()
-                .add(SystemConstants.OpMode.AUTONOMUS)
+                .add(SystemConstants.OpMode.AUTONOMOUS)
                 .setAutoOnBlue(true);
 
         hardware = Hardware.getInstance(this);
@@ -52,24 +44,91 @@ public class BlueFar extends ExoMode {
         hardware.limelight.setPipeline(LimelightEx.Pipeline.RANDOMIZATION);
 
         system.indexer.preload();
+    }
 
-        while (opModeInInit()) {
-            auto.linearCx.setPID(linearPx, 0, linearDx);
-            auto.linearCy.setPID(linearPy, 0, linearDy);
-            auto.angularC.setPID(angularP, 0, angularD);
 
-            auto.setBusyThresholdLinear(linearThreshold);
-            auto.setBusyThresholdAngular(Math.toRadians(angularThreshold));
-        }
+
+    @Override
+    protected void WaitForStart(){
+        hardware.limelight.getRandomization();
     }
 
     @Override
     protected void WhenStarted() {
-        auto.driveTo(new Pose(-170, 100, Math.toRadians(0)))
-                .waitDrive(() -> hardware.limelight.getRandomization())
-                .moveSystem(() -> hardware.limelight.stop())
-                .end();
+        hardware.limelight.stop();
+
+        preload();
+        thirdLine();
+        humanPlayerLine();
+        leave();
+
+        auto.end();
     }
+
+    private void preload() {
+        auto.driveTo(new Pose(-156, 48, Math.toRadians(20)))
+            .moveSystem(() -> {
+                //system.indexer.indexPattern();
+                system.shooter.on();
+            })
+                .waitDrive()
+            .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.indexer.isBusy());
+    }
+
+    private void thirdLine() {
+        auto.driveTo(new Pose(-96, 88, Math.toRadians(90)))
+                .waitDrive()
+            .moveSystem(() -> system.intake.on())
+            .driveTo(new Pose(-96, 160, Math.toRadians(90)))
+                .waitDrive()
+                .waitMs(500)
+            .driveTo(new Pose(-156, 48, Math.toRadians(20)))
+            .moveSystem(() -> {
+                system.intake.reverse();
+                try{ Thread.sleep(400); } catch (InterruptedException e) {}
+                system.intake.off();
+                })
+                .waitDrive(0.5)
+            .moveSystem(() -> {
+                //system.indexer.indexPattern();
+                system.shooter.on();
+            })
+                .waitDrive()
+            .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.indexer.isBusy());
+    }
+
+    private void humanPlayerLine() {
+        auto.driveTo(new Pose(-126, 160, Math.toRadians(150)))
+                .waitDrive()
+            .moveSystem(() -> system.intake.on())
+            .driveTo(new Pose(-160, 160, Math.toRadians(150)), 2000)
+                .waitDrive()
+            .driveTo(new Pose(-156, 48, Math.toRadians(20)))
+            .moveSystem(() -> {
+                system.intake.reverse();
+                try{ Thread.sleep(400); } catch (InterruptedException e) {}
+                system.intake.off();
+            })
+            .waitDrive(0.5)
+            .moveSystem(() -> {
+                //system.indexer.indexPattern();
+                system.shooter.on();
+            })
+                .waitDrive()
+            .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.indexer.isBusy());
+
+    }
+
+    private void leave() {
+        auto.driveTo(new Pose(-156, 108, Math.toRadians(0)))
+                .waitDrive();
+    }
+
+
+
 
     @Override
     protected void Loop() {}
