@@ -17,6 +17,8 @@ public class Shooter extends SystemBase {
     private final Hardware hardware;
     private final PIDFController controller;
 
+    public static ShotSample sample;
+
     public static double kP = 0.05;
     public static double kI = 0;
     public static double kD = 0;
@@ -61,18 +63,18 @@ public class Shooter extends SystemBase {
         if (!on) return;
 
 
-        ShotSample shot = lookupShot(distance);
+        sample = lookupShot(distance);
 
         if (overridePower != -1) {
             targetPower = overridePower;
             targetAngle = overrideAngle;
-        } else if (shot != null) {
-            targetPower = shot.power;
-            targetAngle = shot.angle;
+        } else if (sample != null) {
+            targetPower = sample.power;
+            targetAngle = sample.angle;
         }
 
         this.targetVelocity = targetPower * MAX_RPS;
-        this.currentPower = controller.calculate(correctedVelocity, targetVelocity) + VELOCITY_ADJUST * Math.abs(targetVelocity - correctedVelocity);
+        this.currentPower = controller.calculate(correctedVelocity, targetVelocity);
 
         targetAngle = clamp(targetAngle - (this.targetVelocity - correctedVelocity - threshold) * ANGLE_ADJUST, 0.34, 0.94);  // adjust angle by velocity*/
     }
@@ -107,8 +109,9 @@ public class Shooter extends SystemBase {
 
         double power = lerp(before.power, after.power, t);
         double angle = lerp(before.angle, after.angle, t);
+        double transferPower = lerp(before.transferPower, after.transferPower, t);
 
-        return new ShotSample(d, power, angle);
+        return new ShotSample(d, power, angle, transferPower);
     }
 
     private double lerp(double a, double b, double t) {

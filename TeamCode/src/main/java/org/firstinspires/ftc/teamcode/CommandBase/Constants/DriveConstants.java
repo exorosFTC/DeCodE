@@ -5,9 +5,9 @@ import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 public class DriveConstants {
     public static final Pose startPoseRedFar = new Pose(-186, -48, Math.toRadians(0));
-    public static final Pose startPoseRedClose = new Pose(149, -107, Math.toRadians(45));
+    public static final Pose startPoseRedClose = new Pose(149, -107, Math.toRadians(315));
     public static final Pose startPoseBlueFar = new Pose(-186, 48, Math.toRadians(0));
-    public static final Pose startPoseBlueClose = new Pose(149, 107, Math.toRadians(315));
+    public static final Pose startPoseBlueClose = new Pose(149, 107, Math.toRadians(45));
 
     public static Pose startPose = new Pose(0, 0, Math.toRadians(270));
     public static Pose POSE = startPose;
@@ -17,7 +17,7 @@ public class DriveConstants {
 
     public static double TELE_OP_STRAFING_SLEW_RATE_LIMIT = 7,
                         TELE_OP_TURNING_SLEW_RATE_LIMIT = Double.POSITIVE_INFINITY;
-    public static double AUTO_STRAFING_SLEW_RATE_LIMIT = 3,
+    public static double AUTO_STRAFING_SLEW_RATE_LIMIT = 8,
                         AUTO_TURNING_SLEW_RATE_LIMIT = 5.67;
 
 
@@ -26,16 +26,16 @@ public class DriveConstants {
                                 TeleOpAngularD = 0;
     public static double TeleOpLimelightP = 0,
                                 TeleOpLimelightD = 0;
-    public static double TeleOpVelocityMultiplier = 0.3;
+    public static double TeleOpVelocityMultiplier = 0;
 
     // auto PID
-    public static double AutoLinearPx = 0.012,
+    public static double AutoLinearPx = 0.015,
                             AutoLinearDx = 0,
                             AutoLinearPy = 0.012,
                             AutoLinearDy = 0;
-    public static double AutoAngularP = 0,
+    public static double AutoAngularP = 0.45,
                             AutoAngularD = 0;
-    public static double AutoAngularVelocityMultiplier = 0.3,
+    public static double AutoAngularVelocityMultiplier = 0,
                             AutoLinearVelocityMultiplier = 0;
 
     // swerve module PID

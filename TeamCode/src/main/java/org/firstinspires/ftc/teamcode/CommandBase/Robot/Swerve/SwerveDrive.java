@@ -139,7 +139,7 @@ public class SwerveDrive extends SystemBase {
                 velocity.heading = limelightC.calculate(hardware.limelight.getCenterOffset());
             } else {*/
                 //hardware.telemetry.addLine("Alignment: ODOMETRY");
-                targetHeading = Math.atan2(goalPosition.y - POSE.y, goalPosition.x - POSE.x);
+                if (opModeType == SystemConstants.OpMode.TELE_OP) targetHeading = Math.atan2(goalPosition.y - POSE.y, goalPosition.x - POSE.x);
                 angularC.setPID(0.9, 0, 0);
                 velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
             //}

@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.OpModes.Main.TeleOp;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionRed;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
 
@@ -101,6 +104,8 @@ public class CrazyTeleOp extends ExoMode {
 
                     lift.on();
                 }
+                if (in.evSetBlue.getAndSet(false)) { goalPosition = goalPositionBlue; autoOnBlue = true; };
+                if (in.evSetRed.getAndSet(false)) { goalPosition = goalPositionRed; autoOnBlue = false; };
 
                 hardware.updateTelemetry();
             }
@@ -129,9 +134,12 @@ public class CrazyTeleOp extends ExoMode {
                 if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) in.evSort.set(true);
                 if (g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) in.evShoot.set(true);
                 if (g2.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
+
                 if (g1.isDown(GamepadKeys.Button.X) && g1.isDown(GamepadKeys.Button.DPAD_RIGHT)) in.evStartLift.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) in.evResetHeading.set(true);
-                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evResetPosition.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) in.evResetPosition.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_UP)) in.evSetRed.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evSetBlue.set(true);
 
                 if (g1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1) in.evLockX.set(true);
 

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.CustomPathing;
 
+import static com.qualcomm.robotcore.util.Range.clip;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularVelocityMultiplier;
@@ -19,6 +20,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 
@@ -36,7 +38,7 @@ public class AutoDrive {
     private Thread driveThread, systemThread;
     public final PIDController linearCx, linearCy, angularC;
 
-    private double busyThresholdLinear = 0.96,
+    private double busyThresholdLinear = 0.9,
                    busyThresholdAngular = Math.toRadians(6);
 
     private double failSafeTimeMs = Double.POSITIVE_INFINITY;
@@ -85,6 +87,10 @@ public class AutoDrive {
                 hardware.telemetry.addData("target x", target.x);
                 hardware.telemetry.addData("target y", target.y);
                 hardware.telemetry.addData("target head", Math.toDegrees(target.heading));
+                hardware.telemetry.addData("isBusy", isBusy());
+                hardware.telemetry.addData("current", Math.abs(currentDistance));
+                hardware.telemetry.addData("max", Math.abs(maxDistance * (1 - busyThresholdLinear)));
+                hardware.telemetry.addData("shooter ready", system.shooter.ready());
                 hardware.telemetry.update();
 
                 if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
@@ -128,6 +134,7 @@ public class AutoDrive {
 
         this.target = new Pose(pose.x, pose.y, normalizeAngleRad(pose.heading));
         maxDistance = target.hypot(POSE);
+        swerve.targetHeading = target.heading;
         currentDistance = maxDistance;
 
         failSafeTimer.reset();
@@ -142,11 +149,24 @@ public class AutoDrive {
 
 
 
-    public AutoDrive waitDrive() { return waitDrive(opMode::idle, 0.96); }
+    public AutoDrive waitDrive() { return waitDrive(opMode::idle, 0.9); }
 
-    public AutoDrive waitDrive(double threshold) { return waitDrive(opMode::idle, threshold); }
+    public AutoDrive waitDrive(double threshold) {
+        waitDrive(threshold, false);
+        return this;
+    }
 
-    public AutoDrive waitDrive(Runnable inLoop) { return waitDrive(inLoop, 0.96); }
+    public AutoDrive waitDrive(double threshold, boolean useHeading) {
+        this.busyThresholdLinear = threshold;
+
+        updateDriveVector();
+        try { Thread.sleep(10); } catch (InterruptedException e) {}
+
+        while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive()) {}
+        return this;
+    }
+
+    public AutoDrive waitDrive(Runnable inLoop) { return waitDrive(inLoop, 0.9); }
 
     public AutoDrive waitDrive(Runnable inLoop, double threshold) {
         this.busyThresholdLinear = threshold;
@@ -266,6 +286,7 @@ public class AutoDrive {
 
         targetVelX = linearCx.calculate(POSE.x, target.x);
         targetVelY = linearCy.calculate(POSE.y, target.y);
+        //angularC.setP((1 - Math.abs(clip(new Point(targetVelX, targetVelY).hypot(), -1, 1))) * AutoAngularP);
         targetVelHeading = angularC.calculate(FindShortestPath(POSE.heading, target.heading));
 
         driveVector = new Pose(targetVelX, targetVelY, targetVelHeading).multiplyBy(13.0 / hardware.batteryVoltage);
@@ -278,8 +299,8 @@ public class AutoDrive {
     }
 
     public boolean isBusy() {
-        return currentDistance > maxDistance * (1 - busyThresholdLinear)
-                                            &&
+        return Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))
+                                            ||
                Math.abs(target.heading - POSE.heading) > busyThresholdAngular;
     }
 

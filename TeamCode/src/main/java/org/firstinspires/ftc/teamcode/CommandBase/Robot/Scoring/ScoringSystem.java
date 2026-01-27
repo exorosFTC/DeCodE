@@ -25,7 +25,7 @@ public class ScoringSystem extends SystemBase {
     public ElapsedTime timer;
     public double MIN_LOOPS = 8;
 
-    public double[] catchThreshold = new double[]{68, 85, 56};
+    public double[] catchThreshold = new double[]{68, 69, 56};
     public double[] colorDistance = new double[]{-1, -1, -1};
     public double[] loops = new double[]{0, 0, 0};
     public NormalizedRGBA colorValues;
@@ -101,10 +101,6 @@ public class ScoringSystem extends SystemBase {
         while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 3) {}
 
         indexer.isHome = true;
-
-        if (shooter.distance > 312) Indexer.SHOOTING_POWER = 0.7d;
-        else Indexer.SHOOTING_POWER = 1;
-
         indexer.shoot(3);
 
         shooter.off();
