@@ -13,7 +13,8 @@ public class InputBus {
 
     // one-shot events
     public final AtomicBoolean evToggleIntake   = new AtomicBoolean(false);
-    public final AtomicBoolean evReverseIntake  = new AtomicBoolean(false);
+    public final AtomicBoolean evToggleIntakeReverse = new AtomicBoolean(false);
+    public final AtomicBoolean evIgnoreColorSensors  = new AtomicBoolean(false);
     public final AtomicBoolean evSort           = new AtomicBoolean(false);
     public final AtomicBoolean evShoot          = new AtomicBoolean(false);
     public final AtomicBoolean evHomeIndexer    = new AtomicBoolean(false);

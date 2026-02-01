@@ -43,9 +43,7 @@ public class LimelightEx {
     public void read() {
         if (!enabled)  return;
 
-        raw = limelight.getLatestResult();
-        if (raw == null) return;
-        result = raw;
+        result = limelight.getLatestResult();
     }
 
 
@@ -90,8 +88,10 @@ public class LimelightEx {
         else if (!autoOnBlue && pipeline != LimelightEx.Pipeline.RED_GOAL) setPipeline(LimelightEx.Pipeline.RED_GOAL);
         if (result == null) return 0;
 
-        return result.getTx();
+        return -result.getTx();
     }
+
+    public void  relocalize() {}
 
     public boolean tagInSight() {
         return !result.getFiducialResults().isEmpty() && pipeline != LimelightEx.Pipeline.RANDOMIZATION;

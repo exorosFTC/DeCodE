@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoSwerveModuleD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoSwerveModuleP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpSwerveModuleD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpSwerveModuleP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 import static org.firstinspires.ftc.teamcode.CustomPathing.Math.MathFormulas.normalizeRadians;
 
 import com.arcrobotics.ftclib.controller.PIDFController;
@@ -11,7 +14,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.AbsoluteAnalogEncoder;
 
@@ -23,7 +26,7 @@ public class SwerveModule extends SystemBase {
 
     private double kS_angle, kS_threshold;
 
-    private final PIDFController controller = new PIDFController(swerveModuleP, 0, swerveModuleD, 0);
+    private final PIDFController controller = new PIDFController(TeleOpSwerveModuleP, 0, TeleOpSwerveModuleD, 0);
     private boolean wheelFlipped = false;
 
     public SwerveModuleState currentState = new SwerveModuleState(0, 0);
@@ -41,6 +44,9 @@ public class SwerveModule extends SystemBase {
 
         this.kS_angle = kS_angle;
         this.kS_threshold = kS_threshold;
+
+        if (opModeType == SystemConstants.OpMode.AUTONOMOUS) controller.setPIDF(AutoSwerveModuleP, 0, AutoSwerveModuleD, 0);
+        else controller.setPIDF(TeleOpSwerveModuleP, 0, TeleOpSwerveModuleD, 0);
     }
 
 

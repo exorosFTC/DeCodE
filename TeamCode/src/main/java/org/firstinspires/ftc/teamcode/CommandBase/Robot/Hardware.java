@@ -155,12 +155,7 @@ public class Hardware {
 
 
 
-    public void read(SystemBase system) {
-        localizer.update();
-        batteryVoltage = batteryVoltageSensor.getVoltage();
-
-        system.read();
-    }
+    public void readBattery() { batteryVoltage = batteryVoltageSensor.getVoltage(); }
 
     public void updateTelemetry() {
 

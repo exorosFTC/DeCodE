@@ -6,8 +6,10 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearVelocityMultiplier;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.swerveModuleP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoSwerveModuleD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoSwerveModuleP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpSwerveModuleD;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpSwerveModuleP;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -26,14 +28,13 @@ import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 @Config
 @Autonomous(name = "MovementPIDTuner", group = "tuning")
 public class PIDAutoTuner extends ExoMode {
-    private Hardware hardware;
     private SwerveDrive swerve;
     private ScoringSystem system;
     private AutoDrive auto;
 
     public static double linP = AutoLinearPx, angP = AutoAngularP;
     public static double linD = AutoLinearDx, angD = AutoAngularD;
-    public static double moduleP = swerveModuleP, moduleD = swerveModuleD;
+    public static double moduleP = AutoSwerveModuleP, moduleD = AutoSwerveModuleD;
     public static double angularMultiplier = AutoAngularVelocityMultiplier;
     public static double linearMultiplier = AutoAngularVelocityMultiplier;
     public static double x, y, head;
@@ -42,13 +43,12 @@ public class PIDAutoTuner extends ExoMode {
 
     @Override
     protected void Init() {
-        hardware = Hardware.getInstance(this);
+        new SystemData()
+                .add(SystemConstants.OpMode.AUTONOMOUS)
+                .setAutoOnBlue(false);
+
         swerve = new SwerveDrive(this);
         system = new ScoringSystem(this);
-
-        new SystemData()
-                        .add(SystemConstants.OpMode.AUTONOMOUS)
-                        .setAutoOnBlue(false);
 
         g1 = new GamepadEx(gamepad1);
     }
@@ -66,11 +66,11 @@ public class PIDAutoTuner extends ExoMode {
         g1.readButtons();
         auto.linearCx.setPID(linP, 0, linD);
         auto.linearCy.setPID(linP, 0, linD);
-        //auto.angularC.setPID(angP, 0, angD);
+        auto.angularC.setPID(angP, 0, angD);
 
         AutoAngularVelocityMultiplier = angularMultiplier;
         AutoLinearVelocityMultiplier = linearMultiplier;
 
-        swerve.setModulePID(swerveModuleP, 0, swerveModuleD);
+        swerve.setModulePID(moduleP, 0, moduleD);
     }
 }

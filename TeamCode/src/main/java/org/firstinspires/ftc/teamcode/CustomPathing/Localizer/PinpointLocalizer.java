@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
@@ -39,6 +40,12 @@ public class PinpointLocalizer {
                 pinpoint.getPosX(DistanceUnit.CM),
                 pinpoint.getPosY(DistanceUnit.CM),
                 (rawHeading < 0) ? rawHeading + 2 * Math.PI : rawHeading
+        );
+
+        DriveConstants.VELOCITY = new Pose(
+                pinpoint.getVelX(DistanceUnit.CM),
+                pinpoint.getVelY(DistanceUnit.CM),
+                pinpoint.getHeadingVelocity(UnnormalizedAngleUnit.RADIANS)
         );
     }
 

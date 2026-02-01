@@ -46,7 +46,7 @@ public class ScoringSystem extends SystemBase {
 
 
 
-    public void updateIntake() {
+    public void updateIntake(boolean ignore) {
         if (indexer.isBusy() || !indexer.on || !intake.on) return;
 
         colorDistance = new double[]{
@@ -73,8 +73,12 @@ public class ScoringSystem extends SystemBase {
         }
 
 
-        if (indexer.elements.contains(Indexer.Artifact.NONE)) return;
-        if (opModeType == SystemConstants.OpMode.AUTONOMOUS) return;
+        if (indexer.elements.contains(Indexer.Artifact.NONE)
+                                ||
+            opModeType == SystemConstants.OpMode.AUTONOMOUS
+                                ||
+                              ignore) return;
+
 
         // when all 3 slots are full, reverse intake & move on
         intake.reverse();

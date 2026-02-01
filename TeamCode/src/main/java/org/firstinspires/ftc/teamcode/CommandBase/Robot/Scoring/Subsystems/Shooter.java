@@ -60,15 +60,12 @@ public class Shooter extends SystemBase {
 
     public void update(double overridePower, double overrideAngle) {
         distance = POSE.distanceTo(goalPosition);
-        if (!on) return;
-
-
         sample = lookupShot(distance);
 
-        if (overridePower != -1) {
+        if (overridePower != -1 && on) {
             targetPower = overridePower;
             targetAngle = overrideAngle;
-        } else if (sample != null) {
+        } else if (sample != null && on) {
             targetPower = sample.power;
             targetAngle = sample.angle;
         }
@@ -132,10 +129,10 @@ public class Shooter extends SystemBase {
 
     @Override
     public void write() {
-        if (!on) return;
         hardware.Shooter1.setPower(this.currentPower);
         hardware.Shooter2.setPower(-this.currentPower);
 
+        if (!on) return;
         hardware.ShooterHoodServo.setPosition(targetAngle);
     }
 
@@ -147,9 +144,7 @@ public class Shooter extends SystemBase {
         currentPower = 0;
         targetAngle = 0.94;
 
-        hardware.Shooter1.setPower(0);
-        hardware.Shooter2.setPower(0);
-        hardware.ShooterHoodServo.setPosition(0.94);
+        hardware.ShooterHoodServo.setPosition(targetAngle);
 
     }
 }

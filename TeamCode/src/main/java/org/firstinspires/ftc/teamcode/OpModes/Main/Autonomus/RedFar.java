@@ -59,8 +59,8 @@ public class RedFar extends ExoMode {
         hardware.limelight.stop();
 
         preload();
-        thirdLine();
-        humanPlayerLine();
+        //thirdLine();
+        //humanPlayerLine();
         leave();
 
         auto.end();

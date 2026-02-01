@@ -6,8 +6,6 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpVelocityMultiplier;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -46,7 +44,7 @@ public class SoloTeleOp extends ExoMode {
 
     public static double velocityMultiplier = TeleOpVelocityMultiplier;
     public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD, swervePmultiplier = TeleOpVelocityMultiplier;
-    public static double moduleP = DriveConstants.swerveModuleP, moduleD = DriveConstants.swerveModuleD, moduleS = 0;
+    public static double moduleP = DriveConstants.TeleOpSwerveModuleP, moduleD = DriveConstants.TeleOpSwerveModuleD, moduleS = 0;
     public static double linX = 7, linY = 7, angHead = 100;
 
     public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
@@ -76,13 +74,13 @@ public class SoloTeleOp extends ExoMode {
         // create gamepad triggers
         intakeTriggers = new TriggerManager()
                 .addTrigger(() -> in.evToggleIntake.getAndSet(false), () -> {
-                            if (system.intake.on && !system.intake.reversed) system.intake.off();
-                            else system.intake.on();
-                            })   // intake
-                .addTrigger(() -> in.evReverseIntake.getAndSet(false), () -> {
-                            if (system.intake.on && system.intake.reversed) system.intake.off();
-                            else system.intake.reverse();
-                        }); // reverse intake
+                    if (system.intake.on && !system.intake.reversed) system.intake.off();
+                    else system.intake.on();
+                })   // intake
+                .addTrigger(() -> in.evToggleIntakeReverse.getAndSet(false), () -> {
+                    if (system.intake.on && system.intake.reversed) system.intake.off();
+                    else system.intake.reverse();
+                }); // reverse intake
 
         shooterTriggers = new TriggerManager()
                 .addTrigger(() -> in.evSort.getAndSet(false), () -> system.indexer.indexPattern())                       // sort
@@ -144,7 +142,10 @@ public class SoloTeleOp extends ExoMode {
         gamepadThread = new Thread(() -> {
             while (opModeIsActive()) {
                 hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
-                hardware.read(system);
+
+                hardware.localizer.update();
+                hardware.readBattery();
+                system.read();
 
                 g1.readButtons();
 
@@ -161,7 +162,7 @@ public class SoloTeleOp extends ExoMode {
 
                 // edges -> events (one-shot)
                 if (g1.wasJustPressed(GamepadKeys.Button.B)) in.evToggleIntake.set(true);
-                if (g1.wasJustPressed(GamepadKeys.Button.A)) in.evReverseIntake.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.A)) in.evToggleIntakeReverse.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) in.evSort.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) in.evShoot.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
@@ -206,7 +207,7 @@ public class SoloTeleOp extends ExoMode {
             system.indexer.microAdjust(true);
         }
 
-        system.updateIntake();
+        system.updateIntake(false);
         Thread.yield();
     }
 }

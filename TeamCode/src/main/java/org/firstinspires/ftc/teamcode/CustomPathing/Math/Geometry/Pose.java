@@ -72,9 +72,11 @@ public class Pose extends Point {
         return this.multiplyBy(1 / largest);
     }
 
-    public void negate() {
+    public Pose negate() {
         x = -x;
         y = -y;
+
+        return this;
     }
 
     public boolean closeToZero(double threshold) {

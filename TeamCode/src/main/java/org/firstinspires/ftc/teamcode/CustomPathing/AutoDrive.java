@@ -50,6 +50,7 @@ public class AutoDrive {
     private boolean usingFailSafe = false;
     private double maxDistance = 0;
     private double currentDistance = 0;
+    private double radius = 30;
 
 
 
@@ -79,7 +80,6 @@ public class AutoDrive {
 
             while (opMode.opModeIsActive()) {
                 swerve.read();
-                swerve.write();
 
                 hardware.telemetry.addData("x", POSE.x);
                 hardware.telemetry.addData("y", POSE.y);
@@ -98,8 +98,9 @@ public class AutoDrive {
 
                 updateDriveVector();
                 swerve.update(driveVector);
-            }
+                swerve.write();
 
+            }
             startPose = POSE;
         });
         systemThread = new Thread(() -> {
@@ -107,7 +108,9 @@ public class AutoDrive {
 
             while (opMode.opModeIsActive()) {
                 hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
-                hardware.read(system);
+                hardware.localizer.update();
+                hardware.readBattery();
+                system.read();
 
                 system.shooter.update();
                 system.write();
@@ -151,17 +154,13 @@ public class AutoDrive {
 
     public AutoDrive waitDrive() { return waitDrive(opMode::idle, 0.9); }
 
-    public AutoDrive waitDrive(double threshold) {
-        waitDrive(threshold, false);
-        return this;
-    }
+    public AutoDrive waitDrive(double threshold) { return waitDrive(threshold, false); }
 
     public AutoDrive waitDrive(double threshold, boolean useHeading) {
         this.busyThresholdLinear = threshold;
 
         updateDriveVector();
         try { Thread.sleep(10); } catch (InterruptedException e) {}
-
         while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive()) {}
         return this;
     }
@@ -173,7 +172,6 @@ public class AutoDrive {
 
         updateDriveVector();
         try { Thread.sleep(10); } catch (InterruptedException e) {}
-
         while (isBusy() && opMode.opModeIsActive()) { inLoop.run(); }
         return this;
     }
@@ -284,8 +282,8 @@ public class AutoDrive {
         double targetVelX, targetVelY, targetVelHeading;
         currentDistance = target.hypot(POSE);
 
-        targetVelX = linearCx.calculate(POSE.x, target.x);
-        targetVelY = linearCy.calculate(POSE.y, target.y);
+        targetVelX = linearCx.calculate(POSE.x, target.x) * 0.5;
+        targetVelY = linearCy.calculate(POSE.y, target.y) * 0.5;
         //angularC.setP((1 - Math.abs(clip(new Point(targetVelX, targetVelY).hypot(), -1, 1))) * AutoAngularP);
         targetVelHeading = angularC.calculate(FindShortestPath(POSE.heading, target.heading));
 

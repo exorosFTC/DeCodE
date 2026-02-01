@@ -27,7 +27,7 @@ public class Indexer extends SystemBase {
 
     public static final double TICKS_PER_REVOLUTION = 336;
     public static double HOMING_POWER = 0.2; //in the indexing direction
-    public static double INDEXING_POWER = 0.35;
+    public static double INDEXING_POWER = 0.25;
 
     public static final int microAdjustValue = 15;
     private static final int intakeOffset = 0;
@@ -69,6 +69,8 @@ public class Indexer extends SystemBase {
 
         sideswipe(3, true);
         resetEncoder();
+
+        runTarget(target, 1);
     }
 
 
@@ -97,11 +99,11 @@ public class Indexer extends SystemBase {
             // come back so the transfer arm is down
             target = (int) (target + TICKS_PER_REVOLUTION / 4.6);
 
-            hardware.IndexerMotor.setPower(0.25);
+            hardware.IndexerMotor.setPower(0.2);
             while (indexerPosition < target && opMode.opModeIsActive()) {}
 
             runTarget(target,
-                    INDEXING_POWER);
+                    1);
         }
 
         isIndexing = false;
@@ -158,16 +160,13 @@ public class Indexer extends SystemBase {
         this.target = (int) (target + indexOffset + balls * TICKS_PER_REVOLUTION / 3 * (opModeType == SystemConstants.OpMode.TELE_OP ? 2 : 1) + ((balls == 3) ? microAdjustValue : 0));
 
         timer.reset();
-        while (indexerPosition < this.target && timer.seconds() < 2) {
+        while (indexerPosition < this.target && timer.seconds() < 2 && opMode.opModeIsActive()) {
             hardware.IndexerMotor.setPower(overridePower == -1 ? Shooter.sample.transferPower : overridePower);
         }
 
 
         // use PID for holding the intake position, after overshooting
-        runTarget(
-                target,
-                1
-        );
+        runTarget(target, 1);
 
         sideswipe(balls, true);
         if (balls == 3) indexOffset = 0;
