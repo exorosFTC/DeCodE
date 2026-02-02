@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AUTO_STRAFING_SLEW_RATE_LIMIT;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AUTO_TURNING_SLEW_RATE_LIMIT;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularVelocityMultiplier;
@@ -8,8 +10,6 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoSwerveModuleD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoSwerveModuleP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpSwerveModuleD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpSwerveModuleP;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -32,12 +32,12 @@ public class PIDAutoTuner extends ExoMode {
     private ScoringSystem system;
     private AutoDrive auto;
 
-    public static double linP = AutoLinearPx, angP = AutoAngularP;
-    public static double linD = AutoLinearDx, angD = AutoAngularD;
+    public static double linP = AutoLinearPx;
+    public static double linD = AutoLinearDx;
     public static double moduleP = AutoSwerveModuleP, moduleD = AutoSwerveModuleD;
     public static double angularMultiplier = AutoAngularVelocityMultiplier;
     public static double linearMultiplier = AutoAngularVelocityMultiplier;
-    public static double x, y, head;
+    public static double x, y, head, radius = 30;
 
     public GamepadEx g1;
 
@@ -61,12 +61,11 @@ public class PIDAutoTuner extends ExoMode {
     @Override
     protected void Loop() {
         if (g1.wasJustPressed(GamepadKeys.Button.B))
-            auto.driveTo(new Pose(x, y, Math.toRadians(head)));
+            auto.driveTo(new Pose(x, y, Math.toRadians(head)), radius);
 
         g1.readButtons();
         auto.linearCx.setPID(linP, 0, linD);
         auto.linearCy.setPID(linP, 0, linD);
-        auto.angularC.setPID(angP, 0, angD);
 
         AutoAngularVelocityMultiplier = angularMultiplier;
         AutoLinearVelocityMultiplier = linearMultiplier;

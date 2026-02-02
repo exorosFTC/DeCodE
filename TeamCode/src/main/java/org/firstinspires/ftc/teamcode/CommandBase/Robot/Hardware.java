@@ -86,7 +86,7 @@ public class Hardware {
     public Hardware(LinearOpMode opMode) {
         this.telemetry = new MultipleTelemetry(opMode.telemetry, FtcDashboard.getInstance().getTelemetry());
         this.bulk = new HubBulkRead(opMode.hardwareMap, LynxModule.BulkCachingMode.MANUAL);
-        this.limelight = new LimelightEx("limelight", opMode.hardwareMap);
+        this.limelight = new LimelightEx("limelight", opMode);
         this.localizer = new PinpointLocalizer(opMode.hardwareMap);
 
         batteryVoltageSensor = opMode.hardwareMap.voltageSensor.iterator().next();

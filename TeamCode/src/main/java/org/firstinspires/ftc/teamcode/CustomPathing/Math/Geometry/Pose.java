@@ -87,6 +87,14 @@ public class Pose extends Point {
                 Math.abs(heading) <= threshold;
     }
 
+    public boolean is(Pose other) {
+        return this.x == other.x && this.y == other.y && this.heading == other.heading;
+    }
+
+    public boolean is(Point other) {
+        return this.x == other.x && this.y == other.y;
+    }
+
     public Point point() { return new Point(x, y); }
 
     //......................................................................

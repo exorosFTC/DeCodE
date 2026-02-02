@@ -67,7 +67,7 @@ public class RedFar extends ExoMode {
     }
 
     private void preload() {
-        auto.driveTo(new Pose(-166, -28, Math.toRadians(335.5)))
+        auto.driveTo(new Pose(-166, -28, Math.toRadians(335.5)), 30)
                 .moveSystem(() -> {
                     //system.indexer.indexPattern();
                     system.shooter.on();
@@ -81,13 +81,13 @@ public class RedFar extends ExoMode {
     }
 
     private void thirdLine() {
-        auto.driveTo(new Pose(-115, -88, Math.toRadians(270)))
+        auto.driveTo(new Pose(-115, -88, Math.toRadians(270)), 30)
                 .waitDrive(0.87)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-115, -170, Math.toRadians(270)), 3000)
+                .driveTo(new Pose(-115, -170, Math.toRadians(270)), 30, 3000)
                 .waitDrive(0.87)
                 .waitMs(500)
-                .driveTo(new Pose(-166, -22, Math.toRadians(336)))
+                .driveTo(new Pose(-166, -22, Math.toRadians(336)), 30)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
@@ -107,12 +107,12 @@ public class RedFar extends ExoMode {
     }
 
     private void humanPlayerLine() {
-        auto.driveTo(new Pose(-126, -164, Math.toRadians(180)))
+        auto.driveTo(new Pose(-126, -164, Math.toRadians(180)), 30)
                 .waitDrive(0.88)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-190, -164, Math.toRadians(180)), 2500)
-                .waitDrive()
-                .driveTo(new Pose(-166, -25, Math.toRadians(336)))
+                .driveTo(new Pose(-190, -164, Math.toRadians(180)), 30, 2500)
+                .waitDrive(0.9)
+                .driveTo(new Pose(-166, -25, Math.toRadians(336)), 30)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
@@ -133,8 +133,8 @@ public class RedFar extends ExoMode {
     }
 
     private void leave() {
-        auto.driveTo(new Pose(-166, -108, Math.toRadians(0)))
-                .waitDrive();
+        auto.driveTo(new Pose(-166, -108, Math.toRadians(0)), 30)
+                .waitDrive(0.9);
     }
 
 

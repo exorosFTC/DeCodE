@@ -74,26 +74,26 @@ public class RedCloseArra extends ExoMode {
 
     @Override
     protected void WhenStarted() {
-        auto.driveTo(new Pose(75, -60, Math.toRadians(45)))
+        auto.driveTo(new Pose(75, -60, Math.toRadians(45)), 30)
                 // cycle 1 + read randomization
                 .moveSystem(() -> system.indexer.home())
-                .waitDrive(() -> hardware.limelight.getRandomization(), 4)
+                .waitDrive(() -> hardware.limelight.getRandomization(), 4, false)
                 .moveSystem(() -> {
                     hardware.limelight.stop();
                     //system.indexer.indexPattern();
                     system.shooter.on();
                 })
-                .driveTo(new Pose(75, -60, Math.toRadians(320)), 2000)
+                .driveTo(new Pose(75, -60, Math.toRadians(320)), 30, 2000)
                 .waitDrive(1)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.indexer.isBusy())
 
                 // cycle 2
-                .driveTo(new Pose(35, -60, Math.toRadians(270)), 2000)
+                .driveTo(new Pose(35, -60, Math.toRadians(270)), 30, 2000)
                 .moveSystem(() -> system.indexer.home())
                 .waitDrive(2)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(35, -127, Math.toRadians(270)), 1200)
+                .driveTo(new Pose(35, -127, Math.toRadians(270)), 30, 1200)
                 .waitDrive(1)
                 .waitMs(300)
                 .moveSystem(() -> {
@@ -103,25 +103,25 @@ public class RedCloseArra extends ExoMode {
                     system.shooter.on();
 
                 })
-                .driveTo(new Pose(75, -100, Math.toRadians(320)), 1000)
-                .waitDrive()
-                .driveTo(new Pose(0, -130, Math.toRadians(0)), 3000)
-                .waitDrive()
+                .driveTo(new Pose(75, -100, Math.toRadians(320)), 30, 1000)
+                .waitDrive(0.9)
+                .driveTo(new Pose(0, -130, Math.toRadians(0)), 30, 3000)
+                .waitDrive(0.9)
                 .waitMs(500)
-                .driveTo(new Pose(75, -60, Math.toRadians(320)), 2000)
+                .driveTo(new Pose(75, -60, Math.toRadians(320)), 30, 2000)
                 .waitDrive(1)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.indexer.isBusy())
 
                 // cycle 3
-                .driveTo(new Pose(-25, -60, Math.toRadians(270)))
+                .driveTo(new Pose(-25, -60, Math.toRadians(270)), 30)
                 .moveSystem(() -> system.indexer.home())
                 .waitDrive(2)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-27, -149, Math.toRadians(270)), 1200)
+                .driveTo(new Pose(-27, -149, Math.toRadians(270)), 30, 1200)
                 .waitDrive(1)
                 .waitMs(300)
-                .driveTo(new Pose(-27, -60, Math.toRadians(270)))
+                .driveTo(new Pose(-27, -60, Math.toRadians(270)), 30)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
@@ -129,7 +129,7 @@ public class RedCloseArra extends ExoMode {
                     system.shooter.on();
                 })
                 .waitDrive(1.5)
-                .driveTo(new Pose(77, -60, Math.toRadians(320)))
+                .driveTo(new Pose(77, -60, Math.toRadians(320)), 30)
                 .waitAction(() -> !system.indexer.isIndexing)
                 .waitDrive(1)
                 .moveSystem(() -> system.shootSequence())
@@ -137,8 +137,8 @@ public class RedCloseArra extends ExoMode {
                 .moveSystem(() -> system.indexer.home())
 
                 // park
-                .driveTo(new Pose(-20, -80, Math.toRadians(270)))
-                .waitDrive()
+                .driveTo(new Pose(-20, -80, Math.toRadians(270)), 30)
+                .waitDrive(0.9)
                 .end();
 
 
@@ -149,29 +149,29 @@ public class RedCloseArra extends ExoMode {
 
 
     private void preload() {
-        auto.driveTo(new Pose(75, -60, Math.toRadians(45)))
+        auto.driveTo(new Pose(75, -60, Math.toRadians(45)), 30)
                 // cycle 1 + read randomization
                 .moveSystem(() -> system.indexer.home())
-                .waitDrive(() -> hardware.limelight.getRandomization(), 4)
+                .waitDrive(() -> hardware.limelight.getRandomization(), 4, false)
                 .moveSystem(() -> {
                     hardware.limelight.stop();
                     system.shooter.on();
                 })
-                .driveTo(new Pose(75, -60, Math.toRadians(315)))
+                .driveTo(new Pose(75, -60, Math.toRadians(315)), 30)
                 .waitDrive(1)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.indexer.isBusy());
     }
 
     private void cycle1() {
-        auto.driveTo(new Pose(35, -60, Math.toRadians(270)))
+        auto.driveTo(new Pose(35, -60, Math.toRadians(270)), 30)
                 .moveSystem(() -> system.indexer.home())
                 .waitDrive(2)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(35, -127, Math.toRadians(270)), 1200)
+                .driveTo(new Pose(35, -127, Math.toRadians(270)), 30, 1200)
                 .waitDrive(1)
                 .waitMs(300)
-                .driveTo(new Pose(75, -60, Math.toRadians(315)))
+                .driveTo(new Pose(75, -60, Math.toRadians(315)), 30)
                 .moveSystem(() -> {
                     system.intake.reverse();
 
@@ -186,14 +186,14 @@ public class RedCloseArra extends ExoMode {
     }
 
     private void cycle2() {
-        auto.driveTo(new Pose(-25, -60, Math.toRadians(270)))
+        auto.driveTo(new Pose(-25, -60, Math.toRadians(270)), 30)
                 .moveSystem(() -> system.indexer.home())
                 .waitDrive(2)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-27, -149, Math.toRadians(270)), 1200)
+                .driveTo(new Pose(-27, -149, Math.toRadians(270)), 30, 1200)
                 .waitDrive(1)
                 .waitMs(300)
-                .driveTo(new Pose(-27, -60, Math.toRadians(270)))
+                .driveTo(new Pose(-27, -60, Math.toRadians(270)), 30)
                 .moveSystem(() -> {
                     system.intake.reverse();
 
@@ -203,7 +203,7 @@ public class RedCloseArra extends ExoMode {
                     system.shooter.on();
                 })
                 .waitDrive(1.5)
-                .driveTo(new Pose(77, -60, Math.toRadians(315)))
+                .driveTo(new Pose(77, -60, Math.toRadians(315)), 30)
                 .waitDrive(1)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.indexer.isBusy())

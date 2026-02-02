@@ -152,6 +152,7 @@ public class CrazyTeleOp extends ExoMode {
                 if (g2.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
                 if (g2.wasJustPressed(GamepadKeys.Button.X)) in.evIgnoreColorSensors.set(true);
                 if (g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) in.evIgnoreColorSensors.set(false);
+                if (g2.wasJustPressed(GamepadKeys.Button.DPAD_UP)) in.evRelocalizeATag.set(true);
 
                 if (g1.isDown(GamepadKeys.Button.X) && g1.isDown(GamepadKeys.Button.DPAD_RIGHT)) in.evStartLift.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) in.evResetHeading.set(true);
@@ -194,6 +195,10 @@ public class CrazyTeleOp extends ExoMode {
         } else if (!in.spinupShooter && system.shooter.on) {
             system.shooter.off();
             system.indexer.microAdjust(true);
+        }
+
+        if (in.evRelocalizeATag.getAndSet(false)) {
+            new Thread(() -> hardware.localizer.setPositionEstimate(hardware.limelight.relocalize())).start();
         }
 
         system.updateIntake(in.evIgnoreColorSensors.get());

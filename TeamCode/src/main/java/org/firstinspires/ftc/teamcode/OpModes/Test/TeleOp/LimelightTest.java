@@ -16,7 +16,7 @@ public class LimelightTest extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        limelight = new LimelightEx("limelight", this.hardwareMap);
+        limelight = new LimelightEx("limelight", this);
         dashboardTelemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         waitForStart();

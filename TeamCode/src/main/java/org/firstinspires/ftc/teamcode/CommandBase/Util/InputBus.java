@@ -12,16 +12,17 @@ public class InputBus {
     public volatile double ly2;
 
     // one-shot events
-    public final AtomicBoolean evToggleIntake   = new AtomicBoolean(false);
+    public final AtomicBoolean evToggleIntake        = new AtomicBoolean(false);
     public final AtomicBoolean evToggleIntakeReverse = new AtomicBoolean(false);
     public final AtomicBoolean evIgnoreColorSensors  = new AtomicBoolean(false);
-    public final AtomicBoolean evSort           = new AtomicBoolean(false);
-    public final AtomicBoolean evShoot          = new AtomicBoolean(false);
-    public final AtomicBoolean evHomeIndexer    = new AtomicBoolean(false);
-    public final AtomicBoolean evLockX          = new AtomicBoolean(false);
-    public final AtomicBoolean evStartLift      = new AtomicBoolean(false);
-    public final AtomicBoolean evResetHeading   = new AtomicBoolean(false);
-    public final AtomicBoolean evResetPosition  = new AtomicBoolean(false);
-    public final AtomicBoolean evSetBlue        = new AtomicBoolean(false);
-    public final AtomicBoolean evSetRed         = new AtomicBoolean(false);
+    public final AtomicBoolean evSort                = new AtomicBoolean(false);
+    public final AtomicBoolean evShoot               = new AtomicBoolean(false);
+    public final AtomicBoolean evHomeIndexer         = new AtomicBoolean(false);
+    public final AtomicBoolean evLockX               = new AtomicBoolean(false);
+    public final AtomicBoolean evStartLift           = new AtomicBoolean(false);
+    public final AtomicBoolean evResetHeading        = new AtomicBoolean(false);
+    public final AtomicBoolean evResetPosition       = new AtomicBoolean(false);
+    public final AtomicBoolean evSetBlue             = new AtomicBoolean(false);
+    public final AtomicBoolean evSetRed              = new AtomicBoolean(false);
+    public final AtomicBoolean evRelocalizeATag      = new AtomicBoolean(false);
 }

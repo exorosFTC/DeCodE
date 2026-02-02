@@ -9,12 +9,14 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VELOCITY;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
 import static org.firstinspires.ftc.teamcode.CustomPathing.Math.MathFormulas.FindShortestPath;
 
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
@@ -50,7 +52,12 @@ public class AutoDrive {
     private boolean usingFailSafe = false;
     private double maxDistance = 0;
     private double currentDistance = 0;
+
+    private double m, n;
+    private double a, b, c;
     private double radius = 30;
+
+    private Point followPoint = new Point();
 
 
 
@@ -84,17 +91,16 @@ public class AutoDrive {
                 hardware.telemetry.addData("x", POSE.x);
                 hardware.telemetry.addData("y", POSE.y);
                 hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
-                hardware.telemetry.addData("target x", target.x);
-                hardware.telemetry.addData("target y", target.y);
+                hardware.telemetry.addData("target x", followPoint.x);
+                hardware.telemetry.addData("target y", followPoint.y);
                 hardware.telemetry.addData("target head", Math.toDegrees(target.heading));
                 hardware.telemetry.addData("isBusy", isBusy());
                 hardware.telemetry.addData("current", Math.abs(currentDistance));
                 hardware.telemetry.addData("max", Math.abs(maxDistance * (1 - busyThresholdLinear)));
-                hardware.telemetry.addData("shooter ready", system.shooter.ready());
                 hardware.telemetry.update();
 
                 if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
-                    driveTo(POSE);
+                    driveTo(POSE, 30);
 
                 updateDriveVector();
                 swerve.update(driveVector);
@@ -126,19 +132,19 @@ public class AutoDrive {
 
 
 
-    public AutoDrive driveTo(Pose pose) {
-        driveTo(pose, Double.POSITIVE_INFINITY);
-        return this;
+
+    public AutoDrive driveTo(Pose pose, double radius) {
+        return driveTo(pose, radius, Double.POSITIVE_INFINITY);
     }
 
-    public AutoDrive driveTo(Pose pose, double ms) {
+    public AutoDrive driveTo(Pose pose, double radius, double ms) {
+        this.radius = radius;
         this.failSafeTimeMs = ms;
         this.usingFailSafe = ms != Double.POSITIVE_INFINITY;
-
         this.target = new Pose(pose.x, pose.y, normalizeAngleRad(pose.heading));
-        maxDistance = target.hypot(POSE);
-        swerve.targetHeading = target.heading;
-        currentDistance = maxDistance;
+
+        updateLineEquation();
+        updateDistance();
 
         failSafeTimer.reset();
 
@@ -151,30 +157,21 @@ public class AutoDrive {
 
 
 
+    public AutoDrive waitDrive(double threshold) { return waitDrive(opMode::idle, threshold, false); }
 
-    public AutoDrive waitDrive() { return waitDrive(opMode::idle, 0.9); }
+    public AutoDrive waitDrive(double threshold, boolean useHeading) { return waitDrive(opMode::idle, threshold, useHeading); }
 
-    public AutoDrive waitDrive(double threshold) { return waitDrive(threshold, false); }
-
-    public AutoDrive waitDrive(double threshold, boolean useHeading) {
+    public AutoDrive waitDrive(Runnable inLoop, double threshold, boolean useHeading) {
         this.busyThresholdLinear = threshold;
 
         updateDriveVector();
         try { Thread.sleep(10); } catch (InterruptedException e) {}
-        while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive()) {}
+        while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive()) { inLoop.run(); }
+
+        target = POSE;
         return this;
     }
 
-    public AutoDrive waitDrive(Runnable inLoop) { return waitDrive(inLoop, 0.9); }
-
-    public AutoDrive waitDrive(Runnable inLoop, double threshold) {
-        this.busyThresholdLinear = threshold;
-
-        updateDriveVector();
-        try { Thread.sleep(10); } catch (InterruptedException e) {}
-        while (isBusy() && opMode.opModeIsActive()) { inLoop.run(); }
-        return this;
-    }
 
 
 
@@ -196,40 +193,6 @@ public class AutoDrive {
         return this;
     }
 
-    public AutoDrive waitActionTimeFailSafe(BooleanSupplier action,
-                                            Runnable inLoop,
-                                            double ms,
-                                            Runnable failSafe) {
-        boolean useFailSafe = true;
-        waitTimer.reset();
-
-        do {
-            inLoop.run();
-            if (action.getAsBoolean()) useFailSafe = false;
-        } while(!action.getAsBoolean() && opMode.opModeIsActive() && waitTimer.time(TimeUnit.MILLISECONDS) < ms);
-
-        if (useFailSafe)
-            failSafe.run();
-
-        return this;
-    }
-
-    public AutoDrive waitActionTimeFailSafe(BooleanSupplier action,
-                                            double ms,
-                                            Runnable failSafe) {
-        return waitActionTimeFailSafe(action,
-                opMode::idle,
-                ms,
-                failSafe);
-    }
-
-    public AutoDrive waitActionTimeFailSafe(BooleanSupplier action,
-                                            double ms) {
-        return waitActionTimeFailSafe(action,
-                opMode::idle,
-                ms,
-                opMode::idle);
-    }
 
 
 
@@ -262,11 +225,6 @@ public class AutoDrive {
 
 
 
-    public AutoDrive disableDrive() {
-        swerve.disable();
-        return this;
-    }
-
     public void end() {
         driveThread.interrupt();
         systemThread.interrupt();
@@ -278,17 +236,48 @@ public class AutoDrive {
 
 
 
-    private void updateDriveVector() {
-        double targetVelX, targetVelY, targetVelHeading;
-        currentDistance = target.hypot(POSE);
-
-        targetVelX = linearCx.calculate(POSE.x, target.x) * 0.5;
-        targetVelY = linearCy.calculate(POSE.y, target.y) * 0.5;
-        //angularC.setP((1 - Math.abs(clip(new Point(targetVelX, targetVelY).hypot(), -1, 1))) * AutoAngularP);
-        targetVelHeading = angularC.calculate(FindShortestPath(POSE.heading, target.heading));
-
-        driveVector = new Pose(targetVelX, targetVelY, targetVelHeading).multiplyBy(13.0 / hardware.batteryVoltage);
+    private void updateDistance() {
+        maxDistance = target.hypot(POSE);
+        currentDistance = maxDistance;
     }
+
+    private void updateLineEquation() {
+        m = (target.y - POSE.y) / (target.x - POSE.x);
+        n = target.y - m * target.x;
+
+        a = 1 + m * m;
+    }
+
+    private void updateLookupPoint() {
+        if (currentDistance < radius) {followPoint = target.point(); return; }
+
+        b = 2 * m * (n - POSE.y) - 2 * POSE.x;
+        c = POSE.x * POSE.x + (n - POSE.y) * (n - POSE.y) - radius * radius;
+
+        double delta = b * b - 4 * a * c;
+        if (delta < 0) { followPoint = target.point(); return; }
+
+        double x1 = (-b + Math.sqrt(delta)) / (2 * a);
+        double x2 = (-b - Math.sqrt(delta)) / (2 * a);
+
+        Point p1 = new Point(x1, m * x1 + n);
+        Point p2 = new Point(x2, m * x2 + n);
+
+        followPoint = target.distanceTo(p1) < target.distanceTo(p2) ? p1 : p2;
+    }
+
+    private void updateDriveVector() {
+        currentDistance = target.hypot(POSE);
+        updateLookupPoint();
+
+        driveVector = new Pose(linearCx.calculate(POSE.x, followPoint.x),
+                                linearCy.calculate(POSE.y, followPoint.y),
+                                angularC.calculate(FindShortestPath(POSE.heading, target.heading))).multiplyBy(13.0 / hardware.batteryVoltage);
+
+        angularC.setP(0.45 + 0.6 * (1 - Range.clip(Math.abs(driveVector.hypot()), 0, 1)));
+    }
+
+
 
 
     private double normalizeAngleRad(double angle) {

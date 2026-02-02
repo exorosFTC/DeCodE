@@ -111,9 +111,9 @@ public class SoloTeleOp extends ExoMode {
                 swerve.setModulePID(moduleP, 0, moduleD);
                 swerve.setModuleKs(moduleS);
 
-                swerve.xLim.setRate(linX);
-                swerve.yLim.setRate(linY);
-                swerve.headLim.setRate(angHead);
+                swerve.xLim.setRates(linX, linX * 0.5);
+                swerve.yLim.setRates(linY, linY * 0.5);
+                swerve.headLim.setRates(angHead, angHead * 0.5);
 
                 TeleOpVelocityMultiplier = swervePmultiplier;
                 TeleOpAngularP = swerveP;

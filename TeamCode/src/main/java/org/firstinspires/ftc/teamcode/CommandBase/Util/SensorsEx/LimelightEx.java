@@ -1,11 +1,15 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx;
 
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.lastValidRandomization;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 public class LimelightEx {
     public enum Pipeline{
@@ -23,22 +27,22 @@ public class LimelightEx {
 
 
     private final Limelight3A limelight;
+    private final LinearOpMode opMode;
 
     public boolean enabled = false;
 
     public LimelightEx.Pipeline pipeline = LimelightEx.Pipeline.RANDOMIZATION;
-    public LLResult
-            raw = null,
-            result = null;
+    public LLResult result = null;
 
-    public LimelightEx(String name, HardwareMap hardwareMap) {
-        limelight = hardwareMap.get(Limelight3A.class, name);
+    public LimelightEx(String name, LinearOpMode opMode) {
+        limelight = opMode.hardwareMap.get(Limelight3A.class, name);
+        this.opMode = opMode;
     }
 
 
     public void start() { enabled = true; limelight.start(); }
 
-    public void stop() { enabled = false; limelight.stop(); }
+    public void stop() { enabled = false; limelight.stop(); result = null; }
 
     public void read() {
         if (!enabled)  return;
@@ -91,7 +95,19 @@ public class LimelightEx {
         return -result.getTx();
     }
 
-    public void  relocalize() {}
+
+
+    public Pose relocalize() {
+        if (!enabled) start();
+        setPipeline(autoOnBlue ? LimelightEx.Pipeline.BLUE_GOAL : LimelightEx.Pipeline.RED_GOAL);
+
+        while ((result == null || !result.isValid()) && opMode.opModeIsActive()) { read(); }
+
+        Pose3D LLPose = result.getBotpose();
+        if (LLPose != null) return new Pose(LLPose.getPosition().x, LLPose.getPosition().y, POSE.heading);
+        return POSE;
+
+    }
 
     public boolean tagInSight() {
         return !result.getFiducialResults().isEmpty() && pipeline != LimelightEx.Pipeline.RANDOMIZATION;

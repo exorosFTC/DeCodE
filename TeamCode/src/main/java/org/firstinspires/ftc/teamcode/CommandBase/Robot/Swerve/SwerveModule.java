@@ -26,7 +26,7 @@ public class SwerveModule extends SystemBase {
 
     private double kS_angle, kS_threshold;
 
-    private final PIDFController controller = new PIDFController(TeleOpSwerveModuleP, 0, TeleOpSwerveModuleD, 0);
+    private final PIDFController controller;
     private boolean wheelFlipped = false;
 
     public SwerveModuleState currentState = new SwerveModuleState(0, 0);
@@ -45,8 +45,11 @@ public class SwerveModule extends SystemBase {
         this.kS_angle = kS_angle;
         this.kS_threshold = kS_threshold;
 
-        if (opModeType == SystemConstants.OpMode.AUTONOMOUS) controller.setPIDF(AutoSwerveModuleP, 0, AutoSwerveModuleD, 0);
-        else controller.setPIDF(TeleOpSwerveModuleP, 0, TeleOpSwerveModuleD, 0);
+        controller = new PIDFController(
+                opModeType == SystemConstants.OpMode.AUTONOMOUS ? AutoSwerveModuleP : TeleOpSwerveModuleP,
+                0,
+                opModeType == SystemConstants.OpMode.AUTONOMOUS ? AutoSwerveModuleD : TeleOpSwerveModuleD,
+                0);
     }
 
 

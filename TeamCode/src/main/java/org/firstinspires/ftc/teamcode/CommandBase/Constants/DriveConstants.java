@@ -18,10 +18,10 @@ public class DriveConstants {
     public static double DRIVE_W = 33, DRIVE_L = 33;
     public static double R = Math.hypot(DRIVE_W, DRIVE_L);
 
-    public static double TELE_OP_STRAFING_SLEW_RATE_LIMIT = 7,
-                        TELE_OP_TURNING_SLEW_RATE_LIMIT = Double.POSITIVE_INFINITY;
-    public static double AUTO_STRAFING_SLEW_RATE_LIMIT = 3,
-                        AUTO_TURNING_SLEW_RATE_LIMIT = 10;
+    public static double TELE_OP_STRAFING_SLEW_RATE_LIMIT = 0.3,
+                        TELE_OP_TURNING_SLEW_RATE_LIMIT = 0;
+    public static double AUTO_STRAFING_SLEW_RATE_LIMIT = 0.3,
+                        AUTO_TURNING_SLEW_RATE_LIMIT = 0.15;
 
 
     // teleop PID
@@ -32,11 +32,11 @@ public class DriveConstants {
     public static double TeleOpVelocityMultiplier = 0;
 
     // auto PID
-    public static double AutoLinearPx = 0.025,
+    public static double AutoLinearPx = 0.08,
                             AutoLinearDx = 0,
-                            AutoLinearPy = 0.025,
+                            AutoLinearPy = 0.08,
                             AutoLinearDy = 0;
-    public static double AutoAngularP = 0.4,
+    public static double AutoAngularP = 0,
                             AutoAngularD = 0;
     public static double AutoAngularVelocityMultiplier = 0,
                             AutoLinearVelocityMultiplier = 0;
