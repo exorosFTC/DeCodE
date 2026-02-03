@@ -98,8 +98,6 @@ public class SwerveModule extends SystemBase {
     @Override
     public void write() {
         servo.setPower(servoPower);
-        if (Math.abs(targetState.getModuleVelocity()) > 0.02)
-            motor.setPower((wheelFlipped ? -1 : 1) * targetState.getModuleVelocity());
-        else motor.setPower(0);
+        motor.setPower(Math.abs(targetState.getModuleVelocity()) > 0.08 ? ((wheelFlipped ? -1 : 1) * targetState.getModuleVelocity()) : 0);
     }
 }

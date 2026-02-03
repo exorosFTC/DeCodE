@@ -138,19 +138,19 @@ public class Hardware {
 
         Shooter1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         Shooter1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        Shooter1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        Shooter1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         Shooter2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         Shooter2.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        Shooter2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        Shooter2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         IntakeMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         IntakeMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
 
-        LeftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        LeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        RightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        LeftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        LeftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        RightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        RightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
 

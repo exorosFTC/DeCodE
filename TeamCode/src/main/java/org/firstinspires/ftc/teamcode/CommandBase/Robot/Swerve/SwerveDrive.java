@@ -24,14 +24,12 @@ import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.AbsoluteAnalogEncoder;
-import org.firstinspires.ftc.teamcode.CommandBase.Util.SlewRateLimiter;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 import java.util.List;
 
 public class SwerveDrive extends SystemBase {
     private final Hardware hardware;
-    public final SlewRateLimiter xLim, yLim, headLim;
 
     public List<SwerveModuleState> states;
 
@@ -73,17 +71,6 @@ public class SwerveDrive extends SystemBase {
 
         modules = new SwerveModule[]{rightFrontModule, leftFrontModule, leftBackModule, rightBackModule};
         states = SwerveKinematics.robot2wheel(new Pose(0, 0, 0));
-
-        if (opModeType == SystemConstants.OpMode.AUTONOMOUS) {
-            xLim = new SlewRateLimiter(AUTO_STRAFING_SLEW_RATE_LIMIT, AUTO_STRAFING_SLEW_RATE_LIMIT * 0.5);
-            yLim = new SlewRateLimiter(AUTO_STRAFING_SLEW_RATE_LIMIT, AUTO_STRAFING_SLEW_RATE_LIMIT * 0.5);
-            headLim = new SlewRateLimiter(AUTO_STRAFING_SLEW_RATE_LIMIT, AUTO_TURNING_SLEW_RATE_LIMIT * 0.5);
-        } else {
-            xLim = new SlewRateLimiter(TELE_OP_STRAFING_SLEW_RATE_LIMIT, TELE_OP_STRAFING_SLEW_RATE_LIMIT * 0.5);
-            yLim = new SlewRateLimiter(TELE_OP_STRAFING_SLEW_RATE_LIMIT, TELE_OP_STRAFING_SLEW_RATE_LIMIT * 0.5);
-            headLim = new SlewRateLimiter(TELE_OP_TURNING_SLEW_RATE_LIMIT, TELE_OP_TURNING_SLEW_RATE_LIMIT * 0.5);
-
-        }
 
         angularC = new PIDController(TeleOpAngularP, 0, TeleOpAngularD);
         limelightC = new PIDController(TeleOpLimelightP, 0, TeleOpLimelightD);

@@ -81,13 +81,12 @@ public class RedClose extends ExoMode {
     }
 
     private void preload() {
-        auto.driveTo(new Pose(75, -60, Math.toRadians(340)), 30)
+        auto.driveTo(new Pose(75, -60, Math.toRadians(340)), 0, 30)
                 .moveSystem(() -> system.indexer.home())
                 .waitDrive(() -> hardware.limelight.getRandomization(), 0.7, true)
                 .moveSystem(() -> {
                     system.shooter.on();
                 })
-                .driveTo(new Pose(75, -60, Math.toRadians(340)), 30)
                 .moveSystem(() -> swerve.lockHeadingToGoal(true))
                 .waitMs(1000)
                 .moveSystem(() -> system.shootSequence())
@@ -96,13 +95,13 @@ public class RedClose extends ExoMode {
     }
 
     private void firstLine() {
-        auto.driveTo(new Pose(35, -60, Math.toRadians(270)), 30)
+        auto.driveTo(new Pose(35, -60, Math.toRadians(270)), 0, 30)
                 .moveSystem(() -> system.indexer.home())
                 .waitDrive(0.85)
-                .driveTo(new Pose(35, -129, Math.toRadians(270)), 30)
+                .driveTo(new Pose(35, -129, Math.toRadians(270)), 0, 30)
                 .moveSystem(() -> system.intake.on())
                 .waitDrive(0.88)
-                .driveTo(new Pose(84, -60, Math.toRadians(340)), 30, 2000)
+                .driveTo(new Pose(84, -60, Math.toRadians(340)), 0, 30, 2000)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
@@ -121,20 +120,20 @@ public class RedClose extends ExoMode {
     }
 
     private void secondLine() {
-        auto.driveTo(new Pose(-15, -75, Math.toRadians(270)), 30)
+        auto.driveTo(new Pose(-15, -75, Math.toRadians(270)), 0, 30)
                 //.moveSystem(() -> system.indexer.home())
                 .waitDrive(0.9)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-15, -156, Math.toRadians(270)), 30)
+                .driveTo(new Pose(-15, -156, Math.toRadians(270)), 0, 30)
                 .waitDrive(0.87)
-                .driveTo(new Pose(-15, -60, Math.toRadians(270)), 30, 2000)
+                .driveTo(new Pose(-15, -60, Math.toRadians(270)), 0, 30, 2000)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
                 })
                 .waitDrive(0.7)
-                .driveTo(new Pose(85, -60, Math.toRadians(340)), 30)
+                .driveTo(new Pose(85, -60, Math.toRadians(340)), 30, 30)
                 .waitDrive(0.7)
                 .moveSystem(() -> {
                     //system.indexer.indexPattern();
@@ -149,19 +148,19 @@ public class RedClose extends ExoMode {
     }
 
     private void thirdLine() {
-        auto.driveTo(new Pose(-73, -60, Math.toRadians(270)), 30)
+        auto.driveTo(new Pose(-73, -60, Math.toRadians(270)), 0, 30)
                 .waitDrive(0.95)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-83, -156, Math.toRadians(270)), 30)
+                .driveTo(new Pose(-83, -156, Math.toRadians(270)), 0, 30)
                 .waitDrive(0.87)
-                .driveTo(new Pose(-83, -60, Math.toRadians(270)), 30, 2000)
+                .driveTo(new Pose(-83, -60, Math.toRadians(270)), 0, 30, 2000)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
                 })
                 .waitDrive(0.7)
-                .driveTo(new Pose(135, -60, Math.toRadians(315)), 30)
+                .driveTo(new Pose(135, -60, Math.toRadians(315)), 30, 30)
                 .waitDrive(0.8)
                 .moveSystem(() -> {
                     //system.indexer.indexPattern();
@@ -176,7 +175,7 @@ public class RedClose extends ExoMode {
     }
 
     private void leave() {
-        auto.driveTo(new Pose(135, -60, Math.toRadians(-75)), 30)
+        auto.driveTo(new Pose(135, -60, Math.toRadians(-75)), 30, 30)
                 .waitDrive(0.9);
     }
 

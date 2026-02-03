@@ -36,7 +36,7 @@ public class DriveConstants {
                             AutoLinearDx = 0,
                             AutoLinearPy = 0.08,
                             AutoLinearDy = 0;
-    public static double AutoAngularP = 0,
+    public static double AutoAngularP = 0.4,
                             AutoAngularD = 0;
     public static double AutoAngularVelocityMultiplier = 0,
                             AutoLinearVelocityMultiplier = 0;

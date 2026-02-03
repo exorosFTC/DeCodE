@@ -45,7 +45,6 @@ public class SoloTeleOp extends ExoMode {
     public static double velocityMultiplier = TeleOpVelocityMultiplier;
     public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD, swervePmultiplier = TeleOpVelocityMultiplier;
     public static double moduleP = DriveConstants.TeleOpSwerveModuleP, moduleD = DriveConstants.TeleOpSwerveModuleD, moduleS = 0;
-    public static double linX = 7, linY = 7, angHead = 100;
 
     public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
     public static double angleAdjust = 0;
@@ -111,10 +110,6 @@ public class SoloTeleOp extends ExoMode {
                 swerve.setModulePID(moduleP, 0, moduleD);
                 swerve.setModuleKs(moduleS);
 
-                swerve.xLim.setRates(linX, linX * 0.5);
-                swerve.yLim.setRates(linY, linY * 0.5);
-                swerve.headLim.setRates(angHead, angHead * 0.5);
-
                 TeleOpVelocityMultiplier = swervePmultiplier;
                 TeleOpAngularP = swerveP;
 
@@ -133,6 +128,8 @@ public class SoloTeleOp extends ExoMode {
                 hardware.telemetry.addData("x", POSE.x);
                 hardware.telemetry.addData("y", POSE.y);
                 hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
+                hardware.telemetry.addData("OUTPUT HEADING", in.rx);
+
 
                 hardware.telemetry.addData("shooter velocity", system.shooter.correctedVelocity);
                 hardware.telemetry.addData("shooter target", system.shooter.targetVelocity);
