@@ -1,15 +1,12 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.SHOOT_RELEASE_DELAY_S;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TELE_OP_STRAFING_SLEW_RATE_LIMIT;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TELE_OP_TURNING_SLEW_RATE_LIMIT;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AUTO_STRAFING_SLEW_RATE_LIMIT;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AUTO_TURNING_SLEW_RATE_LIMIT;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightP;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VELOCITY;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
@@ -24,6 +21,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.AbsoluteAnalogEncoder;
+import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 import java.util.List;
@@ -107,6 +105,7 @@ public class SwerveDrive extends SystemBase {
 
             angularC.setPID(0.9, 0, 0);
             velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
+            velocity.heading += Math.signum(velocity.heading) * Math.abs(VELOCITY.hypot()) > 3 ? 0 : AutoDrive.kS_angular;
 
         }
 
@@ -134,13 +133,9 @@ public class SwerveDrive extends SystemBase {
     }
 
     public void updateTargetHeading() {
-        // field velocity (cm/s) from Pinpoint
-        double vx = DriveConstants.VELOCITY.x;
-        double vy = DriveConstants.VELOCITY.y;
-
         // shift goal backward by where robot will move during release delay
-        double virtualGoalX = goalPosition.x - vx * SHOOT_RELEASE_DELAY_S;
-        double virtualGoalY = goalPosition.y - vy * SHOOT_RELEASE_DELAY_S;
+        double virtualGoalX = goalPosition.x - VELOCITY.x * SHOOT_RELEASE_DELAY_S;
+        double virtualGoalY = goalPosition.y - VELOCITY.y * SHOOT_RELEASE_DELAY_S;
 
         targetHeading = Math.atan2(virtualGoalY - POSE.y, virtualGoalX - POSE.x);
     }

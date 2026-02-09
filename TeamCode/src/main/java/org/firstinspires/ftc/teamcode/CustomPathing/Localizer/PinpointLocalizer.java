@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.CustomPathing.Localizer;
 
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.ODOMETRY_X_OFFSET;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.ODOMETRY_Y_OFFSET;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -23,8 +26,7 @@ public class PinpointLocalizer {
                                         GoBildaPinpointDriver.EncoderDirection.FORWARD);    // to the left
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
-        //12.6697 -6.6626
-        pinpoint.setOffsets(-12, 6.1, DistanceUnit.CM);
+        pinpoint.setOffsets(ODOMETRY_X_OFFSET, ODOMETRY_Y_OFFSET, DistanceUnit.CM);
         pinpoint.resetPosAndIMU();
 
         timer = new ElapsedTime();
@@ -54,6 +56,10 @@ public class PinpointLocalizer {
         pinpoint.setPosY(pose.y, DistanceUnit.CM);
         pinpoint.setHeading(pose.heading, AngleUnit.RADIANS);
         DriveConstants.POSE = pose;
+    }
+
+    public void setOffsets(double xOffset, double yOffset) {
+        pinpoint.setOffsets(xOffset, yOffset, DistanceUnit.CM);
     }
 
 }

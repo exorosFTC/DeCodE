@@ -1,13 +1,9 @@
 package org.firstinspires.ftc.teamcode.OpModes.Test.Autonomus;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AUTO_STRAFING_SLEW_RATE_LIMIT;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AUTO_TURNING_SLEW_RATE_LIMIT;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoSwerveModuleD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoSwerveModuleP;
 
@@ -34,9 +30,13 @@ public class PIDAutoTuner extends ExoMode {
 
     public static double linP = AutoLinearPx;
     public static double linD = AutoLinearDx;
+    public static double angP = AutoAngularP;
+    public static double angD = AutoAngularD;
+
+    public static double deceleration = AutoDrive.deceleration;
+    public static double angularKs = AutoDrive.kS_angular;
+
     public static double moduleP = AutoSwerveModuleP, moduleD = AutoSwerveModuleD;
-    public static double angularMultiplier = AutoAngularVelocityMultiplier;
-    public static double linearMultiplier = AutoAngularVelocityMultiplier;
     public static double x, y, head, startRadius = 30, targetRadius = 30;
 
     public GamepadEx g1;
@@ -66,9 +66,10 @@ public class PIDAutoTuner extends ExoMode {
         g1.readButtons();
         auto.linearCx.setPID(linP, 0, linD);
         auto.linearCy.setPID(linP, 0, linD);
+        auto.angularC.setPID(angP, 0, angD);
 
-        AutoAngularVelocityMultiplier = angularMultiplier;
-        AutoLinearVelocityMultiplier = linearMultiplier;
+        AutoDrive.deceleration = deceleration;
+        AutoDrive.kS_angular = angularKs;
 
         swerve.setModulePID(moduleP, 0, moduleD);
     }

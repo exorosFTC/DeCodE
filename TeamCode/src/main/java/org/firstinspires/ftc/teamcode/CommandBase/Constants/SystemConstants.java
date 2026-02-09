@@ -27,7 +27,7 @@ public class SystemConstants {
             new ShotSample(214, 0.69, 0.52, 1),
             new ShotSample(286, 0.73, 0.47, 0.8),
 
-            new ShotSample(338, 0.835, 0.37, 0.48),
-            new ShotSample(363, 0.85, 0.34, 0.45)
+            new ShotSample(338, 0.835, 0.37, 0.55),
+            new ShotSample(363, 0.84, 0.35, 0.568)
     );
 }

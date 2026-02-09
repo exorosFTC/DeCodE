@@ -5,7 +5,7 @@ import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 public class DriveConstants {
     public static final Pose startPoseRedFar = new Pose(-186, -48, Math.toRadians(0));
-    public static final Pose startPoseRedClose = new Pose(149, -107, Math.toRadians(315));
+    public static final Pose startPoseRedClose = new Pose(149, -107, Math.toRadians(-45));
     public static final Pose startPoseBlueFar = new Pose(-186, 48, Math.toRadians(0));
     public static final Pose startPoseBlueClose = new Pose(149, 107, Math.toRadians(45));
 
@@ -13,16 +13,13 @@ public class DriveConstants {
     public static Pose POSE = startPose;
     public static Pose VELOCITY = new Pose();
 
-    public static double SHOOT_RELEASE_DELAY_S = 0.16;
+    public static double SHOOT_RELEASE_DELAY_S = 0.4;
 
     public static double DRIVE_W = 33, DRIVE_L = 33;
     public static double R = Math.hypot(DRIVE_W, DRIVE_L);
 
-    public static double TELE_OP_STRAFING_SLEW_RATE_LIMIT = 0.3,
-                        TELE_OP_TURNING_SLEW_RATE_LIMIT = 0;
-    public static double AUTO_STRAFING_SLEW_RATE_LIMIT = 0.3,
-                        AUTO_TURNING_SLEW_RATE_LIMIT = 0.15;
-
+    public static double ODOMETRY_X_OFFSET = -12.1,
+                         ODOMETRY_Y_OFFSET = 6.2;
 
     // teleop PID
     public static double TeleOpAngularP = 0,
@@ -36,7 +33,7 @@ public class DriveConstants {
                             AutoLinearDx = 0,
                             AutoLinearPy = 0.08,
                             AutoLinearDy = 0;
-    public static double AutoAngularP = 0.4,
+    public static double AutoAngularP = 0.9,
                             AutoAngularD = 0;
     public static double AutoAngularVelocityMultiplier = 0,
                             AutoLinearVelocityMultiplier = 0;

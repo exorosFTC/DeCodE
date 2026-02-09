@@ -108,7 +108,6 @@ public class ScoringSystem extends SystemBase {
         indexer.shoot(3);
 
         shooter.off();
-        indexer.previousLastElement = Indexer.Artifact.NONE;
     }
 
 

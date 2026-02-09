@@ -72,7 +72,8 @@ public class LimelightEx {
 
     public LimelightEx.Randomization getRandomization() {
         if (pipeline != LimelightEx.Pipeline.RANDOMIZATION) setPipeline(LimelightEx.Pipeline.RANDOMIZATION);
-        if (result == null || result.getFiducialResults().isEmpty()) return lastValidRandomization;
+        if (result == null) return lastValidRandomization;
+        if (result.getFiducialResults().isEmpty()) return lastValidRandomization;
 
         int tagId = result.getFiducialResults().get(0).getFiducialId();
         switch (tagId) {
@@ -101,13 +102,36 @@ public class LimelightEx {
         if (!enabled) start();
         setPipeline(autoOnBlue ? LimelightEx.Pipeline.BLUE_GOAL : LimelightEx.Pipeline.RED_GOAL);
 
-        while ((result == null || !result.isValid()) && opMode.opModeIsActive()) { read(); }
+        final int SAMPLES = 10;
+        int count = 0;
 
-        Pose3D LLPose = result.getBotpose();
-        if (LLPose != null) return new Pose(LLPose.getPosition().x, LLPose.getPosition().y, POSE.heading);
-        return POSE;
+        double sumX = 0;
+        double sumY = 0;
 
+        while (opMode.opModeIsActive() && count < SAMPLES) {
+            read();
+
+            if (result == null) continue;
+            if (!result.isValid()) continue;
+
+            Pose3D llPose = result.getBotpose();
+            if (llPose == null) continue;
+
+            sumX += -100 * llPose.getPosition().x;
+            sumY += -100 * llPose.getPosition().y;
+            count++;
+        }
+
+        if (count == 0) return POSE;
+
+        return new Pose(
+                sumX / count,
+                sumY / count,
+                POSE.heading
+        );
     }
+
+
 
     public boolean tagInSight() {
         return !result.getFiducialResults().isEmpty() && pipeline != LimelightEx.Pipeline.RANDOMIZATION;

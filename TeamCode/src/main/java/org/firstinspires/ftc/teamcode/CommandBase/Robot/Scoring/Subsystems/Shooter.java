@@ -19,9 +19,9 @@ public class Shooter extends SystemBase {
 
     public static ShotSample sample;
 
-    public static double kP = 0.05;
+    public static double kP = 0.1;
     public static double kI = 0;
-    public static double kD = 0;
+    public static double kD = 0.01;
     public static double kF = 0.002;
 
     private static final double VEL_ALPHA = 0.3;
@@ -70,8 +70,8 @@ public class Shooter extends SystemBase {
             targetAngle = sample.angle;
         }
 
-        this.targetVelocity = targetPower * MAX_RPS;
-        this.currentPower = controller.calculate(correctedVelocity, targetVelocity);
+        this.targetVelocity = (targetPower - ((Indexer.sorted && on) ? 0.01 : 0)) * MAX_RPS;
+        this.currentPower = (Math.abs(correctedVelocity) < 40 && targetVelocity == 0) ? 0 : controller.calculate(correctedVelocity, targetVelocity);
 
         targetAngle = clamp(targetAngle - (this.targetVelocity - correctedVelocity - threshold) * ANGLE_ADJUST, 0.34, 0.94);  // adjust angle by velocity*/
     }
@@ -146,6 +146,11 @@ public class Shooter extends SystemBase {
 
         hardware.ShooterHoodServo.setPosition(targetAngle);
 
+    }
+
+    public void disable() {
+        hardware.Shooter1.setPower(0);
+        hardware.Shooter2.setPower(0);
     }
 }
 

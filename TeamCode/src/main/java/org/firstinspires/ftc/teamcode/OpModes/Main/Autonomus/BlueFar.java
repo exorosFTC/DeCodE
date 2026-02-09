@@ -66,52 +66,47 @@ public class BlueFar extends ExoMode {
     }
 
     private void preload() {
-        auto.driveTo(new Pose(-166, 28, Math.toRadians(25)), 0, 30)
+        auto.driveTo(new Pose(-166, 28, Math.toRadians(-342)), 0, 30)
                 .moveSystem(() -> {
                     //system.indexer.indexPattern();
                     system.shooter.on();
                 })
-                .waitDrive(0.61)
-                .moveSystem(() -> swerve.lockHeadingToGoal(true))
-                .waitMs(600)
+                .waitDrive(0.65)
+                .waitMs(1500)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.indexer.isBusy())
                 .moveSystem(() -> swerve.lockHeadingToGoal(false));
     }
 
     private void thirdLine() {
-        auto.driveTo(new Pose(-115, 88, Math.toRadians(90)), 0, 30, 3000)
+        auto.driveTo(new Pose(-115, 88, Math.toRadians(-270)), 0, 30)
                 .waitDrive(0.87)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-115, 170, Math.toRadians(90)), 0, 30, 3000)
+                .driveTo(new Pose(-115, 170, Math.toRadians(-270)), 30, 3000)
                 .waitDrive(0.87)
                 .waitMs(500)
-                .driveTo(new Pose(-166, 22, Math.toRadians(26.5)), 0, 30)
+                .driveTo(new Pose(-166, 22, Math.toRadians(-325)), 0, 30)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
                 })
-                .waitDrive(0.5)
                 .moveSystem(() -> {
                     //system.indexer.indexPattern();
                     system.shooter.on();
                 })
-                .waitDrive(0.91)
-                .moveSystem(() -> swerve.lockHeadingToGoal(true))
-                .waitMs(600)
-                .moveSystem(() -> system.shootSequence())
+                .waitDrive(0.95, true)
                 .waitAction(() -> !system.indexer.isBusy())
                 .moveSystem(() -> swerve.lockHeadingToGoal(false));
     }
 
     private void humanPlayerLine() {
-        auto.driveTo(new Pose(-126, 176, Math.toRadians(180)), 0, 30, 3500)
+        auto.driveTo(new Pose(-126, 164, Math.toRadians(-180)), 0, 30)
                 .waitDrive(0.88)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-190, 176, Math.toRadians(180)), 0, 30, 2500)
+                .driveTo(new Pose(-190, 164, Math.toRadians(-180)), 30, 2500)
                 .waitDrive(0.9)
-                .driveTo(new Pose(-166, 25, Math.toRadians(24)), 0, 30)
+                .driveTo(new Pose(-166, 25, Math.toRadians(-336)), 0, 30)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
@@ -122,7 +117,7 @@ public class BlueFar extends ExoMode {
                     //system.indexer.indexPattern();
                     system.shooter.on();
                 })
-                .waitDrive(0.91)
+                .waitDrive(0.92)
                 .moveSystem(() -> swerve.lockHeadingToGoal(true))
                 .waitMs(600)
                 .moveSystem(() -> system.shootSequence())
