@@ -27,7 +27,7 @@ public class Indexer extends SystemBase {
 
     public static final double TICKS_PER_REVOLUTION = 336;
     public static double HOMING_POWER = 0.2; //in the indexing direction
-    public static double INDEXING_POWER = 0.3;
+    public static double INDEXING_POWER = 0.4;
 
     public static final int microAdjustValue = 15;
     private static final int intakeOffset = 0;
@@ -80,7 +80,7 @@ public class Indexer extends SystemBase {
         balls = Math.max(1, Math.min(balls, 2)); //indexing 3 spots is useless, limit to 2
 
         // special check for indexing balls
-        if (elements.get(3 - balls) != Artifact.NONE) target = (int) (target - TICKS_PER_REVOLUTION / 6);
+        if (elements.get(3 - balls) != Artifact.NONE) target = (int) (target - TICKS_PER_REVOLUTION / 4.5);
 
         // index and update the artefact list
         target -= (int) (balls * TICKS_PER_REVOLUTION / 3);
@@ -95,7 +95,7 @@ public class Indexer extends SystemBase {
         // if there is an artefact in the front
         if (elements.get(0) != Artifact.NONE) {
             // come back so the transfer arm is down
-            runTarget((int) (target + TICKS_PER_REVOLUTION / 6), INDEXING_POWER);
+            runTarget((int) (target + TICKS_PER_REVOLUTION / 4.5), 0.3);
 
             while (isBusy() && opMode.opModeIsActive()) {}
         }
@@ -152,7 +152,7 @@ public class Indexer extends SystemBase {
         hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         this.on = true;
-        this.target = (int) (target + indexOffset + balls * TICKS_PER_REVOLUTION / 3 * (Indexer.sorted ? 2 : 1) + ((balls == 3) ? microAdjustValue : 0));
+        this.target = (int) (target + indexOffset + balls * TICKS_PER_REVOLUTION / 3 * (Indexer.sorted ? 2 : 1) + (0));
 
         timer.reset();
         while (indexerPosition < this.target && timer.seconds() < 2 && opMode.opModeIsActive()) {

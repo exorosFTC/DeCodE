@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 
@@ -64,7 +65,7 @@ public class MotorTest extends LinearOpMode {
             hardware.telemetry.addData("Power", power);
             hardware.telemetry.addData("Current", motors[index].getCurrent(CurrentUnit.AMPS));
             hardware.telemetry.addData("Encoder", m.getCurrentPosition());
-            hardware.telemetry.addData("Velocity", "%.1f", m.getVelocity());
+            hardware.telemetry.addData("Velocity", "%.1f", m.getVelocity(AngleUnit.DEGREES));
             hardware.telemetry.update();
         }
     }

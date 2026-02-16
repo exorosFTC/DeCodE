@@ -1,9 +1,14 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx;
 
+import static android.graphics.Color.BLACK;
+import static android.graphics.Color.MAGENTA;
+import static android.graphics.Color.RED;
+import static android.graphics.Color.WHITE;
+
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.aBitOfTrolling;
+
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.Enums;
 
 import java.util.List;
 
@@ -67,22 +72,24 @@ public class HubBulkRead {
             switch (type) {
                 case ALL: {
                     for (LynxModule hub : allHubs) {
+                        if (aBitOfTrolling) hub.setConstant(BLACK);
                         hub.clearBulkCache();
                     }
                 }
                 break;
                 case CONTROL_HUB: {
+                    if (aBitOfTrolling) CONTROL_HUB.setConstant(BLACK);
                     CONTROL_HUB.clearBulkCache();
                 }
                 break;
                 case EXPANSION_HUB: {
                     if (!justControlHub) {
+                        if (aBitOfTrolling) EXPANSION_HUB.setConstant(BLACK);
                         EXPANSION_HUB.clearBulkCache();
                     }
                 }
                 break;
-                default: {
-                }
+                default: {}
             }
         }
     }

@@ -33,7 +33,6 @@ public class PIDAutoTuner extends ExoMode {
     public static double angP = AutoAngularP;
     public static double angD = AutoAngularD;
 
-    public static double deceleration = AutoDrive.deceleration;
     public static double angularKs = AutoDrive.kS_angular;
 
     public static double moduleP = AutoSwerveModuleP, moduleD = AutoSwerveModuleD;
@@ -68,7 +67,6 @@ public class PIDAutoTuner extends ExoMode {
         auto.linearCy.setPID(linP, 0, linD);
         auto.angularC.setPID(angP, 0, angD);
 
-        AutoDrive.deceleration = deceleration;
         AutoDrive.kS_angular = angularKs;
 
         swerve.setModulePID(moduleP, 0, moduleD);

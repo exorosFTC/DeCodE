@@ -3,12 +3,15 @@ package org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.lastValidRandomization;
+import static org.firstinspires.ftc.teamcode.CustomPathing.Math.MathFormulas.normalizeRadians;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.CustomPathing.Localizer.PinpointLocalizer;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 public class LimelightEx {
@@ -30,6 +33,10 @@ public class LimelightEx {
     private final LinearOpMode opMode;
 
     public boolean enabled = false;
+
+    public static double KALMAN_GAIN_POS = 0.1;
+    public static double KALMAN_FILTER_INTERVAL_S = 2;
+
 
     public LimelightEx.Pipeline pipeline = LimelightEx.Pipeline.RANDOMIZATION;
     public LLResult result = null;
@@ -72,7 +79,7 @@ public class LimelightEx {
 
     public LimelightEx.Randomization getRandomization() {
         if (pipeline != LimelightEx.Pipeline.RANDOMIZATION) setPipeline(LimelightEx.Pipeline.RANDOMIZATION);
-        if (result == null) return lastValidRandomization;
+        if (result == null || !result.isValid()) return lastValidRandomization;
         if (result.getFiducialResults().isEmpty()) return lastValidRandomization;
 
         int tagId = result.getFiducialResults().get(0).getFiducialId();
@@ -98,37 +105,25 @@ public class LimelightEx {
 
 
 
-    public Pose relocalize() {
+    public void relocalize(PinpointLocalizer localizer) {
         if (!enabled) start();
         setPipeline(autoOnBlue ? LimelightEx.Pipeline.BLUE_GOAL : LimelightEx.Pipeline.RED_GOAL);
 
-        final int SAMPLES = 10;
-        int count = 0;
+        new Thread(() -> {
+            ElapsedTime timer = new ElapsedTime();
 
-        double sumX = 0;
-        double sumY = 0;
+            while (timer.seconds() <= KALMAN_FILTER_INTERVAL_S) {
+                read();
 
-        while (opMode.opModeIsActive() && count < SAMPLES) {
-            read();
+                if (result == null) continue;
+                Pose3D botPose = result.getBotpose();
+                if (botPose == null) continue;
 
-            if (result == null) continue;
-            if (!result.isValid()) continue;
-
-            Pose3D llPose = result.getBotpose();
-            if (llPose == null) continue;
-
-            sumX += -100 * llPose.getPosition().x;
-            sumY += -100 * llPose.getPosition().y;
-            count++;
-        }
-
-        if (count == 0) return POSE;
-
-        return new Pose(
-                sumX / count,
-                sumY / count,
-                POSE.heading
-        );
+                double filteredX = kalmanUpdate(POSE.x, botPose.getPosition().x * 100, KALMAN_GAIN_POS);
+                double filteredY = kalmanUpdate(POSE.x, botPose.getPosition().y * 100, KALMAN_GAIN_POS);
+                localizer.setPositionEstimate(new Pose(filteredX, filteredY, POSE.heading));
+            }
+        }).start();
     }
 
 
@@ -137,4 +132,10 @@ public class LimelightEx {
         return !result.getFiducialResults().isEmpty() && pipeline != LimelightEx.Pipeline.RANDOMIZATION;
     }
 
+
+
+
+    private static double kalmanUpdate(double state, double measurement, double gain) {
+        return state + (gain * (measurement - state));
+    }
 }

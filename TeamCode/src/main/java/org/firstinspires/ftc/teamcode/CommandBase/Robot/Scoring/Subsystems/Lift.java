@@ -51,8 +51,8 @@ public class Lift extends SystemBase {
         }
 
         if (!breakRight) {
-            hardware.RightBack_lift.setPower(1);
-            hardware.RightFront_lift.setPower(-1);
+            hardware.RightBack_lift.setPower(-1);
+            hardware.RightFront_lift.setPower(1);
         } else {
             hardware.RightBack_lift.setPower(0);
             hardware.RightFront_lift.setPower(0);
@@ -64,7 +64,7 @@ public class Lift extends SystemBase {
         super.on();
         hardware.LiftRetainerServo.setPosition(retainerOff);
 
-        try { Thread.sleep(300); } catch (InterruptedException e) {}
+        try { Thread.sleep(400); } catch (InterruptedException e) {}
     }
 
     public boolean isBusy() {

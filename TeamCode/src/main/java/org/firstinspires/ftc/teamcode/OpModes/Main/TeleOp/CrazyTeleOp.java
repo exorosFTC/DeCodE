@@ -83,8 +83,8 @@ public class CrazyTeleOp extends ExoMode {
 
                 swerve.read();
                 swerve.update(
-                        autoOnBlue ? new Pose(exp(in.ly), exp(-in.lx), -in.rx * 0.75).negate() :
-                                new Pose(exp(in.ly), exp(-in.lx), -in.rx * 0.75)
+                        autoOnBlue ? new Pose(in.ly, -in.lx, -in.rx * 0.75).negate() :
+                                new Pose(in.ly, -in.lx, -in.rx * 0.75)
                 );
                 swerve.write();
 
@@ -191,21 +191,17 @@ public class CrazyTeleOp extends ExoMode {
 
         if (in.spinupShooter && !system.shooter.on) {
             system.shooter.on();
-            system.indexer.microAdjust(false);
+            //system.indexer.microAdjust(false);
         } else if (!in.spinupShooter && system.shooter.on) {
             system.shooter.off();
-            system.indexer.microAdjust(true);
+            //system.indexer.microAdjust(true);
         }
 
         if (in.evRelocalizeATag.getAndSet(false)) {
-            new Thread(() -> hardware.localizer.setPositionEstimate(hardware.limelight.relocalize())).start();
+            hardware.limelight.relocalize(hardware.localizer);
         }
 
         system.updateIntake(in.evIgnoreColorSensors.get());
         Thread.yield();
-    }
-
-    private double exp(double x) {
-        return x * x * x;
     }
 }

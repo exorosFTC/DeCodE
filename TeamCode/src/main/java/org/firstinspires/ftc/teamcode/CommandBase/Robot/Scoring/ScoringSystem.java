@@ -25,7 +25,7 @@ public class ScoringSystem extends SystemBase {
     public ElapsedTime timer;
     public double MIN_LOOPS = 8;
 
-    public double[] catchThreshold = new double[]{68, 69, 56};
+    public double[] catchThreshold = new double[]{68, 69, 52};
     public double[] colorDistance = new double[]{-1, -1, -1};
     public double[] loops = new double[]{0, 0, 0};
     public NormalizedRGBA colorValues;
@@ -102,7 +102,12 @@ public class ScoringSystem extends SystemBase {
         if (intake.on) intake.off();
 
         timer.reset();
-        while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 3) {}
+        while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 3) {
+            hardware.telemetry.addData("ready", !shooter.ready());
+            hardware.telemetry.addData("opMode", this.opMode.opModeIsActive());
+            hardware.telemetry.addData("timer", timer.seconds() < 3);
+
+        }
 
         indexer.isHome = true;
         indexer.shoot(3);

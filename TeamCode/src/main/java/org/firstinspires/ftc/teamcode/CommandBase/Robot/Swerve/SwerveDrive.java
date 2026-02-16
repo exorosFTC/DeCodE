@@ -48,22 +48,22 @@ public class SwerveDrive extends SystemBase {
 
         rightFrontModule = new SwerveModule(hardware.RightFront,
                                             hardware.RightFront_servo,
-                                            new AbsoluteAnalogEncoder(hardware.RightFront_encoder).zero(-1.96),
+                                            new AbsoluteAnalogEncoder(hardware.RightFront_encoder).zero(2.43),
                                             0.03,
                                             0.05);
         leftFrontModule = new SwerveModule(hardware.LeftFront,
                                             hardware.LeftFront_servo,
-                                            new AbsoluteAnalogEncoder(hardware.LeftFront_encoder).zero(-3.12),
+                                            new AbsoluteAnalogEncoder(hardware.LeftFront_encoder).zero(2.05),
                                             0.03,
                                             0.05);
         leftBackModule = new SwerveModule(hardware.LeftBack,
                                             hardware.LeftBack_servo,
-                                            new AbsoluteAnalogEncoder(hardware.LeftBack_encoder).zero(-1.60),
+                                            new AbsoluteAnalogEncoder(hardware.LeftBack_encoder).zero(-1.61),
                                             0.03,
                                             0.05);
         rightBackModule = new SwerveModule(hardware.RightBack,
                                             hardware.RightBack_servo,
-                                            new AbsoluteAnalogEncoder(hardware.RightBack_encoder).zero(-2.52),
+                                            new AbsoluteAnalogEncoder(hardware.RightBack_encoder).zero(-2.54),
                                             0.03,
                                             0.05);
 
@@ -105,7 +105,7 @@ public class SwerveDrive extends SystemBase {
 
             angularC.setPID(0.9, 0, 0);
             velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
-            velocity.heading += Math.signum(velocity.heading) * Math.abs(VELOCITY.hypot()) > 3 ? 0 : AutoDrive.kS_angular;
+            velocity.heading += Math.signum(velocity.heading) * Math.abs(VELOCITY.hypot()) > 3 ? 0 : 0.1;
 
         }
 

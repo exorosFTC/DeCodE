@@ -46,13 +46,10 @@ public class SoloTeleOp extends ExoMode {
     private TriggerManager intakeTriggers, shooterTriggers;
     private Thread swerveThread, gamepadThread;
 
-    public static double velocityMultiplier = TeleOpVelocityMultiplier;
     public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD, swervePmultiplier = TeleOpVelocityMultiplier;
     public static double moduleP = DriveConstants.TeleOpSwerveModuleP, moduleD = DriveConstants.TeleOpSwerveModuleD, moduleS = 0;
     public static double odometryX = ODOMETRY_X_OFFSET, odometryY = ODOMETRY_Y_OFFSET;
 
-    public static double headingS = AutoDrive.kS_angular;
-    public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
     public static double angleAdjust = Shooter.ANGLE_ADJUST;
     //public static double angle = 0.95;
     //public static double power = 0;
@@ -106,8 +103,8 @@ public class SoloTeleOp extends ExoMode {
 
                 swerve.read();
                 swerve.update(new Pose(
-                        exp(in.ly),
-                        exp(-in.lx),
+                        in.ly,
+                        -in.lx,
                         -in.rx * 0.75)
                 );
                 swerve.write();
@@ -118,7 +115,6 @@ public class SoloTeleOp extends ExoMode {
 
                 TeleOpVelocityMultiplier = swervePmultiplier;
                 TeleOpAngularP = swerveP;
-                AutoDrive.kS_angular = headingS;
 
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
@@ -215,15 +211,9 @@ public class SoloTeleOp extends ExoMode {
             system.indexer.microAdjust(true);
         }
 
-        if (in.evRelocalizeATag.getAndSet(false)) {
-            new Thread(() -> hardware.localizer.setPositionEstimate(hardware.limelight.relocalize())).start();
-        }
+        if (in.evRelocalizeATag.getAndSet(false)) hardware.limelight.relocalize(hardware.localizer);
 
         system.updateIntake(false);
         Thread.yield();
-    }
-
-    private double exp(double x) {
-        return x * x * x;
     }
 }

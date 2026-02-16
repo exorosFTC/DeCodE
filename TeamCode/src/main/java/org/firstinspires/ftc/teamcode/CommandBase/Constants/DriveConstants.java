@@ -29,20 +29,20 @@ public class DriveConstants {
     public static double TeleOpVelocityMultiplier = 0;
 
     // auto PID
-    public static double AutoLinearPx = 0.08,
+    public static double AutoLinearPx = 0.06,
                             AutoLinearDx = 0,
-                            AutoLinearPy = 0.08,
-                            AutoLinearDy = 0;
-    public static double AutoAngularP = 0.9,
-                            AutoAngularD = 0;
+                            AutoLinearPy = 0.05,
+                            AutoLinearDy = 0.005;
+    public static double AutoAngularP = 0.6,
+                            AutoAngularD = 0.005;
     public static double AutoAngularVelocityMultiplier = 0,
                             AutoLinearVelocityMultiplier = 0;
 
     // swerve module PID
-    public static final double TeleOpSwerveModuleP = 0.25,
-                                TeleOpSwerveModuleD = 0.03;
-    public static final double AutoSwerveModuleP = 0.15,
-                                AutoSwerveModuleD = 0.003;
+    public static final double TeleOpSwerveModuleP = 0.3,
+                                TeleOpSwerveModuleD = 0.22;
+    public static final double AutoSwerveModuleP = 0.2,
+                                AutoSwerveModuleD = 0.2;
 
 
     public static double tileLengthCM = 60.96;

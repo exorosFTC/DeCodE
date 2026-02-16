@@ -114,7 +114,7 @@ public class BlueClose extends ExoMode {
                     elements.set(2, Indexer.Artifact.PURPLE);
                 })
                 .waitDrive(0.7)
-                .driveTo(new Pose(70, 60, Math.toRadians(45)), 0, 30, 4000)
+                .driveTo(new Pose(70, 60, Math.toRadians(45)), 0, 30)
                 .moveSystem(() -> system.indexer.indexPattern())
                 .waitAction(() -> !system.indexer.isIndexing)
                 .waitDrive(0.97, true)
@@ -130,7 +130,7 @@ public class BlueClose extends ExoMode {
                 .moveSystem(() -> system.intake.on())
                 .driveTo(new Pose(-83, 156, Math.toRadians(-270)), 0, 15)
                 .waitDrive(0.87)
-                .driveTo(new Pose(-83, 60, Math.toRadians(-270)), 0, 30, 2000)
+                .driveTo(new Pose(-83, 60, Math.toRadians(-270)), 0, 30)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}

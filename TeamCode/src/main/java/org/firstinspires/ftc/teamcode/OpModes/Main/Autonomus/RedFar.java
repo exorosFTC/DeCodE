@@ -83,7 +83,7 @@ public class RedFar extends ExoMode {
         auto.driveTo(new Pose(-115, -88, Math.toRadians(270)), 0, 15)
                 .waitDrive(0.87)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-116, -170, Math.toRadians(270)), 0, 15, 3000)
+                .driveTo(new Pose(-116, -170, Math.toRadians(270)), 0, 15)
                 .waitDrive(0.87)
                 .waitMs(500)
                 .driveTo(new Pose(-166, -22, Math.toRadians(340)), 0, 15)
@@ -106,7 +106,7 @@ public class RedFar extends ExoMode {
         auto.driveTo(new Pose(-126, -164, Math.toRadians(180)), 0, 20)
                 .waitDrive(0.88)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-190, -164, Math.toRadians(180)), 0, 20, 2500)
+                .driveTo(new Pose(-190, -164, Math.toRadians(180)), 0, 20)
                 .waitDrive(0.9)
                 .driveTo(new Pose(-166, -25, Math.toRadians(336)), 0, 20)
                 .moveSystem(() -> {
