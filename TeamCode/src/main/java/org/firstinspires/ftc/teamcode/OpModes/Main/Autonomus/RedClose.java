@@ -56,8 +56,8 @@ public class RedClose extends ExoMode {
         auto = new AutoDrive(this, swerve, system, startPoseRedClose);
 
         system.indexer.preload();
-        hardware.limelight.start();
-        hardware.limelight.setPipeline(LimelightEx.Pipeline.RANDOMIZATION);
+        //hardware.limelight.start();
+        //hardware.limelight.setPipeline(LimelightEx.Pipeline.RANDOMIZATION);
 
         while (opModeInInit()) {
             auto.linearCx.setPID(linearPx, 0, linearDx);
@@ -79,85 +79,83 @@ public class RedClose extends ExoMode {
         firstLine();
         secondLine();
         thirdLine();
-        //leave();
-
-        auto.end();
     }
 
     private void preload() {
-        auto//.driveTo(new Pose(70, -40, Math.toRadians(10)), 0.7)
-                //.waitDrive(() -> { hardware.limelight.read(); hardware.limelight.getRandomization(); }, 0.95, true)
-                .moveSystem(() -> hardware.limelight.stop())
-                .driveTo(new Pose(70, -40, Math.toRadians(-45)), 0.7)
+        auto.driveTo(new Pose(70, -40, Math.toRadians(-44.5)), 0.6)
+                .waitDrive(0.3)
                 .moveSystem(() -> {system.shooter.on(); system.indexer.microAdjust(false); })
-                .waitDrive(0.97, true)
-                .waitMs(100)
+                .waitDrive(0.98, true)
+                .waitMs(50)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.shooter.on);
     }
 
     private void firstLine() {
-        auto.driveTo(new Pose(35, -45, Math.toRadians(270)), 0.6)
-                .waitDrive(0.93, true)
+        auto.driveTo(new Pose(40, -39, Math.toRadians(270)), 0.5)
+                .waitDrive(0.4)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(35, -125, Math.toRadians(270)), 0.6)
-                .waitDrive(0.97)
-                .waitMs(400)
-                .moveSystem(() -> system.intake.off())
-                .driveTo(new Pose(10, -133, Math.toRadians(0)), 0.9, 1500)
-                .waitDrive(0.95, true)
-                .waitMs(500)
-                .driveTo(new Pose(70, -60, Math.toRadians(-40)), 0.75)
+                .driveTo(new Pose(40, -128, Math.toRadians(270)), 0.5)
+                .waitDrive(0.965)
+                .waitMs(300)
+                .driveTo(new Pose(16, -118, Math.toRadians(0)), 0.8)
+                .waitDrive(0.7)
+                .driveTo(new Pose(15, -135, Math.toRadians(0)), 0.8, 1500)
+                .waitDrive(0.965, true)
+                .waitMs(300)
+                .driveTo(new Pose(70, -60, Math.toRadians(-44)), 0.75)
                 .moveSystem(() -> {system.shooter.on(); system.indexer.microAdjust(false); })
-                .waitDrive(0.97, true)
+                .waitDrive(0.95, true)
+                .moveSystem(() -> system.intake.off())
+                .waitMs(100)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.shooter.on);
     }
 
     private void secondLine() {
-        auto.driveTo(new Pose(-25, -75, Math.toRadians(270)), 0.7)
-                .moveSystem(() -> system.indexer.home())
-                .waitDrive(0.95, true)
+        auto.driveTo(new Pose(-23, -50, Math.toRadians(270)), 0.6)
+                .waitDrive(0.8)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-25, -156, Math.toRadians(270)), 0.6)
-                .waitDrive(0.90)
-                .waitMs(400)
-                .driveTo(new Pose(-25, -60, Math.toRadians(270)), 0.6)
+                .driveTo(new Pose(-23, -156, Math.toRadians(270)), 0.5)
+                .waitDrive(0.88)
+                .waitMs(600)
+                .driveTo(new Pose(-23, -60, Math.toRadians(270)), 0.8)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
                 })
-                .waitDrive(0.8)
-                .driveTo(new Pose(70, -60, Math.toRadians(-40)), 0.7)
-                .waitDrive(0.97, true)
+                .waitDrive(0.4)
+                .driveTo(new Pose(70, -60, Math.toRadians(-43.5)), 0.8)
+                .waitDrive(0.85)
                 .moveSystem(() -> {system.shooter.on(); system.indexer.microAdjust(false); })
+                .waitDrive(0.95, true)
+                .waitMs(100)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.shooter.on);
     }
 
     private void thirdLine() {
-        auto.driveTo(new Pose(-73, -60, Math.toRadians(270)), 0.7)
-                .waitDrive(0.95, true)
+        auto.driveTo(new Pose(-73, -50, Math.toRadians(270)), 0.8)
+                .waitDrive(0.85)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-83, -156, Math.toRadians(270)), 0.6)
-                .waitDrive(0.90)
-                .waitMs(400)
-                .driveTo(new Pose(-83, -60, Math.toRadians(270)), 0.6)
+                .driveTo(new Pose(-83, -156, Math.toRadians(270)), 0.5)
+                .waitDrive(0.88)
+                .waitMs(600)
+                .driveTo(new Pose(-83, -60, Math.toRadians(270)), 0.8)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
                 })
-                .waitDrive(0.7)
-                .driveTo(new Pose(160, -30, Math.toRadians(-85)), 0.7)
-                .waitDrive(0.95)
-                .moveSystem(() -> {
-                    //system.indexer.indexPattern();
-                    system.shooter.on();
-                })
+                .waitDrive(0.4)
+                .driveTo(new Pose(115, -40, Math.toRadians(-60)), 0.8)
+                .waitDrive(0.9)
+                .moveSystem(() -> {system.shooter.on(); system.indexer.microAdjust(false); })
+                .waitDrive(0.95, true)
+                .waitMs(50)
                 .moveSystem(() -> system.shootSequence())
-                .waitAction(() -> !system.indexer.isBusy());
+                .waitAction(() -> !system.shooter.on);
     }
 
     private void leave() {

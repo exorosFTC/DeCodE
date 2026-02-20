@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems;
 import static androidx.core.math.MathUtils.clamp;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.samples;
 
 import com.arcrobotics.ftclib.controller.PIDFController;
@@ -19,10 +20,10 @@ public class Shooter extends SystemBase {
 
     public static ShotSample sample;
 
-    public static double kP = 0.8;
+    public static double kP = 0.09;
     public static double kI = 0;
-    public static double kD = 0.07;
-    public static double kF = 0.002;
+    public static double kD = 0.002;
+    public static double kF = 0.0015;
 
     private static final double VEL_ALPHA = 0.3;
     public static final double MAX_RPS = 380;
@@ -71,7 +72,7 @@ public class Shooter extends SystemBase {
         }
 
         this.targetVelocity = (targetPower - ((Indexer.sorted && on) ? 0.01 : 0)) * MAX_RPS;
-        this.currentPower = (Math.abs(correctedVelocity) < 40 && targetVelocity == 0) ? 0 : controller.calculate(correctedVelocity, targetVelocity);
+        this.currentPower = ((Math.abs(correctedVelocity) < 40 && targetVelocity == 0) ? 0 : controller.calculate(correctedVelocity, targetVelocity));
 
         targetAngle = clamp(targetAngle - (this.targetVelocity - correctedVelocity - threshold) * ANGLE_ADJUST, 0.34, 0.94);  // adjust angle by velocity*/
     }

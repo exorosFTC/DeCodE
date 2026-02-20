@@ -7,7 +7,9 @@ public class InputBus {
     public volatile double lx, ly, rx;
     public volatile double lt, rt;
     public volatile boolean spinupShooter;
+    public volatile boolean readRandomization;
     public volatile boolean lockToGoal;
+    public volatile boolean wallResetCombo;
 
     public volatile double ly2;
 
@@ -25,4 +27,9 @@ public class InputBus {
     public final AtomicBoolean evSetBlue             = new AtomicBoolean(false);
     public final AtomicBoolean evSetRed              = new AtomicBoolean(false);
     public final AtomicBoolean evRelocalizeATag      = new AtomicBoolean(false);
+
+    public final AtomicBoolean evResetDown           = new AtomicBoolean(false);
+    public final AtomicBoolean evResetLeft           = new AtomicBoolean(false);
+    public final AtomicBoolean evResetRight          = new AtomicBoolean(false);
+    public final AtomicBoolean evResetUp             = new AtomicBoolean(false);
 }

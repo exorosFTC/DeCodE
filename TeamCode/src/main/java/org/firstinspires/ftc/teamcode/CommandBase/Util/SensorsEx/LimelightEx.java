@@ -129,7 +129,7 @@ public class LimelightEx {
 
 
     public boolean tagInSight() {
-        return !result.getFiducialResults().isEmpty() && pipeline != LimelightEx.Pipeline.RANDOMIZATION;
+        return !(result == null || !result.isValid());
     }
 
 

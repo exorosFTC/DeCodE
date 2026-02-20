@@ -1,13 +1,6 @@
 package org.firstinspires.ftc.teamcode.OpModes.Main.Autonomus;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoAngularP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearDx;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueFar;
-
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
@@ -20,7 +13,6 @@ import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
-@Config
 @Autonomous(name = "BlueFar", group = "main", preselectTeleOp = "😈🔥")
 public class BlueFar extends ExoMode {
     private Hardware hardware;
@@ -58,76 +50,69 @@ public class BlueFar extends ExoMode {
         hardware.limelight.stop();
 
         preload();
-        //thirdLine();
-        //humanPlayerLine();
+        thirdLine();
+        humanPlayerLine();
         leave();
-
-        auto.end();
     }
 
     private void preload() {
-        auto.driveTo(new Pose(-166, 28, Math.toRadians(-342)), 0, 30)
-                .moveSystem(() -> {
-                    //system.indexer.indexPattern();
-                    system.shooter.on();
-                })
-                .waitDrive(0.65)
-                .waitMs(1500)
+        auto.driveTo(new Pose(-140, 28, Math.toRadians(-335.5)), 0.8, 2000)
+                .moveSystem(() -> system.shooter.on())
+                .waitDrive(0.95, true)
                 .moveSystem(() -> system.shootSequence())
-                .waitAction(() -> !system.indexer.isBusy())
-                .moveSystem(() -> swerve.lockHeadingToGoal(false));
+                .waitAction(() -> !system.indexer.isBusy());
     }
 
     private void thirdLine() {
-        auto.driveTo(new Pose(-115, 88, Math.toRadians(-270)), 0, 30)
-                .waitDrive(0.87)
+        auto.driveTo(new Pose(-85, 70, Math.toRadians(-270)), 0.6, 4000)
+                .waitDrive(0.8)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-115, 170, Math.toRadians(-270)), 30, 3000)
-                .waitDrive(0.87)
-                .waitMs(500)
-                .driveTo(new Pose(-166, 22, Math.toRadians(-325)), 0, 30)
+                .driveTo(new Pose(-85, 170, Math.toRadians(-270)), 0.4, 5000)
+                .waitDrive(0.90)
+                .waitMs(400)
+                .driveTo(new Pose(-140, 28, Math.toRadians(-335)), 0.8, 5000)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
                 })
-                .moveSystem(() -> {
-                    //system.indexer.indexPattern();
-                    system.shooter.on();
-                })
+                .waitDrive(0.6)
+                .moveSystem(() -> system.shooter.on())
                 .waitDrive(0.95, true)
-                .waitAction(() -> !system.indexer.isBusy())
-                .moveSystem(() -> swerve.lockHeadingToGoal(false));
+                .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.indexer.isBusy());
     }
 
     private void humanPlayerLine() {
-        auto.driveTo(new Pose(-126, 164, Math.toRadians(-180)), 0, 30)
-                .waitDrive(0.88)
+        auto.driveTo(new Pose(-154, 164, Math.toRadians(90)), 0.6, 4000)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-190, 164, Math.toRadians(-180)), 30, 2500)
-                .waitDrive(0.9)
-                .driveTo(new Pose(-166, 25, Math.toRadians(-336)), 0, 30)
+
+                .waitDrive(0.95)
+                .driveTo(new Pose(-156, 100, Math.toRadians(90)), 0.9, 1000)
+                .waitDrive(0.007)
+                .driveTo(new Pose(-156, 164, Math.toRadians(90)), 0.9, 1000)
+                .waitDrive(0.35)
+                .driveTo(new Pose(-156, 100, Math.toRadians(90)), 0.9, 1000)
+                .waitDrive(0.007)
+                .driveTo(new Pose(-156, 164, Math.toRadians(90)), 0.9, 1000)
+                .waitDrive(0.35)
+                .waitMs(500)
+
+                .driveTo(new Pose(-140, 28, Math.toRadians(-335)), 0.8, 5000)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
                 })
                 .waitDrive(0.5)
-                .moveSystem(() -> {
-                    //system.indexer.indexPattern();
-                    system.shooter.on();
-                })
-                .waitDrive(0.92)
-                .moveSystem(() -> swerve.lockHeadingToGoal(true))
-                .waitMs(600)
+                .moveSystem(() -> system.shooter.on())
+                .waitDrive(0.95, true)
                 .moveSystem(() -> system.shootSequence())
-                .waitAction(() -> !system.indexer.isBusy())
-                .moveSystem(() -> swerve.lockHeadingToGoal(false));
-
+                .waitAction(() -> !system.indexer.isBusy());
     }
 
     private void leave() {
-        auto.driveTo(new Pose(-166, 108, Math.toRadians(0)), 30, 30)
+        auto.driveTo(new Pose(-150, 108, Math.toRadians(0)), 0.8)
                 .waitDrive(0.9);
     }
 

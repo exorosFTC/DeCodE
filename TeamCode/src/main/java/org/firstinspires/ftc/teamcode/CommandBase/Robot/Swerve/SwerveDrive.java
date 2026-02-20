@@ -1,14 +1,18 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve;
 
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.SHOOT_RELEASE_DELAY_S;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VELOCITY;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VEL_X_MULTIPLIER;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VEL_Y_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionRed;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 import static org.firstinspires.ftc.teamcode.CustomPathing.Math.MathFormulas.FindShortestPath;
 
@@ -16,12 +20,13 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.AbsoluteAnalogEncoder;
-import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 import java.util.List;
@@ -99,15 +104,33 @@ public class SwerveDrive extends SystemBase {
         // stop updating the swerve if disabled
         if (!on) return;
 
+        updateShootOnTheMove();
+
         // lock to goal logic
         if (lockHeadingToGoal) {
-            updateTargetHeading();
+            if (!hardware.limelight.enabled) { hardware.limelight.start(); hardware.limelight.setPipeline(autoOnBlue ? LimelightEx.Pipeline.BLUE_GOAL : LimelightEx.Pipeline.RED_GOAL); }
+            hardware.limelight.read();
 
-            angularC.setPID(0.9, 0, 0);
-            velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
-            velocity.heading += Math.signum(velocity.heading) * Math.abs(VELOCITY.hypot()) > 3 ? 0 : 0.1;
+            hardware.telemetry.addData("result null", hardware.limelight.result != null);
+            hardware.telemetry.addData("result valid", hardware.limelight.result.isValid());
 
-        }
+            if (hardware.limelight.tagInSight()) {
+                hardware.telemetry.addLine("Alignment: LIMELIGHT");
+                double offset = hardware.limelight.getCenterOffset();
+
+                if (Math.abs(offset) > 0.1) limelightC.setP(0.015);
+                else limelightC.setP(0.08);
+
+                velocity.heading = limelightC.calculate(hardware.limelight.getCenterOffset());
+            } else {
+                hardware.telemetry.addLine("Alignment: ODOMETRY");
+
+                velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
+                velocity.heading += Math.signum(velocity.heading) * Math.abs(VELOCITY.hypot()) > 3 ? 0 : 0.1;
+            }
+        } else if (hardware.limelight.enabled) hardware.limelight.stop();
+        else hardware.telemetry.addLine("Alignment: OFF");
+
 
         // convert to field centric anytime
         velocity = velocity.rotate_matrix(-POSE.heading + ((opModeType == SystemConstants.OpMode.TELE_OP) ? Math.toRadians(270) : 0));
@@ -132,11 +155,12 @@ public class SwerveDrive extends SystemBase {
         }
     }
 
-    public void updateTargetHeading() {
+    public void updateShootOnTheMove() {
         // shift goal backward by where robot will move during release delay
-        double virtualGoalX = goalPosition.x - VELOCITY.x * SHOOT_RELEASE_DELAY_S;
-        double virtualGoalY = goalPosition.y - VELOCITY.y * SHOOT_RELEASE_DELAY_S;
+        double virtualGoalX = autoOnBlue ? goalPositionBlue.x : goalPositionRed.x - VELOCITY.x * VEL_X_MULTIPLIER;
+        double virtualGoalY = autoOnBlue ? goalPositionBlue.y : goalPositionRed.y - VELOCITY.y * VEL_Y_MULTIPLIER;
 
+        goalPosition = new Point(virtualGoalX, virtualGoalY);
         targetHeading = Math.atan2(virtualGoalY - POSE.y, virtualGoalX - POSE.x);
     }
 

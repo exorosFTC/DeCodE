@@ -36,7 +36,7 @@ public class PIDAutoTuner extends ExoMode {
     public static double angularKs = AutoDrive.kS_angular;
 
     public static double moduleP = AutoSwerveModuleP, moduleD = AutoSwerveModuleD;
-    public static double x, y, head, startRadius = 30, targetRadius = 30;
+    public static double x, y, head, speed = 0.8;
 
     public GamepadEx g1;
 
@@ -60,7 +60,7 @@ public class PIDAutoTuner extends ExoMode {
     @Override
     protected void Loop() {
         if (g1.wasJustPressed(GamepadKeys.Button.B))
-            auto.driveTo(new Pose(x, y, Math.toRadians(head)), startRadius, targetRadius);
+            auto.driveTo(new Pose(x, y, Math.toRadians(head)), speed);
 
         g1.readButtons();
         auto.linearCx.setPID(linP, 0, linD);

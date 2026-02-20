@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.TriggerManager;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.InputBus;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
@@ -66,7 +67,7 @@ public class CrazyTeleOp extends ExoMode {
 
         shooterTriggers = new TriggerManager()
                 .addTrigger(() -> in.evSort.getAndSet(false), () -> system.indexer.indexPattern())                // sort
-                .addTrigger(() -> in.evShoot.getAndSet(false) && in.spinupShooter, () -> system.shootSequence())  // shoot
+                .addTrigger(() -> in.evShoot.getAndSet(false) && !in.spinupShooter, () -> system.shootSequence()) // shoot
                 .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home());                // emergency homing
 
 
@@ -88,8 +89,9 @@ public class CrazyTeleOp extends ExoMode {
                 );
                 swerve.write();
 
-                swerve.lockHeadingToGoal(in.lockToGoal);
+                //swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
+
                 if (in.evResetHeading.getAndSet(false)) {
                     try { Thread.sleep(150); } catch (InterruptedException e) {}
                     hardware.localizer.setPositionEstimate(new Pose(POSE.x, POSE.y, 0));
@@ -105,7 +107,52 @@ public class CrazyTeleOp extends ExoMode {
                         hardware.localizer.setPositionEstimate(new Pose(-160, 160, 0));
                         try { Thread.sleep(150); } catch (InterruptedException e) {}
                     }
-                }
+                }   // corner reset
+                if (in.evResetLeft.getAndSet(false)) {
+                    if (autoOnBlue) {
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                        hardware.localizer.setPositionEstimate(new Pose(-160, POSE.y, POSE.heading));
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                    } else {
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                        hardware.localizer.setPositionEstimate(new Pose(160, POSE.y, POSE.heading));
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                    }
+                }       // left reset
+                if (in.evResetRight.getAndSet(false)) {
+                    if (autoOnBlue) {
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                        hardware.localizer.setPositionEstimate(new Pose(160, POSE.y, POSE.heading));
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                    } else {
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                        hardware.localizer.setPositionEstimate(new Pose(-160, POSE.y, POSE.heading));
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                    }
+                }      // right reset
+                if (in.evResetDown.getAndSet(false)) {
+                    if (autoOnBlue) {
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                        hardware.localizer.setPositionEstimate(new Pose(POSE.x, -160, POSE.heading));
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                    } else {
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                        hardware.localizer.setPositionEstimate(new Pose(POSE.x, 160, POSE.heading));
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                    }
+                }       // down reset
+                if (in.evResetUp.getAndSet(false)) {
+                    if (autoOnBlue) {
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                        hardware.localizer.setPositionEstimate(new Pose(POSE.x, 160, POSE.heading));
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                    } else {
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                        hardware.localizer.setPositionEstimate(new Pose(POSE.x, -160, POSE.heading));
+                        try { Thread.sleep(150); } catch (InterruptedException e) {}
+                    }
+                }         // up reset
+
                 if (in.evStartLift.getAndSet(false)) {
                     swerve.disable();
                     system.indexer.off();
@@ -114,8 +161,15 @@ public class CrazyTeleOp extends ExoMode {
 
                     lift.on();
                 }
-                if (in.evSetBlue.getAndSet(false)) { goalPosition = goalPositionBlue; autoOnBlue = true; };
-                if (in.evSetRed.getAndSet(false)) { goalPosition = goalPositionRed; autoOnBlue = false; };
+
+                if (in.evSetBlue.getAndSet(false)) { goalPosition = goalPositionBlue; autoOnBlue = true; }
+                if (in.evSetRed.getAndSet(false)) { goalPosition = goalPositionRed; autoOnBlue = false; }
+
+                if (in.readRandomization) {
+                    if (!hardware.limelight.enabled) { hardware.limelight.start(); hardware.limelight.setPipeline(LimelightEx.Pipeline.RANDOMIZATION); }
+                    hardware.limelight.read();
+                    hardware.limelight.getRandomization();
+                } else if (hardware.limelight.enabled) hardware.limelight.stop();
 
                 hardware.telemetry.addData("x", POSE.x);
                 hardware.telemetry.addData("y", POSE.y);
@@ -141,8 +195,9 @@ public class CrazyTeleOp extends ExoMode {
                 in.rx = g1.getRightX();
                 in.lt = g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
                 in.rt = g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
-                in.lockToGoal = in.lt > 0.1;
+                in.readRandomization = in.lt > 0.1;
                 in.spinupShooter = in.rt > 0.1;
+                in.wallResetCombo = g1.isDown(GamepadKeys.Button.RIGHT_BUMPER);
 
                 // edges -> events (one-shot)
                 if (g2.wasJustPressed(GamepadKeys.Button.B)) in.evToggleIntake.set(true);
@@ -155,10 +210,10 @@ public class CrazyTeleOp extends ExoMode {
                 //if (g2.wasJustPressed(GamepadKeys.Button.DPAD_UP)) in.evRelocalizeATag.set(true);
 
                 if (g1.isDown(GamepadKeys.Button.X) && g1.isDown(GamepadKeys.Button.DPAD_RIGHT)) in.evStartLift.set(true);
-                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) in.evResetHeading.set(true);
-                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) in.evResetPosition.set(true);
-                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_UP)) in.evSetRed.set(true);
-                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evSetBlue.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) { if (in.wallResetCombo) in.evResetLeft.set(true); else in.evResetHeading.set(true); }
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) { if (in.wallResetCombo) in.evResetRight.set(true); else in.evResetPosition.set(true); }
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_UP)) { if (in.wallResetCombo) in.evResetUp.set(true); else in.evSetRed.set(true); }
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) { if (in.wallResetCombo) in.evResetDown.set(true); else in.evSetBlue.set(true); };
 
                 if (g1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1) in.evLockX.set(true);
 
@@ -189,10 +244,10 @@ public class CrazyTeleOp extends ExoMode {
         intakeTriggers.check();
         shooterTriggers.check();
 
-        if (in.spinupShooter && !system.shooter.on) {
+        if (!in.spinupShooter && !system.shooter.on) {
             system.shooter.on();
             //system.indexer.microAdjust(false);
-        } else if (!in.spinupShooter && system.shooter.on) {
+        } else if (in.spinupShooter && system.shooter.on) {
             system.shooter.off();
             //system.indexer.microAdjust(true);
         }
@@ -200,6 +255,7 @@ public class CrazyTeleOp extends ExoMode {
         if (in.evRelocalizeATag.getAndSet(false)) {
             hardware.limelight.relocalize(hardware.localizer);
         }
+
 
         system.updateIntake(in.evIgnoreColorSensors.get());
         Thread.yield();

@@ -24,12 +24,15 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SlewRateLimiter;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
+
+import kotlin.collections.SlidingWindowKt;
 
 public class AutoDrive {
     private final Hardware hardware;
@@ -43,7 +46,7 @@ public class AutoDrive {
     public final PIDController linearCx, linearCy, angularC;
 
     private double busyThresholdLinear = 0.9,
-            busyThresholdAngular = Math.toRadians(8);
+            busyThresholdAngular = Math.toRadians(3);
 
     private double failSafeTimeMs = Double.POSITIVE_INFINITY;
     private final ElapsedTime failSafeTimer = new ElapsedTime();
@@ -57,7 +60,8 @@ public class AutoDrive {
     private double currentVelocity = 0;
     private double maxSpeed = 0.8;
 
-    public static double kS_angular = 0.04;
+    public static double kS_angular = 0.06; //0.04;
+    public static SlewRateLimiter limX, limY;
 
 
 
@@ -75,6 +79,9 @@ public class AutoDrive {
         linearCx = new PIDController(AutoLinearPx, 0, AutoLinearDx);
         linearCy = new PIDController(AutoLinearPy, 0, AutoLinearDy);
         angularC = new PIDController(AutoAngularP, 0, AutoAngularD);
+
+        limX = new SlewRateLimiter(2);
+        limY = new SlewRateLimiter(2);
 
         this.opMode = opMode;
 
@@ -175,7 +182,6 @@ public class AutoDrive {
         try { Thread.sleep(10); } catch (InterruptedException e) {}
         while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive()) { inLoop.run(); }
 
-        target = POSE;
         return this;
     }
 
@@ -236,28 +242,17 @@ public class AutoDrive {
 
 
 
-    public void end() {
-        driveThread.interrupt();
-        systemThread.interrupt();
-
-        system.shooter.off();
-        system.intake.off();
-        system.indexer.off();
-        system.shooter.disable();
-        swerve.disable();
-
-    }
-
     private void updateDriveVector() {
         currentDistance = target.hypot(POSE);
         currentVelocity = VELOCITY.hypot();
 
         double angularVelocity = angularC.calculate(FindShortestPath(POSE.heading, target.heading));
 
-        driveVector = new Pose(Range.clip(linearCx.calculate(POSE.x, target.x), -maxSpeed, maxSpeed),
-                Range.clip(linearCy.calculate(POSE.y, target.y), -maxSpeed, maxSpeed),
+        driveVector = new Pose(
+                limX.calculate(Range.clip(linearCx.calculate(POSE.x, target.x), -maxSpeed, maxSpeed)),
+                limY.calculate(Range.clip(linearCy.calculate(POSE.y, target.y), -maxSpeed, maxSpeed)),
                 Range.clip(Math.abs(currentVelocity) > 4 ? angularVelocity : angularVelocity + Math.signum(angularVelocity) * kS_angular, -1, 1)
-        );
+        ).multiplyBy(11.0 / hardware.batteryVoltage);
     }
 
 

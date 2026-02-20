@@ -9,6 +9,8 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VELOCITY;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VEL_X_MULTIPLIER;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VEL_Y_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -46,9 +48,13 @@ public class SoloTeleOp extends ExoMode {
     private TriggerManager intakeTriggers, shooterTriggers;
     private Thread swerveThread, gamepadThread;
 
-    public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD, swervePmultiplier = TeleOpVelocityMultiplier;
+    public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD;
+    public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
+
     public static double moduleP = DriveConstants.TeleOpSwerveModuleP, moduleD = DriveConstants.TeleOpSwerveModuleD, moduleS = 0;
     public static double odometryX = ODOMETRY_X_OFFSET, odometryY = ODOMETRY_Y_OFFSET;
+
+    public static double sotmX = VEL_X_MULTIPLIER, sotmY = VEL_Y_MULTIPLIER;
 
     public static double angleAdjust = Shooter.ANGLE_ADJUST;
     //public static double angle = 0.95;
@@ -85,9 +91,9 @@ public class SoloTeleOp extends ExoMode {
                 }); // reverse intake
 
         shooterTriggers = new TriggerManager()
-                .addTrigger(() -> in.evSort.getAndSet(false), () -> system.indexer.indexPattern())                       // sort
-                .addTrigger(() -> in.evShoot.getAndSet(false) && in.spinupShooter, () -> system.shootSequence()) // shoot
-                .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home());      // emergency homing
+                .addTrigger(() -> in.evSort.getAndSet(false), () -> system.indexer.indexPattern())                  // sort
+                .addTrigger(() -> in.evShoot.getAndSet(false) && in.spinupShooter, () -> system.shootSequence())    // shoot
+                .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home());                  // emergency homing
 
 
         // set the right start position
@@ -110,11 +116,13 @@ public class SoloTeleOp extends ExoMode {
                 swerve.write();
 
                 swerve.setHeadingPID(swerveP, 0, swerveD);
+                swerve.setLimelightPID(limelightP, 0, limelightD);
                 swerve.setModulePID(moduleP, 0, moduleD);
                 swerve.setModuleKs(moduleS);
 
-                TeleOpVelocityMultiplier = swervePmultiplier;
                 TeleOpAngularP = swerveP;
+                VEL_X_MULTIPLIER = sotmX;
+                VEL_Y_MULTIPLIER = sotmY;
 
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
@@ -131,7 +139,6 @@ public class SoloTeleOp extends ExoMode {
                 hardware.telemetry.addData("x", POSE.x);
                 hardware.telemetry.addData("y", POSE.y);
                 hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
-                hardware.telemetry.addData("OUTPUT HEADING", in.rx * 0.75);
 
                 hardware.telemetry.addData("VEL X", VELOCITY.x);
                 hardware.telemetry.addData("VEL Y",VELOCITY.y);
@@ -172,6 +179,7 @@ public class SoloTeleOp extends ExoMode {
                 if (g1.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) in.evLockX.set(true);
                 if (g1.isDown(GamepadKeys.Button.X) && g1.isDown(GamepadKeys.Button.DPAD_RIGHT)) in.evStartLift.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) in.evResetHeading.set(true);
+                if (g1.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) in.evResetPosition.set(true);
                 //if (g1.wasJustPressed(GamepadKeys.Button.DPAD_UP)) in.evRelocalizeATag.set(true);
 
                 //Shooter.ANGLE_ADJUST = angleAdjust;
