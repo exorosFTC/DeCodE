@@ -11,6 +11,7 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VELOCITY;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPose;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.useVelocityTimeout;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.lastValidRandomization;
 import static org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Indexer.elements;
 import static org.firstinspires.ftc.teamcode.CustomPathing.Math.MathFormulas.FindShortestPath;
@@ -50,6 +51,7 @@ public class AutoDrive {
 
     private double failSafeTimeMs = Double.POSITIVE_INFINITY;
     private final ElapsedTime failSafeTimer = new ElapsedTime();
+    private final ElapsedTime velocityTimeoutTimer = new ElapsedTime();
 
     private Pose target = new Pose();
     private Pose driveVector = new Pose();
@@ -60,7 +62,7 @@ public class AutoDrive {
     private double currentVelocity = 0;
     private double maxSpeed = 0.8;
 
-    public static double kS_angular = 0.06; //0.04;
+    public static double kS_angular = 0.06;
     public static SlewRateLimiter limX, limY;
 
 
@@ -177,10 +179,16 @@ public class AutoDrive {
 
     public AutoDrive waitDrive(Runnable inLoop, double threshold, boolean useHeading) {
         this.busyThresholdLinear = threshold;
-
         updateDriveVector();
+
         try { Thread.sleep(10); } catch (InterruptedException e) {}
-        while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive()) { inLoop.run(); }
+        velocityTimeoutTimer.reset();
+
+        while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive() && (!useVelocityTimeout || velocityTimeoutTimer.milliseconds() < 800)) {
+            if (useVelocityTimeout && currentVelocity > 8)
+                velocityTimeoutTimer.reset();
+            inLoop.run();
+        }
 
         return this;
     }

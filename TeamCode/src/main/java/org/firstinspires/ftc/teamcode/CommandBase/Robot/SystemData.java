@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionRed;
 
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 
 public class SystemData {
@@ -16,6 +17,11 @@ public class SystemData {
     public SystemData setAutoOnBlue(boolean flag) {
         SystemConstants.autoOnBlue = flag;
         goalPosition = (flag) ? goalPositionBlue : goalPositionRed;
+        return this;
+    }
+
+    public SystemData setVelocityTimeout(boolean flag) {
+        DriveConstants.useVelocityTimeout = flag;
         return this;
     }
 }

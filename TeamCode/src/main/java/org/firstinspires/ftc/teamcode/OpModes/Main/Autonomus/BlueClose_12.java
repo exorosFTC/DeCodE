@@ -1,24 +1,20 @@
 package org.firstinspires.ftc.teamcode.OpModes.Main.Autonomus;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueClose;
-import static org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Indexer.elements;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
-import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
-import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
-@Autonomous(name = "BlueClose", group = "main", preselectTeleOp = "😈🔥")
-public class BlueClose extends ExoMode {
+@Autonomous(group = "main", preselectTeleOp = "😈🔥")
+public class BlueClose_12 extends ExoMode {
     private Hardware hardware;
     private SwerveDrive swerve;
     private ScoringSystem system;

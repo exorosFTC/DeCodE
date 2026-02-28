@@ -19,30 +19,40 @@ public class DriveConstants {
     public static double DRIVE_W = 33, DRIVE_L = 33;
     public static double R = Math.hypot(DRIVE_W, DRIVE_L);
 
-    public static double ODOMETRY_X_OFFSET = -12.1,
-                         ODOMETRY_Y_OFFSET = 6.2;
+    public static double ODOMETRY_X_OFFSET = -12.01, // -12.6765
+                         ODOMETRY_Y_OFFSET = 6.23;   // 6.6
+
+    //or
+    //public static double ODOMETRY_X_OFFSET = 6.2938,
+    //                     ODOMETRY_Y_OFFSET = 12.3054;
 
     // teleop PID
     public static double TeleOpAngularP = 0.9,
                                 TeleOpAngularD = 0;
-    public static double TeleOpLimelightP = 0.03,
-                                TeleOpLimelightD = 0;
     public static double TeleOpVelocityMultiplier = 0;
+
+    public static double llThreshold = 5.5,
+                        llCloseP = 0.03,
+                        llFarP = 0.015;
+    public static double llCloseD = 0;
 
     // auto PID
     public static double AutoLinearPx = 0.04,
-                            AutoLinearDx = 0.005, //0.005,
+                            AutoLinearDx = 0.005,
                             AutoLinearPy = 0.04,
                             AutoLinearDy = 0.005;
-    public static double AutoAngularP = 0.5, //0.6,
-                            AutoAngularD = 0; //0.005;
+    public static double AutoAngularP = 0.5,
+                            AutoAngularD = 0;
     public static double AutoAngularVelocityMultiplier = 0;
 
     // swerve module PID
-    public static final double TeleOpSwerveModuleP = 0.3,
-                                TeleOpSwerveModuleD = 0.22;
+    public static final double TeleOpSwerveModuleP = 0.25,
+                                TeleOpSwerveModuleD = 0;
     public static final double AutoSwerveModuleP = 0.2,
                                 AutoSwerveModuleD = 0.2;
+
+
+    public static boolean useVelocityTimeout = false;
 
 
     public static double tileLengthCM = 60.96;

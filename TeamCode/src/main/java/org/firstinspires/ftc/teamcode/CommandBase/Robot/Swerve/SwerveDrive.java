@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightP;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VELOCITY;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VEL_X_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VEL_Y_MULTIPLIER;
@@ -20,9 +18,9 @@ import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
-import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.AbsoluteAnalogEncoder;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
@@ -76,7 +74,7 @@ public class SwerveDrive extends SystemBase {
         states = SwerveKinematics.robot2wheel(new Pose(0, 0, 0));
 
         angularC = new PIDController(TeleOpAngularP, 0, TeleOpAngularD);
-        limelightC = new PIDController(TeleOpLimelightP, 0, TeleOpLimelightD);
+        limelightC = new PIDController(0, 0, 0);
         targetHeading = startPose.heading;
 
         super.on();
@@ -111,17 +109,14 @@ public class SwerveDrive extends SystemBase {
             if (!hardware.limelight.enabled) { hardware.limelight.start(); hardware.limelight.setPipeline(autoOnBlue ? LimelightEx.Pipeline.BLUE_GOAL : LimelightEx.Pipeline.RED_GOAL); }
             hardware.limelight.read();
 
-            hardware.telemetry.addData("result null", hardware.limelight.result != null);
-            hardware.telemetry.addData("result valid", hardware.limelight.result.isValid());
-
             if (hardware.limelight.tagInSight()) {
                 hardware.telemetry.addLine("Alignment: LIMELIGHT");
                 double offset = hardware.limelight.getCenterOffset();
 
-                if (Math.abs(offset) > 0.1) limelightC.setP(0.015);
-                else limelightC.setP(0.08);
+                if (Math.abs(offset) > DriveConstants.llThreshold) limelightC.setPID(DriveConstants.llFarP, 0, DriveConstants.llCloseD);
+                else limelightC.setP(DriveConstants.llCloseP);
 
-                velocity.heading = limelightC.calculate(hardware.limelight.getCenterOffset());
+                velocity.heading = limelightC.calculate(offset) * 10 / hardware.batteryVoltage;
             } else {
                 hardware.telemetry.addLine("Alignment: ODOMETRY");
 

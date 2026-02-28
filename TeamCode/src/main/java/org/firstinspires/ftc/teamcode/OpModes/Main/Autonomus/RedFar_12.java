@@ -13,8 +13,8 @@ import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
-@Autonomous(name = "RedFar", group = "main", preselectTeleOp = "😈🔥")
-public class RedFar extends ExoMode {
+@Autonomous(group = "main", preselectTeleOp = "😈🔥")
+public class RedFar_12 extends ExoMode {
     private Hardware hardware;
     private SwerveDrive swerve;
     private ScoringSystem system;
@@ -24,6 +24,7 @@ public class RedFar extends ExoMode {
     protected void Init() {
         new SystemData()
                 .add(SystemConstants.OpMode.AUTONOMOUS)
+                .setVelocityTimeout(true)
                 .setAutoOnBlue(false);
 
         hardware = Hardware.getInstance(this);
@@ -51,61 +52,84 @@ public class RedFar extends ExoMode {
 
         preload();
         thirdLine();
-        humanPlayerLine();
+        gateCycle1();
+        gateCycle2();
         leave();
     }
 
     private void preload() {
-        auto.driveTo(new Pose(-140, -28, Math.toRadians(335.5)), 0.8, 2000)
-                .moveSystem(() -> system.shooter.on())
+        auto.driveTo(new Pose(-140, -40, Math.toRadians(337.5)), 0.8, 2000)
+                .moveSystem(() -> {system.shooter.on(); system.indexer.microAdjust(false); })
                 .waitDrive(0.95, true)
+                .waitAction(() -> system.shooter.ready())
+                .waitMs(200)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.indexer.isBusy());
     }
 
     private void thirdLine() {
-        auto.driveTo(new Pose(-90, -70, Math.toRadians(270)), 0.6, 4000)
+        auto.driveTo(new Pose(-85, -70, Math.toRadians(270)), 0.6, 4000)
                 .waitDrive(0.8)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-90, -170, Math.toRadians(270)), 0.4, 5000)
+                .driveTo(new Pose(-85, -170, Math.toRadians(270)), 0.4, 5000)
                 .waitDrive(0.90)
                 .waitMs(400)
-                .driveTo(new Pose(-140, -28, Math.toRadians(335)), 0.8, 5000)
+                .driveTo(new Pose(-140, -40, Math.toRadians(338)), 0.7, 5000)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
                 })
-                .waitDrive(0.6)
-                .moveSystem(() -> system.shooter.on())
+                .waitDrive(0.3)
+                .moveSystem(() -> {system.shooter.on(); system.indexer.microAdjust(false); })
                 .waitDrive(0.95, true)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.indexer.isBusy());
     }
 
-    private void humanPlayerLine() {
-        auto.driveTo(new Pose(-154, -164, Math.toRadians(-90)), 0.6, 3000)
+    private void gateCycle1() {
+        auto.driveTo(new Pose(-150, -154, Math.toRadians(-90)), 0.8, 3000)
                 .moveSystem(() -> system.intake.on())
 
-                .waitDrive(0.94)
-                .driveTo(new Pose(-154, -100, Math.toRadians(-90)), 0.9, 1000)
-                .waitDrive(0.008)
-                .driveTo(new Pose(-154, -164, Math.toRadians(-90)), 0.9, 1000)
-                .waitDrive(0.33)
-                .driveTo(new Pose(-154, -100, Math.toRadians(-90)), 0.9, 1000)
-                .waitDrive(0.008)
-                .driveTo(new Pose(-154, -164, Math.toRadians(-90)), 0.9, 1000)
-                .waitDrive(0.33)
+                .waitDrive(0.98)
+                .driveTo(new Pose(-152, -100, Math.toRadians(-90)), 0.9, 1000)
+                .waitDrive(0.005)
+                .driveTo(new Pose(-152, -164, Math.toRadians(-90)), 0.9, 1000)
+                .waitDrive(0.32)
                 .waitMs(500)
 
-                .driveTo(new Pose(-140, -28, Math.toRadians(335)), 0.8, 5000)
+                .driveTo(new Pose(-140, -40, Math.toRadians(338)), 0.7, 5000)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
                 })
-                .waitDrive(0.5)
-                .moveSystem(() -> system.shooter.on())
+                .waitDrive(0.3)
+                .moveSystem(() -> {system.shooter.on(); system.indexer.microAdjust(false); })
+                .waitDrive(0.95, true)
+                .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.indexer.isBusy());
+    }
+
+    private void gateCycle2() {
+        auto.driveTo(new Pose(-105, -164, Math.toRadians(-90)), 0.8, 3000)
+                .moveSystem(() -> system.intake.on())
+
+                .waitDrive(0.95)
+                .driveTo(new Pose(-105, -100, Math.toRadians(-90)), 0.9, 1000)
+                .waitDrive(0.001)
+                .driveTo(new Pose(-105, -164, Math.toRadians(-90)), 0.9, 1000)
+                .waitDrive(0.32)
+                .waitMs(500)
+
+                .driveTo(new Pose(-140, -40, Math.toRadians(338)), 0.7, 5000)
+                .moveSystem(() -> {
+                    system.intake.reverse();
+                    try{ Thread.sleep(400); } catch (InterruptedException e) {}
+                    system.intake.off();
+                })
+                .waitDrive(0.3)
+                .moveSystem(() -> {system.shooter.on(); system.indexer.microAdjust(false); })
                 .waitDrive(0.95, true)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.indexer.isBusy());

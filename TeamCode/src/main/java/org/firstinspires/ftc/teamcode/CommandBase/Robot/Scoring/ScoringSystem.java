@@ -22,6 +22,10 @@ public class ScoringSystem extends SystemBase {
     public Indexer indexer;
     public Shooter shooter;
 
+    private boolean isRetainerOn;
+    private double retainerOn = 0.93,
+                   retainerOff = 0.67;
+
     public ElapsedTime timer;
     public double MIN_LOOPS = 8;
 
@@ -47,6 +51,9 @@ public class ScoringSystem extends SystemBase {
 
 
     public void updateIntake(boolean ignore) {
+        if ((intake.on && !intake.reversed) && !isRetainerOn) { hardware.ShooterRetainerServo.setPosition(retainerOn); isRetainerOn = true; }
+        else if ((!intake.on || intake.reversed) && isRetainerOn) { hardware.ShooterRetainerServo.setPosition(retainerOff); isRetainerOn = false; }
+
         if (indexer.isBusy() || !indexer.on || !intake.on) return;
 
         colorDistance = new double[]{
@@ -84,6 +91,9 @@ public class ScoringSystem extends SystemBase {
         intake.reverse();
         timer.reset();
 
+        hardware.ShooterRetainerServo.setPosition(retainerOff);
+        isRetainerOn = false;
+
         while (opMode.opModeIsActive() && timer.milliseconds() < 400) {
             if (hardware.IntakeColor1.getDistance(DistanceUnit.MM) < catchThreshold[0]) {
                 colorValues = getColorForIndex(0);
@@ -99,17 +109,30 @@ public class ScoringSystem extends SystemBase {
 
     public void shootSequence() {
         if (!shooter.on) return;
-        if (intake.on) intake.off();
+        if (intake.on) {
+            if (!intake.reversed) {
+                intake.off();
+                hardware.ShooterRetainerServo.setPosition(retainerOff);
+                isRetainerOn = false;
+
+                try { Thread.sleep(200); } catch (InterruptedException e) {}
+            } else intake.off();
+        }
 
         timer.reset();
         while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 3) {
             hardware.telemetry.addData("ready", !shooter.ready());
             hardware.telemetry.addData("opMode", this.opMode.opModeIsActive());
             hardware.telemetry.addData("timer", timer.seconds() < 3);
-
         }
 
         indexer.isHome = true;
+
+        if (opModeType == SystemConstants.OpMode.TELE_OP) {
+            timer.reset();
+            while (this.opMode.opModeIsActive() && timer.milliseconds() < 100) {}
+        }
+
         indexer.shoot(3);
 
         shooter.off();

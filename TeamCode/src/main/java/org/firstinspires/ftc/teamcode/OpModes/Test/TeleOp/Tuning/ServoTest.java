@@ -29,7 +29,7 @@ public class ServoTest extends LinearOpMode {
 
         servos = new Servo[]{
                 hardware.ShooterHoodServo,
-                hardware.LiftRetainerServo
+                hardware.ShooterRetainerServo
         };
 
         waitForStart();

@@ -57,15 +57,16 @@ public class Shooter extends SystemBase {
     }
 
 
-    public void update() { update(-1, -1);}
+    public void update() { update(-1, -1, -1);}
 
-    public void update(double overridePower, double overrideAngle) {
+    public void update(double overridePower, double overrideAngle, double overrideIndexerSpeed) {
         distance = POSE.distanceTo(goalPosition);
         sample = lookupShot(distance);
 
         if (overridePower != -1 && on) {
             targetPower = overridePower;
             targetAngle = overrideAngle;
+            sample.transferPower = overrideIndexerSpeed;
         } else if (sample != null && on) {
             targetPower = sample.power;
             targetAngle = sample.angle;

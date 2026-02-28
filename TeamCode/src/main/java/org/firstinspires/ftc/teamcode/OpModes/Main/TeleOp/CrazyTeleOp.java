@@ -12,6 +12,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Lift;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
@@ -19,7 +20,6 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
-import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.TriggerManager;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.InputBus;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
@@ -36,6 +36,9 @@ public class CrazyTeleOp extends ExoMode {
 
     private GamepadEx g1, g2;
     private final InputBus in = new InputBus();
+
+    private final double sensitivity = 0.75;
+    public static double moduleP = DriveConstants.TeleOpSwerveModuleP, moduleD = DriveConstants.TeleOpSwerveModuleD, moduleS = 0;
 
     private TriggerManager intakeTriggers, shooterTriggers;
     private Thread swerveThread, gamepadThread;
@@ -84,12 +87,14 @@ public class CrazyTeleOp extends ExoMode {
 
                 swerve.read();
                 swerve.update(
-                        autoOnBlue ? new Pose(in.ly, -in.lx, -in.rx * 0.75).negate() :
-                                new Pose(in.ly, -in.lx, -in.rx * 0.75)
+                        autoOnBlue ? new Pose(in.ly, -in.lx, -in.rx * sensitivity).negate() :
+                                new Pose(in.ly, -in.lx, -in.rx * sensitivity)
                 );
                 swerve.write();
+                
+                swerve.setModulePID(moduleP, 0, moduleD);
 
-                //swerve.lockHeadingToGoal(in.lockToGoal);
+                swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
 
                 if (in.evResetHeading.getAndSet(false)) {
@@ -165,11 +170,7 @@ public class CrazyTeleOp extends ExoMode {
                 if (in.evSetBlue.getAndSet(false)) { goalPosition = goalPositionBlue; autoOnBlue = true; }
                 if (in.evSetRed.getAndSet(false)) { goalPosition = goalPositionRed; autoOnBlue = false; }
 
-                if (in.readRandomization) {
-                    if (!hardware.limelight.enabled) { hardware.limelight.start(); hardware.limelight.setPipeline(LimelightEx.Pipeline.RANDOMIZATION); }
-                    hardware.limelight.read();
-                    hardware.limelight.getRandomization();
-                } else if (hardware.limelight.enabled) hardware.limelight.stop();
+
 
                 hardware.telemetry.addData("x", POSE.x);
                 hardware.telemetry.addData("y", POSE.y);
@@ -195,7 +196,7 @@ public class CrazyTeleOp extends ExoMode {
                 in.rx = g1.getRightX();
                 in.lt = g1.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
                 in.rt = g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER);
-                in.readRandomization = in.lt > 0.1;
+                in.lockToGoal = in.lt > 0.1;
                 in.spinupShooter = in.rt > 0.1;
                 in.wallResetCombo = g1.isDown(GamepadKeys.Button.RIGHT_BUMPER);
 
@@ -235,7 +236,6 @@ public class CrazyTeleOp extends ExoMode {
         gamepadThread.start();
         swerveThread.start();
 
-        lift.init();
         system.indexer.home();
     }
 
@@ -244,13 +244,9 @@ public class CrazyTeleOp extends ExoMode {
         intakeTriggers.check();
         shooterTriggers.check();
 
-        if (!in.spinupShooter && !system.shooter.on) {
-            system.shooter.on();
-            //system.indexer.microAdjust(false);
-        } else if (in.spinupShooter && system.shooter.on) {
-            system.shooter.off();
-            //system.indexer.microAdjust(true);
-        }
+        if (!in.spinupShooter && !system.shooter.on) system.shooter.on();
+        else if (in.spinupShooter && system.shooter.on) system.shooter.off();
+
 
         if (in.evRelocalizeATag.getAndSet(false)) {
             hardware.limelight.relocalize(hardware.localizer);

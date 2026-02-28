@@ -5,9 +5,6 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularD;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpAngularP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightD;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpLimelightP;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpVelocityMultiplier;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VELOCITY;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VEL_X_MULTIPLIER;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.VEL_Y_MULTIPLIER;
@@ -29,7 +26,6 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.InputBus;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.TriggerManager;
-import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
@@ -48,19 +44,23 @@ public class SoloTeleOp extends ExoMode {
     private TriggerManager intakeTriggers, shooterTriggers;
     private Thread swerveThread, gamepadThread;
 
-    public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD;
-    public static double limelightP = TeleOpLimelightP, limelightD = TeleOpLimelightD;
+    //public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD;
+    //public static double LlThreshold = DriveConstants.llThreshold;
+    //public static double LlCloseP = DriveConstants.llCloseP;
+    //public static double LlFarP = DriveConstants.llFarP;
+    //public static double LlCloseD = DriveConstants.llCloseD;
 
-    public static double moduleP = DriveConstants.TeleOpSwerveModuleP, moduleD = DriveConstants.TeleOpSwerveModuleD, moduleS = 0;
-    public static double odometryX = ODOMETRY_X_OFFSET, odometryY = ODOMETRY_Y_OFFSET;
+    //public static double moduleP = DriveConstants.TeleOpSwerveModuleP, moduleD = DriveConstants.TeleOpSwerveModuleD, moduleS = 0;
+    //public static double odometryX = ODOMETRY_X_OFFSET, odometryY = ODOMETRY_Y_OFFSET;
 
-    public static double sotmX = VEL_X_MULTIPLIER, sotmY = VEL_Y_MULTIPLIER;
+    //public static double sotmX = VEL_X_MULTIPLIER, sotmY = VEL_Y_MULTIPLIER;
 
     public static double angleAdjust = Shooter.ANGLE_ADJUST;
-    //public static double angle = 0.95;
-    //public static double power = 0;
+    public static double indexerSpeed = 1;
+    public static double angle = 0.95;
+    public static double power = 0;
 
-    public static double shooterP = Shooter.kP, shooterF = Shooter.kF, shooterD = Shooter.kD;
+    //public static double shooterP = Shooter.kP, shooterF = Shooter.kF, shooterD = Shooter.kD;
     public static double velocityAdjust = 0;
 
 
@@ -115,14 +115,18 @@ public class SoloTeleOp extends ExoMode {
                 );
                 swerve.write();
 
-                swerve.setHeadingPID(swerveP, 0, swerveD);
-                swerve.setLimelightPID(limelightP, 0, limelightD);
-                swerve.setModulePID(moduleP, 0, moduleD);
-                swerve.setModuleKs(moduleS);
+                //swerve.setHeadingPID(swerveP, 0, swerveD);
+                //swerve.setModulePID(moduleP, 0, moduleD);
+                //swerve.setModuleKs(moduleS);
 
-                TeleOpAngularP = swerveP;
-                VEL_X_MULTIPLIER = sotmX;
-                VEL_Y_MULTIPLIER = sotmY;
+                //DriveConstants.llCloseP = LlCloseP;
+                //DriveConstants.llThreshold = LlThreshold;
+                //DriveConstants.llFarP = LlFarP;
+                //DriveConstants.llCloseD = LlCloseD;
+
+                //TeleOpAngularP = swerveP;
+                //VEL_X_MULTIPLIER = sotmX;
+                //VEL_Y_MULTIPLIER = sotmY;
 
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
@@ -136,12 +140,13 @@ public class SoloTeleOp extends ExoMode {
                     lift.on();
                 }
 
-                hardware.telemetry.addData("x", POSE.x);
-                hardware.telemetry.addData("y", POSE.y);
-                hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
+                hardware.telemetry.addData("x", "%.2f", POSE.x);
+                hardware.telemetry.addData("y", "%.2f", POSE.y);
+                hardware.telemetry.addData("head", "%.2f", Math.toDegrees(POSE.heading));
 
-                hardware.telemetry.addData("VEL X", VELOCITY.x);
-                hardware.telemetry.addData("VEL Y",VELOCITY.y);
+                hardware.telemetry.addData("distance", system.shooter.distance);
+                //hardware.telemetry.addData("VEL X", VELOCITY.x);
+                //hardware.telemetry.addData("VEL Y",VELOCITY.y);
 
                 hardware.telemetry.addData("shooter velocity", system.shooter.correctedVelocity);
                 hardware.telemetry.addData("shooter target", system.shooter.targetVelocity);
@@ -152,7 +157,7 @@ public class SoloTeleOp extends ExoMode {
             while (opModeIsActive()) {
                 hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
 
-                hardware.localizer.setOffsets(odometryX, odometryY);
+                //hardware.localizer.setOffsets(odometryX, odometryY);
                 hardware.localizer.update();
                 hardware.readBattery();
                 system.read();
@@ -182,8 +187,8 @@ public class SoloTeleOp extends ExoMode {
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) in.evResetPosition.set(true);
                 //if (g1.wasJustPressed(GamepadKeys.Button.DPAD_UP)) in.evRelocalizeATag.set(true);
 
-                //Shooter.ANGLE_ADJUST = angleAdjust;
-                system.shooter.setPIDF(shooterP, 0, shooterD, shooterF);
+                Shooter.ANGLE_ADJUST = angleAdjust;
+                //system.shooter.setPIDF(shooterP, 0, shooterD, shooterF);
                 system.shooter.update();
                 system.write();
 
@@ -202,7 +207,6 @@ public class SoloTeleOp extends ExoMode {
         gamepadThread.start();
         swerveThread.start();
 
-        lift.init();
         system.indexer.home();
     }
 

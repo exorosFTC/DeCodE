@@ -13,8 +13,8 @@ import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
-@Autonomous(name = "BlueFar", group = "main", preselectTeleOp = "😈🔥")
-public class BlueFar extends ExoMode {
+@Autonomous(group = "main", preselectTeleOp = "😈🔥")
+public class BlueFar_9 extends ExoMode {
     private Hardware hardware;
     private SwerveDrive swerve;
     private ScoringSystem system;
@@ -24,6 +24,7 @@ public class BlueFar extends ExoMode {
     protected void Init() {
         new SystemData()
                 .add(SystemConstants.OpMode.AUTONOMOUS)
+                .setVelocityTimeout(true)
                 .setAutoOnBlue(true);
 
         hardware = Hardware.getInstance(this);
@@ -68,9 +69,9 @@ public class BlueFar extends ExoMode {
                 .waitDrive(0.8)
                 .moveSystem(() -> system.intake.on())
                 .driveTo(new Pose(-85, 170, Math.toRadians(-270)), 0.4, 5000)
-                .waitDrive(0.90)
+                .waitDrive(0.60)
                 .waitMs(400)
-                .driveTo(new Pose(-140, 28, Math.toRadians(-335)), 0.8, 5000)
+                .driveTo(new Pose(-140, 28, Math.toRadians(-335)), 0.7, 5000)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
@@ -84,21 +85,21 @@ public class BlueFar extends ExoMode {
     }
 
     private void humanPlayerLine() {
-        auto.driveTo(new Pose(-154, 164, Math.toRadians(90)), 0.6, 4000)
+        auto.driveTo(new Pose(-150, 164, Math.toRadians(90)), 0.6, 4000)
                 .moveSystem(() -> system.intake.on())
 
                 .waitDrive(0.95)
-                .driveTo(new Pose(-156, 100, Math.toRadians(90)), 0.9, 1000)
-                .waitDrive(0.007)
-                .driveTo(new Pose(-156, 164, Math.toRadians(90)), 0.9, 1000)
+                .driveTo(new Pose(-150, 100, Math.toRadians(90)), 0.9, 1000)
+                .waitDrive(0.004)
+                .driveTo(new Pose(-150, 164, Math.toRadians(90)), 0.9, 1000)
                 .waitDrive(0.35)
-                .driveTo(new Pose(-156, 100, Math.toRadians(90)), 0.9, 1000)
-                .waitDrive(0.007)
-                .driveTo(new Pose(-156, 164, Math.toRadians(90)), 0.9, 1000)
+                .driveTo(new Pose(-150, 100, Math.toRadians(90)), 0.9, 1000)
+                .waitDrive(0.004)
+                .driveTo(new Pose(-150, 164, Math.toRadians(90)), 0.9, 1000)
                 .waitDrive(0.35)
                 .waitMs(500)
 
-                .driveTo(new Pose(-140, 28, Math.toRadians(-335)), 0.8, 5000)
+                .driveTo(new Pose(-140, 28, Math.toRadians(-335)), 0.7, 5000)
                 .moveSystem(() -> {
                     system.intake.reverse();
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}

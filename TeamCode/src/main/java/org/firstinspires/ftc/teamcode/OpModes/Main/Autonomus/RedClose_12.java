@@ -7,10 +7,7 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.AutoLinearPy;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.TeleOpVelocityMultiplier;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
-import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPositionRed;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseRedClose;
-import static org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Indexer.elements;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -18,17 +15,15 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
-import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
-import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
 import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 @Config
-@Autonomous(name = "RedClose", group = "main", preselectTeleOp = "😈🔥")
-public class RedClose extends ExoMode {
+@Autonomous(group = "main", preselectTeleOp = "😈🔥")
+public class RedClose_12 extends ExoMode {
     private Hardware hardware;
     private SwerveDrive swerve;
     private ScoringSystem system;
@@ -100,7 +95,7 @@ public class RedClose extends ExoMode {
                 .waitMs(300)
                 .driveTo(new Pose(16, -118, Math.toRadians(0)), 0.8)
                 .waitDrive(0.7)
-                .driveTo(new Pose(15, -135, Math.toRadians(0)), 0.8, 1500)
+                .driveTo(new Pose(15, -139, Math.toRadians(0)), 0.8, 1500)
                 .waitDrive(0.965, true)
                 .waitMs(300)
                 .driveTo(new Pose(70, -60, Math.toRadians(-44)), 0.75)

@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring;
 
 public class ShotSample {
-    public final double distance;
-    public final double power;
-    public final double angle;
-    public final double transferPower;
+    public double distance;
+    public double power;
+    public double angle;
+    public double transferPower;
 
     public ShotSample(double distance, double power, double angle, double transferPower) {
         this.distance = distance;
