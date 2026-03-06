@@ -25,7 +25,8 @@ public class InputBus {
     public final AtomicBoolean evResetPosition       = new AtomicBoolean(false);
     public final AtomicBoolean evSetBlue             = new AtomicBoolean(false);
     public final AtomicBoolean evSetRed              = new AtomicBoolean(false);
-    public final AtomicBoolean evRelocalizeATag      = new AtomicBoolean(false);
+    public final AtomicBoolean evLoadShooter         = new AtomicBoolean(false);
+    public final AtomicBoolean evRaiseTransferArm    = new AtomicBoolean(false);
 
     public final AtomicBoolean evResetDown           = new AtomicBoolean(false);
     public final AtomicBoolean evResetLeft           = new AtomicBoolean(false);

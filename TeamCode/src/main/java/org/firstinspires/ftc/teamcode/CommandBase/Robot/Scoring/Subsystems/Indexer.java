@@ -26,13 +26,14 @@ public class Indexer extends SystemBase {
     private final ElapsedTime timer;
 
     public static final double TICKS_PER_REVOLUTION = 336;
-    public static double HOMING_POWER = 0.2; //in the indexing direction
-    public static double INDEXING_POWER = 0.3;
+    public static double HOMING_POWER = 0.2; //in the shooting direction
+    public static double INDEXING_POWER = 0.25;
 
-    public static final int microAdjustValue = 15;
+    public static final int microAdjustValue = 30;
+    public int homingOffset = 0;
     public int offset = 0;
 
-    public boolean isHome = true;
+    public boolean isHoming = false;
     public boolean isIndexing = false;
     public static boolean sorted = false;
 
@@ -57,23 +58,22 @@ public class Indexer extends SystemBase {
 
 
     public void home() {
+        isHoming = true;
         hardware.IndexerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // home in the shooting direction
-        hardware.IndexerMotor.setPower(HOMING_POWER); timer.reset();
+        hardware.IndexerMotor.setPower(HOMING_POWER);
+        timer.reset();
 
         while (timer.milliseconds() < 200 || !indexerLimit && opMode.opModeIsActive()) {}
         while (indexerLimit && opMode.opModeIsActive() && timer.seconds() < 3) {}
-
-        if (timer.seconds() < 3) isHome = true;
-
-        target = 0;
 
         sideswipe(3, true);
         resetEncoder();
 
         runTarget(target, 1);
+        isHoming = false;
     }
 
 
@@ -81,9 +81,6 @@ public class Indexer extends SystemBase {
     public void index(int balls) {
         isIndexing = true;
         balls = Math.max(1, Math.min(balls, 2)); //indexing 3 spots is useless, limit to 2
-
-        // special check for indexing balls
-        if (elements.get(3 - balls) != Artifact.NONE) target = (int) (target - TICKS_PER_REVOLUTION / 6);
 
         // index and update the artefact list
         target -= (int) (balls * TICKS_PER_REVOLUTION / 3);
@@ -93,20 +90,9 @@ public class Indexer extends SystemBase {
 
         hardware.IndexerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hardware.IndexerMotor.setPower(-INDEXING_POWER);
+
         while (indexerPosition > target && opMode.opModeIsActive()) {}
         hardware.IndexerMotor.setPower(0);
-
-        try {Thread.sleep(300);} catch (InterruptedException e) {}
-
-        // if there is an artefact in the front
-        if (elements.get(0) != Artifact.NONE) {
-            // come back so the transfer arm is down
-            target += (int) (TICKS_PER_REVOLUTION / 6);
-
-            hardware.IndexerMotor.setPower(0.25);
-            while (indexerPosition < target && opMode.opModeIsActive()) {}
-            hardware.IndexerMotor.setPower(0);
-        }
 
         runTarget(target, 1);
         isIndexing = false;
@@ -136,7 +122,7 @@ public class Indexer extends SystemBase {
         offset += reverse ? -microAdjustValue : microAdjustValue;
 
         runTarget(target + (reverse ? 1 : -1) * microAdjustValue,
-                  INDEXING_POWER);
+                  1);
     }
 
     public void manual(double value, double sensitivity) {
@@ -162,7 +148,7 @@ public class Indexer extends SystemBase {
         hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         this.on = true;
-        this.target = (int) (target + offset + balls * TICKS_PER_REVOLUTION / 3 * (Indexer.sorted ? 2 : 1));
+        this.target = (int) (target + offset + balls * TICKS_PER_REVOLUTION / 3 * (sorted ? 2 : 1));
 
         timer.reset();
         while (indexerPosition < this.target && timer.seconds() < 2 && opMode.opModeIsActive()) {
@@ -240,6 +226,9 @@ public class Indexer extends SystemBase {
 
     public void resetEncoder() {
         hardware.IndexerMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        target = homingOffset;
+        offset = 0;
     }
 
 

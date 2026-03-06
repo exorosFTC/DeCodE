@@ -55,13 +55,14 @@ public class CrazyTeleOp extends ExoMode {
         lift = new Lift(this);
 
         new SystemData()
-                .add(SystemConstants.OpMode.TELE_OP);
+                .add(SystemConstants.OpMode.TELE_OP)
+                .setSoloDrive(false);
 
         // create gamepad triggers
         intakeTriggers = new TriggerManager()
                 .addTrigger(() -> in.evToggleIntake.getAndSet(false), () -> {
-                    if (system.intake.on && !system.intake.reversed) system.intake.off();
-                    else system.intake.on();
+                    if (system.intake.on && !system.intake.reversed && system.isArmUp) system.intake.off();
+                    else if ((!system.intake.on || system.intake.reversed) && system.isArmUp) system.intake.on();
                 })   // intake
                 .addTrigger(() -> in.evToggleIntakeReverse.getAndSet(false), () -> {
                     if (system.intake.on && system.intake.reversed) system.intake.off();
@@ -69,9 +70,11 @@ public class CrazyTeleOp extends ExoMode {
                 }); // reverse intake
 
         shooterTriggers = new TriggerManager()
-                .addTrigger(() -> in.evSort.getAndSet(false), () -> system.indexer.indexPattern())                // sort
-                .addTrigger(() -> in.evShoot.getAndSet(false) && !in.spinupShooter, () -> system.shootSequence()) // shoot
-                .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> system.indexer.home());                // emergency homing
+                .addTrigger(() -> in.evSort.getAndSet(false), () -> { if (!system.indexer.isIndexing && system.isArmUp) system.indexer.indexPattern(); })  // sort
+                .addTrigger(() -> in.evShoot.getAndSet(false) && !in.spinupShooter, () -> { if (!system.isShooting) system.shootSequence(); })             // shoot
+                .addTrigger(() -> in.evHomeIndexer.getAndSet(false), () -> { if (!system.indexer.isHoming) system.indexer.home(); })                       // emergency homing
+                .addTrigger(() -> in.evLoadShooter.getAndSet(false), () -> system.load())                                                                  // load
+                .addTrigger(() -> in.evRaiseTransferArm.getAndSet(false), () -> system.setTransferArm(true));
 
 
         // set the right start position
@@ -97,66 +100,27 @@ public class CrazyTeleOp extends ExoMode {
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
 
-                if (in.evResetHeading.getAndSet(false)) {
-                    try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    hardware.localizer.setPositionEstimate(new Pose(POSE.x, POSE.y, 0));
-                    try { Thread.sleep(150); } catch (InterruptedException e) {}
-                }
+                if (in.evResetHeading.getAndSet(false)) hardware.localizer.setPositionEstimate(new Pose(POSE.x, POSE.y, 0));
                 if (in.evResetPosition.getAndSet(false)) {
-                    if (autoOnBlue) {
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                        hardware.localizer.setPositionEstimate(new Pose(-160, -160, 0));
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    } else {
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                        hardware.localizer.setPositionEstimate(new Pose(-160, 160, 0));
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    }
+                    if (autoOnBlue) hardware.localizer.setPositionEstimate(new Pose(-160, -160, 0));
+                    else hardware.localizer.setPositionEstimate(new Pose(-160, 160, 0));
                 }   // corner reset
                 if (in.evResetLeft.getAndSet(false)) {
-                    if (autoOnBlue) {
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                        hardware.localizer.setPositionEstimate(new Pose(-160, POSE.y, POSE.heading));
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    } else {
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                        hardware.localizer.setPositionEstimate(new Pose(160, POSE.y, POSE.heading));
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    }
-                }       // left reset
+                    if (autoOnBlue) hardware.localizer.setPositionEstimate(new Pose(-160, POSE.y, POSE.heading));
+                    else hardware.localizer.setPositionEstimate(new Pose(160, POSE.y, POSE.heading));
+                }   // left reset
                 if (in.evResetRight.getAndSet(false)) {
-                    if (autoOnBlue) {
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                        hardware.localizer.setPositionEstimate(new Pose(160, POSE.y, POSE.heading));
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    } else {
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                        hardware.localizer.setPositionEstimate(new Pose(-160, POSE.y, POSE.heading));
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    }
-                }      // right reset
+                    if (autoOnBlue) hardware.localizer.setPositionEstimate(new Pose(160, POSE.y, POSE.heading));
+                    else hardware.localizer.setPositionEstimate(new Pose(-160, POSE.y, POSE.heading));
+                }   // right reset
                 if (in.evResetDown.getAndSet(false)) {
-                    if (autoOnBlue) {
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                        hardware.localizer.setPositionEstimate(new Pose(POSE.x, -160, POSE.heading));
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    } else {
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                        hardware.localizer.setPositionEstimate(new Pose(POSE.x, 160, POSE.heading));
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    }
-                }       // down reset
+                    if (autoOnBlue) hardware.localizer.setPositionEstimate(new Pose(POSE.x, -160, POSE.heading));
+                    else hardware.localizer.setPositionEstimate(new Pose(POSE.x, 160, POSE.heading));
+                }   // down reset
                 if (in.evResetUp.getAndSet(false)) {
-                    if (autoOnBlue) {
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                        hardware.localizer.setPositionEstimate(new Pose(POSE.x, 160, POSE.heading));
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    } else {
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                        hardware.localizer.setPositionEstimate(new Pose(POSE.x, -160, POSE.heading));
-                        try { Thread.sleep(150); } catch (InterruptedException e) {}
-                    }
-                }         // up reset
+                    if (autoOnBlue) hardware.localizer.setPositionEstimate(new Pose(POSE.x, 160, POSE.heading));
+                    else hardware.localizer.setPositionEstimate(new Pose(POSE.x, -160, POSE.heading));
+                }   // up reset
 
                 if (in.evStartLift.getAndSet(false)) {
                     swerve.disable();
@@ -208,7 +172,8 @@ public class CrazyTeleOp extends ExoMode {
                 if (g2.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) in.evHomeIndexer.set(true);
                 if (g2.wasJustPressed(GamepadKeys.Button.X)) in.evIgnoreColorSensors.set(true);
                 if (g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) in.evIgnoreColorSensors.set(false);
-                //if (g2.wasJustPressed(GamepadKeys.Button.DPAD_UP)) in.evRelocalizeATag.set(true);
+                if (g2.wasJustPressed(GamepadKeys.Button.DPAD_UP)) in.evRaiseTransferArm.set(true);
+                if (in.ly2 > 0.3) in.evLoadShooter.set(true);
 
                 if (g1.isDown(GamepadKeys.Button.X) && g1.isDown(GamepadKeys.Button.DPAD_RIGHT)) in.evStartLift.set(true);
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) { if (in.wallResetCombo) in.evResetLeft.set(true); else in.evResetHeading.set(true); }
@@ -218,7 +183,7 @@ public class CrazyTeleOp extends ExoMode {
 
                 if (g1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1) in.evLockX.set(true);
 
-                system.indexer.manual(in.ly2, 0.2);
+                //system.indexer.manual(in.ly2, 0.2);
                 system.shooter.update();
                 system.write();
 
@@ -236,6 +201,7 @@ public class CrazyTeleOp extends ExoMode {
         gamepadThread.start();
         swerveThread.start();
 
+        system.setTransferArm(true);
         system.indexer.home();
     }
 
@@ -246,12 +212,6 @@ public class CrazyTeleOp extends ExoMode {
 
         if (!in.spinupShooter && !system.shooter.on) system.shooter.on();
         else if (in.spinupShooter && system.shooter.on) system.shooter.off();
-
-
-        if (in.evRelocalizeATag.getAndSet(false)) {
-            hardware.limelight.relocalize(hardware.localizer);
-        }
-
 
         system.updateIntake(in.evIgnoreColorSensors.get());
         Thread.yield();

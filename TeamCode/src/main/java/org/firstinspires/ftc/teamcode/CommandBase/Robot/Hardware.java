@@ -56,7 +56,7 @@ public class Hardware {
 
     public Servo
             ShooterHoodServo,
-            ShooterRetainerServo;
+            TransferArmServo;
 
     public DigitalChannel
             IndexerLimit,
@@ -117,7 +117,7 @@ public class Hardware {
         RightBack_lift = hardwareMap.get(CRServo.class, "RB lift");
 
         ShooterHoodServo = hardwareMap.get(Servo.class, "hood");
-        ShooterRetainerServo = hardwareMap.get(Servo.class, "shooterRetainer");
+        TransferArmServo = hardwareMap.get(Servo.class, "transferArm");
 
 
 

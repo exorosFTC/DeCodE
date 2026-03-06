@@ -1,14 +1,18 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx;
 
 import static android.graphics.Color.BLACK;
+import static android.graphics.Color.BLUE;
 import static android.graphics.Color.MAGENTA;
 import static android.graphics.Color.RED;
 import static android.graphics.Color.WHITE;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.aBitOfTrolling;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
 
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.teamcode.R;
 
 import java.util.List;
 
@@ -72,19 +76,20 @@ public class HubBulkRead {
             switch (type) {
                 case ALL: {
                     for (LynxModule hub : allHubs) {
-                        if (aBitOfTrolling) hub.setConstant(BLACK);
+                        if (aBitOfTrolling) if (autoOnBlue) hub.setConstant(BLUE); else hub.setConstant(RED);
                         hub.clearBulkCache();
                     }
+
                 }
                 break;
                 case CONTROL_HUB: {
-                    if (aBitOfTrolling) CONTROL_HUB.setConstant(BLACK);
+                    if (aBitOfTrolling) if (autoOnBlue) CONTROL_HUB.setConstant(BLUE); else CONTROL_HUB.setConstant(RED);
                     CONTROL_HUB.clearBulkCache();
                 }
                 break;
                 case EXPANSION_HUB: {
                     if (!justControlHub) {
-                        if (aBitOfTrolling) EXPANSION_HUB.setConstant(BLACK);
+                        if (aBitOfTrolling) if (autoOnBlue) EXPANSION_HUB.setConstant(BLUE); else EXPANSION_HUB.setConstant(RED);
                         EXPANSION_HUB.clearBulkCache();
                     }
                 }

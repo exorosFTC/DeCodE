@@ -41,15 +41,15 @@ public class DriveConstants {
                             AutoLinearDx = 0.005,
                             AutoLinearPy = 0.04,
                             AutoLinearDy = 0.005;
-    public static double AutoAngularP = 0.5,
+    public static double AutoAngularP = 0.4,
                             AutoAngularD = 0;
     public static double AutoAngularVelocityMultiplier = 0;
 
     // swerve module PID
     public static final double TeleOpSwerveModuleP = 0.25,
                                 TeleOpSwerveModuleD = 0;
-    public static final double AutoSwerveModuleP = 0.2,
-                                AutoSwerveModuleD = 0.2;
+    public static final double AutoSwerveModuleP = 0.18,
+                                AutoSwerveModuleD = 0;
 
 
     public static boolean useVelocityTimeout = false;

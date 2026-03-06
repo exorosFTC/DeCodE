@@ -24,12 +24,14 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveModuleState;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SlewRateLimiter;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Point;
 import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
 
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
@@ -63,6 +65,7 @@ public class AutoDrive {
     private double maxSpeed = 0.8;
 
     public static double kS_angular = 0.06;
+    public static double rateLimit = 3;
     public static SlewRateLimiter limX, limY;
 
 
@@ -82,8 +85,8 @@ public class AutoDrive {
         linearCy = new PIDController(AutoLinearPy, 0, AutoLinearDy);
         angularC = new PIDController(AutoAngularP, 0, AutoAngularD);
 
-        limX = new SlewRateLimiter(2);
-        limY = new SlewRateLimiter(2);
+        limX = new SlewRateLimiter(rateLimit);
+        limY = new SlewRateLimiter(rateLimit);
 
         this.opMode = opMode;
 
@@ -93,7 +96,20 @@ public class AutoDrive {
 
     private void startDriveThread() {
         driveThread = new Thread(() -> {
-            opMode.waitForStart();
+
+            while (opMode.opModeInInit()) {
+                hardware.bulk.clearCache(HubBulkRead.Hubs.ALL);
+                hardware.readBattery();
+
+                swerve.read();
+                swerve.update(Arrays.asList(
+                        new SwerveModuleState(0, 0),
+                        new SwerveModuleState(0, 0),
+                        new SwerveModuleState(0, 0),
+                        new SwerveModuleState(0, 0)
+                ));
+                swerve.write();
+            }
 
             while (opMode.opModeIsActive()) {
                 swerve.read();
@@ -104,6 +120,7 @@ public class AutoDrive {
                 hardware.telemetry.addData("isBusy", isBusy());
                 hardware.telemetry.addData("randomization", lastValidRandomization);
                 hardware.telemetry.addData("artifacts", elements.toString());
+                hardware.telemetry.addData("isIndexerFull", system.isIndexerFull);
 
                 hardware.telemetry.update();
 
@@ -131,6 +148,7 @@ public class AutoDrive {
                 hardware.readBattery();
                 system.read();
 
+                system.updateIntake(false);
                 system.shooter.update();
                 system.shooter.write();
 
@@ -193,6 +211,21 @@ public class AutoDrive {
         return this;
     }
 
+    public AutoDrive waitDriveActionFailSafe(double threshold, boolean useHeading, BooleanSupplier action) {
+        this.busyThresholdLinear = threshold;
+        updateDriveVector();
+
+        try { Thread.sleep(10); } catch (InterruptedException e) {}
+        velocityTimeoutTimer.reset();
+
+        while (!action.getAsBoolean() && (useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive() && (!useVelocityTimeout || velocityTimeoutTimer.milliseconds() < 800)) {
+            if (useVelocityTimeout && currentVelocity > 8)
+                velocityTimeoutTimer.reset();
+        }
+
+        return this;
+    }
+
 
 
 
@@ -203,6 +236,12 @@ public class AutoDrive {
     public AutoDrive waitMs(double ms, Runnable action) {
         waitTimer.reset();
         while (waitTimer.time(TimeUnit.MILLISECONDS) <= ms && opMode.opModeIsActive()) { action.run(); }
+        return this;
+    }
+
+    public AutoDrive waitMsActionFailSafe(double ms, BooleanSupplier action) {
+        waitTimer.reset();
+        while (waitTimer.time(TimeUnit.MILLISECONDS) <= ms && opMode.opModeIsActive() && !action.getAsBoolean()) {}
         return this;
     }
 

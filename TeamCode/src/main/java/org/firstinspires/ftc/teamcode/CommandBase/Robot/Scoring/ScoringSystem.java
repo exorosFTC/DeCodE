@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring;
 
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.soloDrive;
+import static org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Indexer.elements;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -22,9 +24,11 @@ public class ScoringSystem extends SystemBase {
     public Indexer indexer;
     public Shooter shooter;
 
-    private boolean isRetainerOn;
-    private double retainerOn = 0.93,
-                   retainerOff = 0.67;
+    public boolean isArmUp = false;
+    public boolean isShooting = false;
+
+    private double armDown = 0.15, // 0.13
+                   armUp = 0.29;   // 0.34
 
     public ElapsedTime timer;
     public double MIN_LOOPS = 8;
@@ -33,6 +37,8 @@ public class ScoringSystem extends SystemBase {
     public double[] colorDistance = new double[]{-1, -1, -1};
     public double[] loops = new double[]{0, 0, 0};
     public NormalizedRGBA colorValues;
+
+    public boolean isIndexerFull = false;
 
 
 
@@ -51,16 +57,19 @@ public class ScoringSystem extends SystemBase {
 
 
     public void updateIntake(boolean ignore) {
-        if ((intake.on && !intake.reversed) && !isRetainerOn) { hardware.ShooterRetainerServo.setPosition(retainerOn); isRetainerOn = true; }
-        else if ((!intake.on || intake.reversed) && isRetainerOn) { hardware.ShooterRetainerServo.setPosition(retainerOff); isRetainerOn = false; }
-
-        if (indexer.isBusy() || !indexer.on || !intake.on) return;
+        if (indexer.isBusy() || !indexer.on || !intake.on || !isArmUp) return;
 
         colorDistance = new double[]{
                 hardware.IntakeColor1.getDistance(DistanceUnit.MM),
                 hardware.IntakeColor2.getDistance(DistanceUnit.MM),
                 hardware.IntakeColor3.getDistance(DistanceUnit.MM)
         };
+
+        isIndexerFull = (colorDistance[0] <= catchThreshold[0]
+                                            &&
+                         colorDistance[1] <= catchThreshold[1]
+                                            &&
+                         colorDistance[2] <= catchThreshold[2]);
 
         //check all 3 sensors
         for (int i = 0; i < colorDistance.length; i++) {
@@ -71,16 +80,16 @@ public class ScoringSystem extends SystemBase {
                 colorValues = getColorForIndex(i);
 
                 if (colorValues.green > colorValues.red && colorValues.green > colorValues.blue)
-                    indexer.elements.set(i, Indexer.Artifact.GREEN);
-                else indexer.elements.set(i, Indexer.Artifact.PURPLE);
+                    elements.set(i, Indexer.Artifact.GREEN);
+                else elements.set(i, Indexer.Artifact.PURPLE);
 
-            } else if (indexer.elements.get(i) != Indexer.Artifact.NONE) {
-                indexer.elements.set(i, Indexer.Artifact.NONE);
+            } else if (elements.get(i) != Indexer.Artifact.NONE) {
+                elements.set(i, Indexer.Artifact.NONE);
             }
         }
 
 
-        if (indexer.elements.contains(Indexer.Artifact.NONE)
+        if (elements.contains(Indexer.Artifact.NONE)
                                 ||
             opModeType == SystemConstants.OpMode.AUTONOMOUS
                                 ||
@@ -91,16 +100,13 @@ public class ScoringSystem extends SystemBase {
         intake.reverse();
         timer.reset();
 
-        hardware.ShooterRetainerServo.setPosition(retainerOff);
-        isRetainerOn = false;
-
         while (opMode.opModeIsActive() && timer.milliseconds() < 400) {
             if (hardware.IntakeColor1.getDistance(DistanceUnit.MM) < catchThreshold[0]) {
                 colorValues = getColorForIndex(0);
 
                 if (colorValues.green > colorValues.red && colorValues.green > colorValues.blue)
-                    indexer.elements.set(0, Indexer.Artifact.GREEN);
-                else indexer.elements.set(0, Indexer.Artifact.PURPLE);
+                    elements.set(0, Indexer.Artifact.GREEN);
+                else elements.set(0, Indexer.Artifact.PURPLE);
             }
         }
 
@@ -109,24 +115,13 @@ public class ScoringSystem extends SystemBase {
 
     public void shootSequence() {
         if (!shooter.on) return;
-        if (intake.on) {
-            if (!intake.reversed) {
-                intake.off();
-                hardware.ShooterRetainerServo.setPosition(retainerOff);
-                isRetainerOn = false;
+        isShooting = true;
 
-                try { Thread.sleep(200); } catch (InterruptedException e) {}
-            } else intake.off();
-        }
+        if (intake.on) intake.off();
+        if (isArmUp) load();
 
         timer.reset();
-        while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 3) {
-            hardware.telemetry.addData("ready", !shooter.ready());
-            hardware.telemetry.addData("opMode", this.opMode.opModeIsActive());
-            hardware.telemetry.addData("timer", timer.seconds() < 3);
-        }
-
-        indexer.isHome = true;
+        while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 3) {}
 
         if (opModeType == SystemConstants.OpMode.TELE_OP) {
             timer.reset();
@@ -135,10 +130,30 @@ public class ScoringSystem extends SystemBase {
 
         indexer.shoot(3);
 
-        shooter.off();
+        setTransferArm(true);
+        isShooting = false;
+        if (soloDrive) shooter.off();
     }
 
+    public void setTransferArm(boolean up) { setTransferArm(up, true); }
 
+    public void setTransferArm(boolean up, boolean updateValue) {
+        if (updateValue) isArmUp = up;
+
+        if (up) hardware.TransferArmServo.setPosition(armUp);
+        else hardware.TransferArmServo.setPosition(armDown);
+    }
+
+    public void load() {
+        if (!isArmUp) return;
+        indexer.microAdjust(false);
+
+        timer.reset();
+        while (indexer.isBusy(3) && timer.seconds() < 1.5 && opMode.opModeIsActive()) {}
+
+        setTransferArm(false, true);
+        indexer.microAdjust(true);
+    }
 
 
     private NormalizedRGBA getColorForIndex(int i) {
@@ -157,3 +172,5 @@ public class ScoringSystem extends SystemBase {
     @Override
     public void write() { shooter.write(); }
 }
+
+

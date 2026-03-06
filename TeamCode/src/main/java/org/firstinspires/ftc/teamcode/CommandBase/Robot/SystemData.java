@@ -24,4 +24,11 @@ public class SystemData {
         DriveConstants.useVelocityTimeout = flag;
         return this;
     }
+
+    public SystemData setSoloDrive(boolean flag) {
+        SystemConstants.soloDrive = flag;
+        return this;
+    }
+
+
 }

@@ -28,8 +28,8 @@ public class ServoTest extends LinearOpMode {
         g1 = new GamepadEx(gamepad1);
 
         servos = new Servo[]{
-                hardware.ShooterHoodServo,
-                hardware.ShooterRetainerServo
+                hardware.TransferArmServo,
+                hardware.ShooterHoodServo
         };
 
         waitForStart();
