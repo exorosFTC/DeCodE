@@ -27,7 +27,7 @@ public class Shooter extends SystemBase {
 
     private static final double VEL_ALPHA = 0.3;
     public static final double MAX_RPS = 380;
-    public static double ANGLE_ADJUST = -0.003;
+    public static double ANGLE_ADJUST = -0.002;
     public static double VELOCITY_ADJUST = 0;
 
 

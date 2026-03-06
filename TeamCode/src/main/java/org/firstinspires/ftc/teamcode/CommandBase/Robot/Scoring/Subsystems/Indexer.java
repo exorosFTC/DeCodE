@@ -29,7 +29,7 @@ public class Indexer extends SystemBase {
     public static double HOMING_POWER = 0.2; //in the shooting direction
     public static double INDEXING_POWER = 0.25;
 
-    public static final int microAdjustValue = 30;
+    public static final int microAdjustValue = 37;
     public int homingOffset = 0;
     public int offset = 0;
 

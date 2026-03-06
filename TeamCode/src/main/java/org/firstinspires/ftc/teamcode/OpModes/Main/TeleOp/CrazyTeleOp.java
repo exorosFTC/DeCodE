@@ -210,7 +210,7 @@ public class CrazyTeleOp extends ExoMode {
         intakeTriggers.check();
         shooterTriggers.check();
 
-        if (!in.spinupShooter && !system.shooter.on) system.shooter.on();
+        if (!in.spinupShooter && !system.shooter.on && !lift.on) system.shooter.on();
         else if (in.spinupShooter && system.shooter.on) system.shooter.off();
 
         system.updateIntake(in.evIgnoreColorSensors.get());

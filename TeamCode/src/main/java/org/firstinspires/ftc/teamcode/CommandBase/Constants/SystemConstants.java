@@ -20,16 +20,17 @@ public class SystemConstants {
     public static boolean aBitOfTrolling = true;
 
     public static List<ShotSample> samples = Arrays.asList(
+            new ShotSample(365, 0.699, 0.35, 0.4),
+            new ShotSample(331, 0.684, 0.37, 0.8),
+            new ShotSample(302, 0.67, 0.39, 0.8),
 
-            new ShotSample(362, 0.78, 0.35, 0.5),
-            new ShotSample(322, 0.7, 0.35, 0.5),
-            new ShotSample(296, 0.67, 0.38, 0.5),
+            new ShotSample(248, 0.605, 0.47, 0.85),
+            new ShotSample(215, 0.589, 0.5, 1),
+            new ShotSample(191, 0.57, 0.55, 1),
+            new ShotSample(169, 0.545, 0.67, 1),
+            new ShotSample(125, 0.509, 0.72, 1),
+            new ShotSample(97, 0.467, 0.85, 1),
+            new ShotSample(74, 0.475, 0.97, 1)
 
-            new ShotSample(245, 0.59, 0.53, 1),
-            new ShotSample(210, 0.568, 0.6, 1),
-            new ShotSample(159, 0.527, 0.67, 1),
-            new ShotSample(124, 0.50, 0.73, 1),
-            new ShotSample(94, 0.48, 0.84, 1),
-            new ShotSample(72, 0.472, 0.97, 1)
     );
 }

@@ -45,6 +45,8 @@ public class SoloTeleOp extends ExoMode {
     private TriggerManager intakeTriggers, shooterTriggers;
     private Thread swerveThread, gamepadThread;
 
+    private boolean tuneShooter = false;
+
     //public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD;
     //public static double LlThreshold = DriveConstants.llThreshold;
     //public static double LlCloseP = DriveConstants.llCloseP;
@@ -57,7 +59,7 @@ public class SoloTeleOp extends ExoMode {
     //public static double sotmX = VEL_X_MULTIPLIER, sotmY = VEL_Y_MULTIPLIER;
 
     public static double angleAdjust = Shooter.ANGLE_ADJUST;
-    public static double indexerSpeed = 1;
+    public static double transferPower = 1;
     public static double angle = 0.95;
     public static double power = 0;
 
@@ -195,7 +197,9 @@ public class SoloTeleOp extends ExoMode {
 
                 Shooter.ANGLE_ADJUST = angleAdjust;
                 //system.shooter.setPIDF(shooterP, 0, shooterD, shooterF);
-                system.shooter.update();
+
+                if (tuneShooter) system.shooter.update(power, angle, transferPower);
+                else system.shooter.update();
                 system.write();
 
                 Thread.yield();

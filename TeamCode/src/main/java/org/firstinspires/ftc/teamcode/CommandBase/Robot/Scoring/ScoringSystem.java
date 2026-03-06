@@ -27,8 +27,8 @@ public class ScoringSystem extends SystemBase {
     public boolean isArmUp = false;
     public boolean isShooting = false;
 
-    private double armDown = 0.15, // 0.13
-                   armUp = 0.29;   // 0.34
+    private final double armDown = 0.15,
+                         armUp = 0.29;
 
     public ElapsedTime timer;
     public double MIN_LOOPS = 8;
@@ -52,7 +52,6 @@ public class ScoringSystem extends SystemBase {
 
         timer = new ElapsedTime();
     }
-
 
 
 
@@ -123,7 +122,7 @@ public class ScoringSystem extends SystemBase {
         timer.reset();
         while (!shooter.ready() && this.opMode.opModeIsActive() && timer.seconds() < 3) {}
 
-        if (opModeType == SystemConstants.OpMode.TELE_OP) {
+        if (opModeType == SystemConstants.OpMode.TELE_OP && soloDrive) {
             timer.reset();
             while (this.opMode.opModeIsActive() && timer.milliseconds() < 100) {}
         }
@@ -151,7 +150,7 @@ public class ScoringSystem extends SystemBase {
         timer.reset();
         while (indexer.isBusy(3) && timer.seconds() < 1.5 && opMode.opModeIsActive()) {}
 
-        setTransferArm(false, true);
+        setTransferArm(false);
         indexer.microAdjust(true);
     }
 
