@@ -74,8 +74,8 @@ public class RedClose_15 extends ExoMode {
     protected void WhenStarted() {
         preload();
         secondLine();
-        gateCycle();
-        gateCycle();
+        gateCycle1();
+        gateCycle2();
         firstLine();
 
         auto.lockHeadingToGoal(true);
@@ -83,11 +83,11 @@ public class RedClose_15 extends ExoMode {
     }
 
     private void preload() {
-        auto.driveTo(new Pose(80, -60, Math.toRadians(-42)), 0.5)
+        auto.driveTo(new Pose(80, -60, Math.toRadians(-45)), 0.45)
                 .moveSystem(() -> system.shooter.on())
+                .waitDrive(0.96)
                 .lockHeadingToGoal(true)
-                .waitDrive(0.98)
-                .waitMs(400)
+                .waitMs(200)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.isShooting)
                 .moveSystem(() -> system.setTransferArm(true))
@@ -98,9 +98,10 @@ public class RedClose_15 extends ExoMode {
         auto.moveSystem(() -> system.intake.on())
                 .driveTo(new Pose(40, -50, Math.toRadians(270)), 0.8)
                 .waitDrive(0.4)
-                .driveTo(new Pose(40, -128, Math.toRadians(270)), 0.5)
+                .driveTo(new Pose(40, -132, Math.toRadians(270)), 0.6)
                 .waitDriveActionFailSafe(0.965, false,  () -> system.isIndexerFull)
                 .driveTo(new Pose(90, -40, Math.toRadians(-48)), 0.7)
+                .waitMs(300)
                 .moveSystem(() -> {
                     new Thread(() -> system.load()).start();
 
@@ -111,7 +112,7 @@ public class RedClose_15 extends ExoMode {
                 })
                 .waitDrive(0.2)
                 .lockHeadingToGoal(true)
-                .waitDrive(0.98, false)
+                .waitDrive(0.96, false)
                 .waitMs(300)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.isShooting)
@@ -119,13 +120,14 @@ public class RedClose_15 extends ExoMode {
     }
 
     private void secondLine() {
-        auto.moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-20, -42, Math.toRadians(270)), 0.8)
-                .waitDrive(0.5)
-                .driveTo(new Pose(-20, -156, Math.toRadians(270)), 0.6, 2500)
-                .waitDriveActionFailSafe(0.88, false, () -> system.isIndexerFull)
-                .driveTo(new Pose(-20, -60, Math.toRadians(270)), 0.8)
-                .waitDrive(0.4)
+        auto.driveTo(new Pose(-20, -42, Math.toRadians(270)), 0.7, 1500)
+                .waitMs(400)
+                .moveSystem(() -> system.intake.on())
+                .waitDrive(0.6, false)
+                .driveTo(new Pose(-20, -156, Math.toRadians(270)), 0.6, 2600)
+                .waitDriveActionFailSafe(0.9, false, () -> system.isIndexerFull)
+                .driveTo(new Pose(-20, -60, Math.toRadians(270)), 0.8, 1500)
+                .waitDrive(0.4, false)
                 .moveSystem(() ->
                     new Thread(() -> {
                         new Thread(() -> system.load()).start();
@@ -135,10 +137,10 @@ public class RedClose_15 extends ExoMode {
                         try{ Thread.sleep(400); } catch (InterruptedException e) {}
                         system.intake.off();
                     }).start())
-                .driveTo(new Pose(60, -60, Math.toRadians(-42.5)), 0.8)
-                .waitDrive(0.3)
+                .driveTo(new Pose(60, -60, Math.toRadians(-44)), 0.8, 3000)
+                .waitDrive(0.4, false)
                 .lockHeadingToGoal(true)
-                .waitDrive(0.98, false)
+                .waitDrive(0.96, false)
                 .waitMs(300)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.isShooting)
@@ -146,23 +148,26 @@ public class RedClose_15 extends ExoMode {
                 .lockHeadingToGoal(false);
     }
 
-    private void gateCycle() {
-        auto.moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-10, -50, Math.toRadians(270)), 0.8)
-                .waitDrive(0.6)
-                .driveTo(new Pose(-10, -146, Math.toRadians(270)), 0.55)
-                .waitDrive(0.9)
-                .driveTo(new Pose(-10, -142, Math.toRadians(270)), 0.3, 400)
-                .waitDrive(0.79)
+    private void gateCycle1() {
+        auto.driveTo(new Pose(-10, -50, Math.toRadians(-90)), 0.8)
+                .waitMs(400)
+                .moveSystem(() -> system.intake.on())
+                .waitDrive(0.4, false)
+                .driveTo(new Pose(-10, -149, Math.toRadians(-80)), 0.55, 800)
+                .waitDrive(0.8, false)
+                .driveTo(new Pose(-10, -149, Math.toRadians(-80)), 0.4, 800)
+                .waitDrive(0.73, false)
+                .waitMs(100)
 
-                .driveTo(new Pose(-45, -142, Math.toRadians(270)), 0.8, 1000)
-                .waitDriveActionFailSafe(0.8, false, () -> system.isIndexerFull)
-                .driveTo(new Pose(-27, -142, Math.toRadians(270)), 0.8, 1000)
-                .waitDriveActionFailSafe(0.8, false, () -> system.isIndexerFull)
-                .driveTo(new Pose(-45, -142, Math.toRadians(270)), 0.8, 1000)
-                .waitDriveActionFailSafe(0.8, false, () -> system.isIndexerFull)
+                .driveTo(new Pose(-40, -144, Math.toRadians(-50)), 0.6, 1000)
+                .waitDriveActionFailSafe(0.9, false, () -> system.isIndexerFull)
+                .waitMsActionFailSafe(550, () -> system.isIndexerFull)
+                .driveTo(new Pose(-25, -149, Math.toRadians(-90)), 0.6, 500)
+                .waitDriveActionFailSafe(0.9, false, () -> system.isIndexerFull)
+                .driveTo(new Pose(-40, -149, Math.toRadians(-90)), 0.6, 500)
+                .waitDriveActionFailSafe(0.9, false, () -> system.isIndexerFull)
 
-                .driveTo(new Pose(-23, -70, Math.toRadians(270)), 0.8)
+                .driveTo(new Pose(-23, -70, Math.toRadians(-90)), 0.8)
                 .moveSystem(() -> {
                     new Thread(() -> system.load()).start();
 
@@ -171,16 +176,60 @@ public class RedClose_15 extends ExoMode {
                     try{ Thread.sleep(400); } catch (InterruptedException e) {}
                     system.intake.off();
                 })
+                .waitDrive(0.4, false)
+                .driveTo(new Pose(60, -60, Math.toRadians(-42)), 0.7)
+                .waitDrive(0.4, false)
                 .lockHeadingToGoal(true)
-                .waitDrive(0.4)
-                .driveTo(new Pose(60, -60, Math.toRadians(38.5)), 0.8)
 
-                .waitDrive(0.98, false)
-                .waitMs(300)
+
+                .waitDrive(0.96, false)
+                .waitMs(400)
                 .moveSystem(() -> system.shootSequence())
                 .waitAction(() -> !system.isShooting)
                 .lockHeadingToGoal(false);
     }
+
+    private void gateCycle2() {
+        auto.driveTo(new Pose(-10, -50, Math.toRadians(-90)), 0.8)
+                .waitMs(500)
+                .moveSystem(() -> system.intake.on())
+                .waitDrive(0.4, false)
+                .driveTo(new Pose(-10, -149, Math.toRadians(-80)), 0.55, 800)
+                .waitDrive(0.8, false)
+                .driveTo(new Pose(-10, -149, Math.toRadians(-80)), 0.4, 800)
+                .waitDrive(0.73, false)
+                .waitMs(100)
+
+                .driveTo(new Pose(-40, -144, Math.toRadians(-50)), 0.6, 1000)
+                .waitDriveActionFailSafe(0.9, false, () -> system.isIndexerFull)
+                .waitMsActionFailSafe(550, () -> system.isIndexerFull)
+                .driveTo(new Pose(-25, -149, Math.toRadians(-90)), 0.6, 500)
+                .waitDriveActionFailSafe(0.9, false, () -> system.isIndexerFull)
+                .driveTo(new Pose(-40, -149, Math.toRadians(-90)), 0.6, 500)
+                .waitDriveActionFailSafe(0.9, false, () -> system.isIndexerFull)
+
+                .driveTo(new Pose(-23, -70, Math.toRadians(-90)), 0.8)
+                .moveSystem(() -> {
+                    new Thread(() -> system.load()).start();
+
+                    try{ Thread.sleep(200); } catch (InterruptedException e) {}
+                    system.intake.reverse();
+                    try{ Thread.sleep(400); } catch (InterruptedException e) {}
+                    system.intake.off();
+                })
+                .waitDrive(0.4, false)
+                .driveTo(new Pose(60, -60, Math.toRadians(-42)), 0.7)
+                .waitDrive(0.4, false)
+                .lockHeadingToGoal(true)
+
+                .waitDrive(0.96, false)
+                .waitMs(400)
+                .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.isShooting)
+                .lockHeadingToGoal(false);
+    }
+
+
 
     @Override
     protected void Loop() {}

@@ -125,7 +125,7 @@ public class AutoDrive {
                 hardware.telemetry.update();
 
                 if (usingFailSafe && isBusy() && failSafeTimer.time(TimeUnit.MILLISECONDS) > failSafeTimeMs)
-                    driveTo(POSE,  30, 30);
+                    driveTo(POSE, 0.8);
 
                 updateDriveVector();
                 swerve.update(driveVector);
@@ -202,8 +202,8 @@ public class AutoDrive {
         try { Thread.sleep(10); } catch (InterruptedException e) {}
         velocityTimeoutTimer.reset();
 
-        while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * 0.2)) && opMode.opModeIsActive() && (!useVelocityTimeout || velocityTimeoutTimer.milliseconds() < 400)) {
-            if (useVelocityTimeout && currentVelocity > 6)
+        while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive() && (!useVelocityTimeout || velocityTimeoutTimer.milliseconds() < 400)) {
+            if ((useVelocityTimeout && currentVelocity > 6) || Math.abs(currentDistance) < Math.abs(maxDistance * 0.2))
                 velocityTimeoutTimer.reset();
             inLoop.run();
         }
@@ -218,8 +218,8 @@ public class AutoDrive {
         try { Thread.sleep(10); } catch (InterruptedException e) {}
         velocityTimeoutTimer.reset();
 
-        while (!action.getAsBoolean() && (useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * 0.2)) && opMode.opModeIsActive() && (!useVelocityTimeout || velocityTimeoutTimer.milliseconds() < 400)) {
-            if (useVelocityTimeout && currentVelocity > 6)
+        while (!action.getAsBoolean() && (useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive() && (!useVelocityTimeout || (velocityTimeoutTimer.milliseconds() < 400))) {
+            if ((useVelocityTimeout && currentVelocity > 6) || Math.abs(currentDistance) < Math.abs(maxDistance * 0.2))
                 velocityTimeoutTimer.reset();
         }
 
@@ -329,9 +329,9 @@ public class AutoDrive {
     }
 
     public boolean isBusy() {
-        return Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))
+        return (Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))
                 ||
-                Math.abs(target.heading - POSE.heading) > busyThresholdAngular;
+                Math.abs(target.heading - POSE.heading) > busyThresholdAngular);
     }
 
 
