@@ -58,6 +58,11 @@ public class PinpointLocalizer {
         DriveConstants.POSE = pose;
     }
 
+    public void recalibrate() {
+        pinpoint.recalibrateIMU();
+        try { Thread.sleep(250); } catch (InterruptedException e) {}
+    }
+
     public void setOffsets(double xOffset, double yOffset) {
         pinpoint.setOffsets(xOffset, yOffset, DistanceUnit.CM);
     }

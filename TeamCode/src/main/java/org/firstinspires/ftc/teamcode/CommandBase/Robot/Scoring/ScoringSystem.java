@@ -33,7 +33,7 @@ public class ScoringSystem extends SystemBase {
     public ElapsedTime timer;
     public double MIN_LOOPS = 8;
 
-    public double[] catchThreshold = new double[]{68, 69, 52};
+    public double[] catchThreshold = new double[]{79, 79, 53};
     public double[] colorDistance = new double[]{-1, -1, -1};
     public double[] loops = new double[]{0, 0, 0};
     public NormalizedRGBA colorValues;
@@ -97,8 +97,12 @@ public class ScoringSystem extends SystemBase {
 
         // when all 3 slots are full, reverse intake & move on
         intake.reverse();
-        timer.reset();
+        readSensors();
+        intake.off();
+    }
 
+    public void readSensors() {
+        timer.reset();
         while (opMode.opModeIsActive() && timer.milliseconds() < 400) {
             if (hardware.IntakeColor1.getDistance(DistanceUnit.MM) < catchThreshold[0]) {
                 colorValues = getColorForIndex(0);
@@ -108,8 +112,6 @@ public class ScoringSystem extends SystemBase {
                 else elements.set(0, Indexer.Artifact.PURPLE);
             }
         }
-
-        intake.off();
     }
 
     public void shootSequence() {
@@ -131,7 +133,8 @@ public class ScoringSystem extends SystemBase {
 
         setTransferArm(true);
         isShooting = false;
-        if (soloDrive) shooter.off();
+        isIndexerFull = false;
+        if (opModeType == SystemConstants.OpMode.TELE_OP && soloDrive) shooter.off();
     }
 
     public void setTransferArm(boolean up) { setTransferArm(up, true); }
@@ -148,10 +151,13 @@ public class ScoringSystem extends SystemBase {
         indexer.microAdjust(false);
 
         timer.reset();
-        while (indexer.isBusy(3) && timer.seconds() < 1.5 && opMode.opModeIsActive()) {}
+        while (indexer.isBusy(6) && timer.seconds() < 1 && opMode.opModeIsActive()) {}
 
         setTransferArm(false);
         indexer.microAdjust(true);
+
+        while (indexer.isBusy(6) && timer.seconds() < 1 && opMode.opModeIsActive()) {}
+
     }
 
 

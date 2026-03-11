@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.POSE;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.autoOnBlue;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.lastValidRandomization;
-import static org.firstinspires.ftc.teamcode.CustomPathing.Math.MathFormulas.normalizeRadians;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -38,7 +37,7 @@ public class LimelightEx {
     public static double KALMAN_FILTER_INTERVAL_S = 2;
 
 
-    public LimelightEx.Pipeline pipeline = LimelightEx.Pipeline.RANDOMIZATION;
+    public LimelightEx.Pipeline pipeline = Pipeline.RANDOMIZATION;
     public LLResult result = null;
 
     public LimelightEx(String name, LinearOpMode opMode) {
@@ -77,10 +76,10 @@ public class LimelightEx {
 
 
 
-    public LimelightEx.Randomization getRandomization() {
+    public void getRandomization() {
         if (pipeline != LimelightEx.Pipeline.RANDOMIZATION) setPipeline(LimelightEx.Pipeline.RANDOMIZATION);
-        if (result == null || !result.isValid()) return lastValidRandomization;
-        if (result.getFiducialResults().isEmpty()) return lastValidRandomization;
+        if (result == null || !result.isValid()) return;
+        if (result.getFiducialResults().isEmpty()) return;
 
         int tagId = result.getFiducialResults().get(0).getFiducialId();
         switch (tagId) {
@@ -89,8 +88,6 @@ public class LimelightEx {
             case 23: { lastValidRandomization = LimelightEx.Randomization.RIGHT; } break;
             default: {} break;
         }
-
-        return lastValidRandomization;
     }
 
     public LimelightEx.Pipeline getPipeline() { return pipeline; }

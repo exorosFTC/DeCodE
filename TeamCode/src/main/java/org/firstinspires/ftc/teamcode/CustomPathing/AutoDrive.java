@@ -114,13 +114,13 @@ public class AutoDrive {
             while (opMode.opModeIsActive()) {
                 swerve.read();
 
-                hardware.telemetry.addData("x", POSE.x);
-                hardware.telemetry.addData("y", POSE.y);
-                hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
-                hardware.telemetry.addData("isBusy", isBusy());
+                //hardware.telemetry.addData("x", POSE.x);
+                //hardware.telemetry.addData("y", POSE.y);
+                //hardware.telemetry.addData("head", Math.toDegrees(POSE.heading));
+                //hardware.telemetry.addData("isBusy", isBusy());
                 hardware.telemetry.addData("randomization", lastValidRandomization);
                 hardware.telemetry.addData("artifacts", elements.toString());
-                hardware.telemetry.addData("isIndexerFull", system.isIndexerFull);
+                //hardware.telemetry.addData("isIndexerFull", system.isIndexerFull);
 
                 hardware.telemetry.update();
 
@@ -202,8 +202,8 @@ public class AutoDrive {
         try { Thread.sleep(10); } catch (InterruptedException e) {}
         velocityTimeoutTimer.reset();
 
-        while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive() && (!useVelocityTimeout || velocityTimeoutTimer.milliseconds() < 800)) {
-            if (useVelocityTimeout && currentVelocity > 8)
+        while ((useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * 0.2)) && opMode.opModeIsActive() && (!useVelocityTimeout || velocityTimeoutTimer.milliseconds() < 400)) {
+            if (useVelocityTimeout && currentVelocity > 6)
                 velocityTimeoutTimer.reset();
             inLoop.run();
         }
@@ -218,8 +218,8 @@ public class AutoDrive {
         try { Thread.sleep(10); } catch (InterruptedException e) {}
         velocityTimeoutTimer.reset();
 
-        while (!action.getAsBoolean() && (useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * (1 - busyThresholdLinear))) && opMode.opModeIsActive() && (!useVelocityTimeout || velocityTimeoutTimer.milliseconds() < 800)) {
-            if (useVelocityTimeout && currentVelocity > 8)
+        while (!action.getAsBoolean() && (useHeading ? isBusy() : Math.abs(currentDistance) > Math.abs(maxDistance * 0.2)) && opMode.opModeIsActive() && (!useVelocityTimeout || velocityTimeoutTimer.milliseconds() < 400)) {
+            if (useVelocityTimeout && currentVelocity > 6)
                 velocityTimeoutTimer.reset();
         }
 
@@ -229,11 +229,23 @@ public class AutoDrive {
 
 
 
-    public AutoDrive waitMs(double ms) {
-        return waitMs(ms, opMode::idle);
+    public AutoDrive waitLimelightAlign(double ms) {
+        double loops = 0;
+        waitTimer.reset();
+
+        while (waitTimer.time(TimeUnit.MICROSECONDS) <= ms && loops < 30 && opMode.opModeIsActive()) {
+            if (hardware.limelight.tagInSight())
+            { if (Math.abs(hardware.limelight.getCenterOffset()) > 0.1) loops = 0; else loops += 1; }
+            else { if (swerve.angularC.getPositionError() > 0.2) loops = 0; else loops += 1; }
+        }
+        return this;
     }
 
-    public AutoDrive waitMs(double ms, Runnable action) {
+    public AutoDrive waitMs(double ms) {
+        return waitMs(opMode::idle, ms);
+    }
+
+    public AutoDrive waitMs(Runnable action, double ms) {
         waitTimer.reset();
         while (waitTimer.time(TimeUnit.MILLISECONDS) <= ms && opMode.opModeIsActive()) { action.run(); }
         return this;
@@ -261,6 +273,11 @@ public class AutoDrive {
 
 
 
+
+    public AutoDrive lockHeadingToGoal(boolean lock) {
+        swerve.lockHeadingToGoal(lock);
+        return this;
+    }
 
     public AutoDrive moveSystem(Runnable action) {
         if (action != null) action.run();
@@ -292,6 +309,7 @@ public class AutoDrive {
     private void updateDriveVector() {
         currentDistance = target.hypot(POSE);
         currentVelocity = VELOCITY.hypot();
+        hardware.telemetry.addData("currentVelocity", currentVelocity);
 
         double angularVelocity = angularC.calculate(FindShortestPath(POSE.heading, target.heading));
 

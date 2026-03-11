@@ -115,7 +115,7 @@ public class SwerveDrive extends SystemBase {
                 double offset = hardware.limelight.getCenterOffset();
 
                 if (Math.abs(offset) > DriveConstants.llThreshold) limelightC.setPID(DriveConstants.llFarP, 0, DriveConstants.llCloseD);
-                else limelightC.setP(DriveConstants.llCloseP);
+                else limelightC.setPID(DriveConstants.llCloseP, 0, DriveConstants.llCloseD);
 
                 velocity.heading = limelightC.calculate(offset) * 10 / hardware.batteryVoltage;
             } else {
@@ -124,7 +124,7 @@ public class SwerveDrive extends SystemBase {
                 velocity.heading = angularC.calculate(FindShortestPath(POSE.heading, targetHeading));
                 velocity.heading += Math.signum(velocity.heading) * Math.abs(VELOCITY.hypot()) > 3 ? 0 : 0.1;
             }
-        } else if (hardware.limelight.enabled) hardware.limelight.stop();
+        } else if (hardware.limelight.enabled && hardware.limelight.getPipeline() != LimelightEx.Pipeline.RANDOMIZATION) hardware.limelight.stop();
         else hardware.telemetry.addLine("Alignment: OFF");
 
 
@@ -181,6 +181,7 @@ public class SwerveDrive extends SystemBase {
 
     public void lockHeadingToGoal(boolean lock) { lockHeadingToGoal = lock; }
 
+    private double getVelocityMultiplier() { return 1 + VELOCITY.hypot() / 167; }
 
 
 

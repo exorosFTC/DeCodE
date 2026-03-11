@@ -102,6 +102,7 @@ public class CrazyTeleOp extends ExoMode {
 
                 if (in.evResetHeading.getAndSet(false)) hardware.localizer.setPositionEstimate(new Pose(POSE.x, POSE.y, 0));
                 if (in.evResetPosition.getAndSet(false)) {
+                    hardware.localizer.recalibrate();
                     if (autoOnBlue) hardware.localizer.setPositionEstimate(new Pose(-160, -160, 0));
                     else hardware.localizer.setPositionEstimate(new Pose(-160, 160, 0));
                 }   // corner reset
@@ -183,7 +184,6 @@ public class CrazyTeleOp extends ExoMode {
 
                 if (g1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1) in.evLockX.set(true);
 
-                //system.indexer.manual(in.ly2, 0.2);
                 system.shooter.update();
                 system.write();
 
@@ -210,8 +210,8 @@ public class CrazyTeleOp extends ExoMode {
         intakeTriggers.check();
         shooterTriggers.check();
 
-        if (!in.spinupShooter && !system.shooter.on && !lift.on) system.shooter.on();
-        else if (in.spinupShooter && system.shooter.on) system.shooter.off();
+        if ((!in.spinupShooter && !lift.on) && !system.shooter.on) system.shooter.on();
+        else if ((in.spinupShooter || lift.on) && system.shooter.on) system.shooter.off();
 
         system.updateIntake(in.evIgnoreColorSensors.get());
         Thread.yield();

@@ -13,8 +13,8 @@ public class DriveConstants {
     public static Pose POSE = startPose;
     public static Pose VELOCITY = new Pose();
 
-    public static double VEL_X_MULTIPLIER = 0.4,
-                         VEL_Y_MULTIPLIER = 0.5;
+    public static double VEL_X_MULTIPLIER = 0.2,
+                         VEL_Y_MULTIPLIER = 0.3;
 
     public static double DRIVE_W = 33, DRIVE_L = 33;
     public static double R = Math.hypot(DRIVE_W, DRIVE_L);
@@ -27,21 +27,21 @@ public class DriveConstants {
     //                     ODOMETRY_Y_OFFSET = 12.3054;
 
     // teleop PID
-    public static double TeleOpAngularP = 0.9,
-                                TeleOpAngularD = 0;
+    public static double TeleOpAngularP = 0.6,
+                                TeleOpAngularD = 0.03;
     public static double TeleOpVelocityMultiplier = 0;
 
     public static double llThreshold = 5.5,
-                        llCloseP = 0.03,
+                        llCloseP = 0.042,
                         llFarP = 0.015;
-    public static double llCloseD = 0;
+    public static double llCloseD = 0.00001;
 
     // auto PID
     public static double AutoLinearPx = 0.04,
                             AutoLinearDx = 0.005,
                             AutoLinearPy = 0.04,
                             AutoLinearDy = 0.005;
-    public static double AutoAngularP = 0.4,
+    public static double AutoAngularP = 0.3,
                             AutoAngularD = 0;
     public static double AutoAngularVelocityMultiplier = 0;
 

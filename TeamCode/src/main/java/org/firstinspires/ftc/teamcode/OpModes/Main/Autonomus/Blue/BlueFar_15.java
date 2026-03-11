@@ -1,0 +1,137 @@
+package org.firstinspires.ftc.teamcode.OpModes.Main.Autonomus.Blue;
+
+import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.startPoseBlueFar;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.Swerve.SwerveDrive;
+import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
+import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
+import org.firstinspires.ftc.teamcode.CustomPathing.AutoDrive;
+import org.firstinspires.ftc.teamcode.CustomPathing.Math.Geometry.Pose;
+
+@Autonomous(group = "blue", preselectTeleOp = "😈🔥")
+public class BlueFar_15 extends ExoMode {
+    private Hardware hardware;
+    private SwerveDrive swerve;
+    private ScoringSystem system;
+    private AutoDrive auto;
+
+    @Override
+    protected void Init() {
+        new SystemData()
+                .add(SystemConstants.OpMode.AUTONOMOUS)
+                .setVelocityTimeout(true)
+                .setAutoOnBlue(true);
+
+        hardware = Hardware.getInstance(this);
+        swerve = new SwerveDrive(this);
+        system = new ScoringSystem(this);
+
+        auto = new AutoDrive(this, swerve, system, startPoseBlueFar);
+
+        system.indexer.preload();
+        system.setTransferArm(false);
+    }
+
+
+
+    @Override
+    protected void WhenStarted() {
+        preload();
+        thirdLine();
+        gateCycle1();
+        gateCycle1();
+        gateCycle1();
+        leave();
+
+        system.shooter.off();
+    }
+
+    private void preload() {
+        auto.driveTo(new Pose(-140, 40, Math.toRadians(-337.5)), 0.8, 2000)
+                .lockHeadingToGoal(true)
+                .moveSystem(() -> system.shooter.on())
+                .waitDrive(0.975, false)
+                .waitAction(() -> system.shooter.ready())
+                .waitMs(200)
+                .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.isShooting)
+                .moveSystem(() -> system.setTransferArm(true))
+                .lockHeadingToGoal(false);
+    }
+
+    private void thirdLine() {
+        auto.driveTo(new Pose(-85, 70, Math.toRadians(90)), 0.7, 4000)
+                .waitDrive(0.75)
+                .moveSystem(() -> system.intake.on())
+                .driveTo(new Pose(-85, 170, Math.toRadians(90)), 0.5, 5000)
+                .waitDriveActionFailSafe(0.90, false, () -> system.isIndexerFull)
+                .driveTo(new Pose(-140, 40, Math.toRadians(-338)), 0.8, 5000)
+                .waitMs(400)
+                .moveSystem(() -> {
+                    new Thread(() -> system.load()).start();
+
+                    try{ Thread.sleep(200); } catch (InterruptedException e) {}
+                    system.intake.reverse();
+                    try{ Thread.sleep(400); } catch (InterruptedException e) {}
+                    system.intake.off();
+                })
+                .waitDrive(0.4)
+                .lockHeadingToGoal(true)
+                .waitDrive(0.985)
+
+                .waitAction(() -> system.shooter.ready())
+                .waitMs(800)
+                .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.isShooting)
+                .moveSystem(() -> system.setTransferArm(true))
+                .lockHeadingToGoal(false);
+    }
+
+    private void gateCycle1() {
+        auto.driveTo(new Pose(-140, 154, Math.toRadians(90)), 0.8, 3000)
+                .moveSystem(() -> system.intake.on())
+                .waitDriveActionFailSafe(0.98, false, () -> system.isIndexerFull)
+
+                .driveTo(new Pose(-164, 156, Math.toRadians(90)), 0.6, 500)
+                .waitDriveActionFailSafe(0.98, false, () -> system.isIndexerFull)
+                .driveTo(new Pose(-140, 156, Math.toRadians(90)), 0.6, 500)
+                .waitDriveActionFailSafe(0.98, false, () -> system.isIndexerFull)
+                .driveTo(new Pose(-164, 156, Math.toRadians(90)), 0.6, 500)
+                .waitDriveActionFailSafe(0.98, false, () -> system.isIndexerFull)
+
+                .driveTo(new Pose(-140, 40, Math.toRadians(-338)), 0.9, 4000)
+                .waitMs(400)
+                .moveSystem(() -> {
+                    new Thread(() -> system.load()).start();
+
+                    try{ Thread.sleep(200); } catch (InterruptedException e) {}
+                    system.intake.reverse();
+                    try{ Thread.sleep(400); } catch (InterruptedException e) {}
+                    system.intake.off();
+                })
+                .waitDrive(0.4)
+                .lockHeadingToGoal(true)
+                .waitDrive(0.99)
+
+                .waitAction(() -> system.shooter.ready())
+                .waitMs(850)
+                .moveSystem(() -> system.shootSequence())
+                .waitAction(() -> !system.isShooting)
+                .moveSystem(() -> system.setTransferArm(true))
+                .lockHeadingToGoal(false);
+    }
+
+    private void leave() {
+        auto.driveTo(new Pose(-115, 50, Math.toRadians(-50)), 0.8)
+                .waitDrive(0.97);
+    }
+
+
+
+    @Override
+    protected void Loop() {}
+}

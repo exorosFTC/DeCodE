@@ -45,13 +45,12 @@ public class SoloTeleOp extends ExoMode {
     private TriggerManager intakeTriggers, shooterTriggers;
     private Thread swerveThread, gamepadThread;
 
-    private boolean tuneShooter = false;
-
-    //public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD;
-    //public static double LlThreshold = DriveConstants.llThreshold;
-    //public static double LlCloseP = DriveConstants.llCloseP;
-    //public static double LlFarP = DriveConstants.llFarP;
-    //public static double LlCloseD = DriveConstants.llCloseD;
+    private final boolean tuneShooter = false;
+    public static double swerveP = TeleOpAngularP, swerveD = TeleOpAngularD;
+    public static double LlThreshold = DriveConstants.llThreshold;
+    public static double LlCloseP = DriveConstants.llCloseP;
+    public static double LlFarP = DriveConstants.llFarP;
+    public static double LlCloseD = DriveConstants.llCloseD;
 
     public static double moduleP = DriveConstants.TeleOpSwerveModuleP, moduleD = DriveConstants.TeleOpSwerveModuleD, moduleS = 0;
     //public static double odometryX = ODOMETRY_X_OFFSET, odometryY = ODOMETRY_Y_OFFSET;
@@ -63,7 +62,7 @@ public class SoloTeleOp extends ExoMode {
     public static double angle = 0.95;
     public static double power = 0;
 
-    //public static double shooterP = Shooter.kP, shooterF = Shooter.kF, shooterD = Shooter.kD;
+    public static double shooterP = Shooter.kP, shooterF = Shooter.kF, shooterD = Shooter.kD;
     public static double velocityAdjust = 0;
 
 
@@ -80,7 +79,7 @@ public class SoloTeleOp extends ExoMode {
         new SystemData()
                 .add(SystemConstants.OpMode.TELE_OP)
                 .setSoloDrive(true)
-                .setAutoOnBlue(false);
+                .setAutoOnBlue(true);
 
 
         // create gamepad triggers
@@ -114,21 +113,20 @@ public class SoloTeleOp extends ExoMode {
                 if (!swerve.on) { lift.read(); lift.write(); continue; }
 
                 swerve.read();
-                swerve.update(new Pose(
-                        in.ly,
-                        -in.lx,
-                        -in.rx * 0.75)
+                swerve.update(
+                        autoOnBlue ? new Pose(in.ly, -in.lx, -in.rx * 0.75).negate() :
+                                new Pose(in.ly, -in.lx, -in.rx * 0.75)
                 );
                 swerve.write();
 
-                //swerve.setHeadingPID(swerveP, 0, swerveD);
+                swerve.setHeadingPID(swerveP, 0, swerveD);
                 swerve.setModulePID(moduleP, 0, moduleD);
                 swerve.setModuleKs(moduleS);
 
-                //DriveConstants.llCloseP = LlCloseP;
-                //DriveConstants.llThreshold = LlThreshold;
-                //DriveConstants.llFarP = LlFarP;
-                //DriveConstants.llCloseD = LlCloseD;
+                DriveConstants.llCloseP = LlCloseP;
+                DriveConstants.llThreshold = LlThreshold;
+                DriveConstants.llFarP = LlFarP;
+                DriveConstants.llCloseD = LlCloseD;
 
                 //TeleOpAngularP = swerveP;
                 //VEL_X_MULTIPLIER = sotmX;
@@ -137,7 +135,7 @@ public class SoloTeleOp extends ExoMode {
                 swerve.lockHeadingToGoal(in.lockToGoal);
                 if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
                 if (in.evResetHeading.getAndSet(false)) hardware.localizer.setPositionEstimate(new Pose(POSE.x, POSE.y, 0));
-                if (in.evResetPosition.getAndSet(false)) hardware.localizer.setPositionEstimate(new Pose(-160, 160, 0));
+                if (in.evResetPosition.getAndSet(false)) hardware.localizer.setPositionEstimate(new Pose(-160, -160, 0));
                 if (in.evStartLift.getAndSet(false)) {
                     swerve.disable();
                     system.indexer.off();
@@ -152,7 +150,7 @@ public class SoloTeleOp extends ExoMode {
                 hardware.telemetry.addData("head", "%.2f", Math.toDegrees(POSE.heading));
 
                 hardware.telemetry.addData("distance", system.shooter.distance);
-                //hardware.telemetry.addData("VEL X", VELOCITY.x);
+                hardware.telemetry.addData("VEL", VELOCITY.hypot());
                 //hardware.telemetry.addData("VEL Y",VELOCITY.y);
 
                 hardware.telemetry.addData("shooter velocity", system.shooter.correctedVelocity);
@@ -196,10 +194,9 @@ public class SoloTeleOp extends ExoMode {
 
 
                 Shooter.ANGLE_ADJUST = angleAdjust;
-                //system.shooter.setPIDF(shooterP, 0, shooterD, shooterF);
+                system.shooter.setPIDF(shooterP, 0, shooterD, shooterF);
 
-                if (tuneShooter) system.shooter.update(power, angle, transferPower);
-                else system.shooter.update();
+                if (tuneShooter) system.shooter.update(power, angle, transferPower); else system.shooter.update();
                 system.write();
 
                 Thread.yield();

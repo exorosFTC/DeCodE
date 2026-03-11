@@ -5,29 +5,30 @@ import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstant
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.DriveConstants.goalPosition;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.opModeType;
 import static org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants.samples;
+import static org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.Subsystems.Indexer.sorted;
 
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.CommandBase.Constants.SystemConstants;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ShotSample;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemBase;
 
 public class Shooter extends SystemBase {
     private final Hardware hardware;
-    private final PIDFController controller;
-
     public static ShotSample sample;
 
     public static double kP = 0.09;
     public static double kI = 0;
     public static double kD = 0.002;
-    public static double kF = 0.0015;
+    public static double kF = 0.003;
+    private static final PIDFController controller = new PIDFController(kP, kI, kD, kF);
 
     private static final double VEL_ALPHA = 0.3;
     public static final double MAX_RPS = 380;
-    public static double ANGLE_ADJUST = -0.002;
+    public static double ANGLE_ADJUST = -0.00267;
     public static double VELOCITY_ADJUST = 0;
 
 
@@ -45,10 +46,7 @@ public class Shooter extends SystemBase {
     private final double threshold = 6;
 
 
-    public Shooter(LinearOpMode opMode) {
-        this.hardware = Hardware.getInstance(opMode);
-        controller = new PIDFController(kP, kI, kD, kF);
-    }
+    public Shooter(LinearOpMode opMode) { this.hardware = Hardware.getInstance(opMode); }
 
     public boolean ready() { return ready(threshold); }
 
@@ -69,11 +67,11 @@ public class Shooter extends SystemBase {
             sample.transferPower = overrideIndexerSpeed;
         } else if (sample != null && on) {
             targetPower = sample.power;
-            targetAngle = sample.angle;
+            targetAngle = sorted ? sample.angle - 0.09 : sample.angle;
         }
 
-        this.targetVelocity = (targetPower - ((Indexer.sorted && on) ? 0.01 : 0)) * MAX_RPS;
-        this.currentPower = ((Math.abs(correctedVelocity) < 40 && targetVelocity == 0) ? 0 : controller.calculate(correctedVelocity, targetVelocity));
+        this.targetVelocity = (targetPower - ((sorted && on) ? 0.01 : 0)) * MAX_RPS;
+        this.currentPower = ((Math.abs(correctedVelocity) < 40 && targetVelocity == 0) ? 0 : controller.calculate(correctedVelocity, targetVelocity)) * 12.0 / hardware.batteryVoltage;
 
         targetAngle = clamp(targetAngle - (this.targetVelocity - correctedVelocity - threshold) * ANGLE_ADJUST, 0.34, 0.94);  // adjust angle by velocity*/
     }
@@ -117,9 +115,9 @@ public class Shooter extends SystemBase {
         return a + (b - a) * t;
     }
 
-    public void setPIDF(double p, double i, double d, double f) {
-        controller.setPIDF(p, i, d, f);
-    }
+    public static void setPIDF(double p, double i, double d, double f) { controller.setPIDF(p, i, d, f); }
+
+    public static void resetPIDF() { controller.setPIDF(kP, kI, kD, kF); }
 
 
 

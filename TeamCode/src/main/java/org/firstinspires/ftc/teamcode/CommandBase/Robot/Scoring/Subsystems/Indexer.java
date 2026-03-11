@@ -29,7 +29,7 @@ public class Indexer extends SystemBase {
     public static double HOMING_POWER = 0.2; //in the shooting direction
     public static double INDEXING_POWER = 0.25;
 
-    public static final int microAdjustValue = 37;
+    public static final int microAdjustValue = 60;
     public int homingOffset = 0;
     public int offset = 0;
 
@@ -80,7 +80,6 @@ public class Indexer extends SystemBase {
 
     public void index(int balls) {
         isIndexing = true;
-        balls = Math.max(1, Math.min(balls, 2)); //indexing 3 spots is useless, limit to 2
 
         // index and update the artefact list
         target -= (int) (balls * TICKS_PER_REVOLUTION / 3);
@@ -99,6 +98,7 @@ public class Indexer extends SystemBase {
     }
 
     public void indexPattern() {
+        if (elements.contains(Artifact.NONE)) elements.set(elements.indexOf(Artifact.NONE), Artifact.GREEN);
         int greenCurrentPos = elements.indexOf(Artifact.GREEN);
         int greenTargetPos = -1;
 
@@ -148,15 +148,15 @@ public class Indexer extends SystemBase {
         hardware.IndexerMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         this.on = true;
-        this.target = (int) (target + offset + balls * TICKS_PER_REVOLUTION / 3 * (sorted ? 2 : 1));
+        this.target = (int) (target + offset + balls * TICKS_PER_REVOLUTION / 3 * (sorted ? 2 : 1) + 90);
 
         timer.reset();
         while (indexerPosition < this.target && timer.seconds() < 2 && opMode.opModeIsActive()) {
-            hardware.IndexerMotor.setPower(sorted ? (this.target - indexerPosition > TICKS_PER_REVOLUTION ? 0.4 : Shooter.sample.transferPower) : (overridePower == -1 ? Shooter.sample.transferPower : overridePower));
+            hardware.IndexerMotor.setPower(sorted ? (this.target - indexerPosition > TICKS_PER_REVOLUTION ? 0.3 : Shooter.sample.transferPower) : (overridePower == -1 ? Shooter.sample.transferPower : overridePower));
         }
 
         // use PID for holding the intake position, after overshooting
-        runTarget(target, 1);
+        runTarget(target - 90, 1);
 
         sideswipe(balls, true);
         if (balls == 3) offset = 0;
