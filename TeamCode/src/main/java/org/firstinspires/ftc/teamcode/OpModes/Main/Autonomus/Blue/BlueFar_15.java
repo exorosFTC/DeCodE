@@ -54,7 +54,7 @@ public class BlueFar_15 extends ExoMode {
         auto.driveTo(new Pose(-140, 40, Math.toRadians(-337.5)), 0.8, 2000)
                 .lockHeadingToGoal(true)
                 .moveSystem(() -> system.shooter.on())
-                .waitDrive(0.975, false)
+                .waitDrive(0.96, false)
                 .waitAction(() -> system.shooter.ready())
                 .waitMs(200)
                 .moveSystem(() -> system.shootSequence())
@@ -64,10 +64,10 @@ public class BlueFar_15 extends ExoMode {
     }
 
     private void thirdLine() {
-        auto.driveTo(new Pose(-85, 70, Math.toRadians(90)), 0.7, 4000)
+        auto.driveTo(new Pose(-85, 70, Math.toRadians(-270)), 0.7, 4000)
                 .waitDrive(0.75)
                 .moveSystem(() -> system.intake.on())
-                .driveTo(new Pose(-85, 170, Math.toRadians(90)), 0.5, 5000)
+                .driveTo(new Pose(-85, 170, Math.toRadians(-270)), 0.5, 5000)
                 .waitDriveActionFailSafe(0.90, false, () -> system.isIndexerFull)
                 .driveTo(new Pose(-140, 40, Math.toRadians(-338)), 0.8, 5000)
                 .waitMs(400)
@@ -81,7 +81,7 @@ public class BlueFar_15 extends ExoMode {
                 })
                 .waitDrive(0.4)
                 .lockHeadingToGoal(true)
-                .waitDrive(0.985)
+                .waitDrive(0.96)
 
                 .waitAction(() -> system.shooter.ready())
                 .waitMs(800)
@@ -115,7 +115,7 @@ public class BlueFar_15 extends ExoMode {
                 })
                 .waitDrive(0.4)
                 .lockHeadingToGoal(true)
-                .waitDrive(0.99)
+                .waitDrive(0.96)
 
                 .waitAction(() -> system.shooter.ready())
                 .waitMs(850)
@@ -129,6 +129,7 @@ public class BlueFar_15 extends ExoMode {
         auto.driveTo(new Pose(-115, 50, Math.toRadians(-50)), 0.8)
                 .waitDrive(0.97);
     }
+
 
 
 

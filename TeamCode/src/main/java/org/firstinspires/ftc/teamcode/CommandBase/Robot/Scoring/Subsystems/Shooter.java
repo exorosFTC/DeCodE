@@ -67,7 +67,7 @@ public class Shooter extends SystemBase {
             sample.transferPower = overrideIndexerSpeed;
         } else if (sample != null && on) {
             targetPower = sample.power;
-            targetAngle = sorted ? sample.angle - 0.09 : sample.angle;
+            targetAngle = sorted ? sample.angle - 0.05 : sample.angle;
         }
 
         this.targetVelocity = (targetPower - ((sorted && on) ? 0.01 : 0)) * MAX_RPS;

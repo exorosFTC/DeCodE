@@ -44,7 +44,6 @@ public class RedFar_15 extends ExoMode {
         gateCycle1();
         gateCycle1();
         gateCycle1();
-        //gateCycle2();
         leave();
 
         system.shooter.off();
@@ -54,7 +53,7 @@ public class RedFar_15 extends ExoMode {
         auto.driveTo(new Pose(-140, -40, Math.toRadians(337.5)), 0.8, 2000)
                 .lockHeadingToGoal(true)
                 .moveSystem(() -> system.shooter.on())
-                .waitDrive(0.975, false)
+                .waitDrive(0.96, false)
                 .waitAction(() -> system.shooter.ready())
                 .waitMs(200)
                 .moveSystem(() -> system.shootSequence())
@@ -81,7 +80,7 @@ public class RedFar_15 extends ExoMode {
                 })
                 .waitDrive(0.4)
                 .lockHeadingToGoal(true)
-                .waitDrive(0.985)
+                .waitDrive(0.96)
 
                 .waitAction(() -> system.shooter.ready())
                 .waitMs(800)
@@ -115,7 +114,7 @@ public class RedFar_15 extends ExoMode {
                 })
                 .waitDrive(0.4)
                 .lockHeadingToGoal(true)
-                .waitDrive(0.99)
+                .waitDrive(0.96)
 
                 .waitAction(() -> system.shooter.ready())
                 .waitMs(850)
