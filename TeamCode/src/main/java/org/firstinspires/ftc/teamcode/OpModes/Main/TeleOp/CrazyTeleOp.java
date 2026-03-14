@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.CommandBase.Robot.Hardware;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.SystemData;
 import org.firstinspires.ftc.teamcode.CommandBase.Robot.Scoring.ScoringSystem;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.HubBulkRead;
+import org.firstinspires.ftc.teamcode.CommandBase.Util.SensorsEx.LimelightEx;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.TriggerManager;
 import org.firstinspires.ftc.teamcode.CommandBase.Util.InputBus;
 import org.firstinspires.ftc.teamcode.OpModes.ExoMode;
@@ -94,11 +95,9 @@ public class CrazyTeleOp extends ExoMode {
                                 new Pose(in.ly, -in.lx, -in.rx * sensitivity)
                 );
                 swerve.write();
-                
-                swerve.setModulePID(moduleP, 0, moduleD);
 
                 swerve.lockHeadingToGoal(in.lockToGoal);
-                if (in.evLockX.getAndSet(false)) swerve.setLockedX(true);
+                swerve.setModulePID(moduleP, 0, moduleD);
 
                 if (in.evResetHeading.getAndSet(false)) hardware.localizer.setPositionEstimate(new Pose(POSE.x, POSE.y, 0));
                 if (in.evResetPosition.getAndSet(false)) {
@@ -164,6 +163,7 @@ public class CrazyTeleOp extends ExoMode {
                 in.lockToGoal = in.lt > 0.1;
                 in.spinupShooter = in.rt > 0.1;
                 in.wallResetCombo = g1.isDown(GamepadKeys.Button.RIGHT_BUMPER);
+                in.readRandomization = g1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1;
 
                 // edges -> events (one-shot)
                 if (g2.wasJustPressed(GamepadKeys.Button.B)) in.evToggleIntake.set(true);
@@ -181,8 +181,6 @@ public class CrazyTeleOp extends ExoMode {
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) { if (in.wallResetCombo) in.evResetRight.set(true); else in.evResetPosition.set(true); }
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_UP)) { if (in.wallResetCombo) in.evResetUp.set(true); else in.evSetRed.set(true); }
                 if (g1.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) { if (in.wallResetCombo) in.evResetDown.set(true); else in.evSetBlue.set(true); };
-
-                if (g1.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.1) in.evLockX.set(true);
 
                 system.shooter.update();
                 system.write();
@@ -212,6 +210,12 @@ public class CrazyTeleOp extends ExoMode {
 
         if ((!in.spinupShooter && !lift.on) && !system.shooter.on) system.shooter.on();
         else if ((in.spinupShooter || lift.on) && system.shooter.on) system.shooter.off();
+
+        if (in.readRandomization) {
+            if (!hardware.limelight.enabled) { hardware.limelight.start(); hardware.limelight.setPipeline(LimelightEx.Pipeline.RANDOMIZATION); }
+            hardware.limelight.read();
+            hardware.limelight.getRandomization();
+        } else if (!in.readRandomization && hardware.limelight.enabled && hardware.limelight.getPipeline() == LimelightEx.Pipeline.RANDOMIZATION) hardware.limelight.stop();
 
         system.updateIntake(in.evIgnoreColorSensors.get());
         Thread.yield();

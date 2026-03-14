@@ -9,6 +9,7 @@ public class InputBus {
     public volatile boolean spinupShooter;
     public volatile boolean lockToGoal;
     public volatile boolean wallResetCombo;
+    public volatile boolean readRandomization;
 
     public volatile double ly2;
 

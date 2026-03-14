@@ -103,9 +103,9 @@ public class Indexer extends SystemBase {
         int greenTargetPos = -1;
 
         switch (lastValidRandomization) {
-            case LEFT: greenTargetPos = 2; break;
+            case LEFT: greenTargetPos = 0; break;
             case CENTER: greenTargetPos = 1; break;
-            case RIGHT: greenTargetPos = 0; break;
+            case RIGHT: greenTargetPos = 2; break;
         }
 
         int steps = (3 + greenTargetPos - greenCurrentPos) % 3;
